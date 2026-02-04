@@ -42,7 +42,9 @@ public class PublicJobController {
             if (job.getRecruiter().getUser() != null) {
                 recruiterEmail = job.getRecruiter().getUser().getEmail();
             }
-            recruiterProfilePictureUrl = fileUploadService.toReadSasUrl(job.getRecruiter().getProfilePictureUrl());
+            if (job.getRecruiter().getUser() != null) {
+                recruiterProfilePictureUrl = fileUploadService.toReadSasUrl(job.getRecruiter().getUser().getProfilePictureUrl());
+            }
         }
 
         JobDetailsResponse dto = new JobDetailsResponse(

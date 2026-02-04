@@ -4,9 +4,11 @@ import xyz.yettensyvus.internshipfinder.dto.AuthResponse;
 import xyz.yettensyvus.internshipfinder.dto.LoginRequest;
 import xyz.yettensyvus.internshipfinder.dto.RegisterRequest;
 import xyz.yettensyvus.internshipfinder.enums.NotificationType;
+import xyz.yettensyvus.internshipfinder.enums.OtpPurpose;
 import xyz.yettensyvus.internshipfinder.enums.Role;
 import xyz.yettensyvus.internshipfinder.model.*;
 import xyz.yettensyvus.internshipfinder.repository.RecruiterRepository;
+import xyz.yettensyvus.internshipfinder.repository.OtpTokenRepository;
 import xyz.yettensyvus.internshipfinder.repository.StudentRepository;
 import xyz.yettensyvus.internshipfinder.repository.UserRepository;
 import xyz.yettensyvus.internshipfinder.security.JwtTokenProvider;
@@ -22,6 +24,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -36,6 +39,7 @@ public class UserServiceImpl implements UserService {
     @Autowired private EmailService emailService;
     @Autowired private NotificationService notificationService;
     @Autowired private FileUploadService fileUploadService;
+    @Autowired private OtpTokenRepository otpTokenRepo;
 
     private String normalizeEmail(String email) {
         if (email == null) return null;
@@ -69,11 +73,7 @@ public class UserServiceImpl implements UserService {
             return "OTP sent to your email.";
         }
 
-        String otp = String.valueOf(new Random().nextInt(900000) + 100000); // 6-digit OTP
-        user.setOtpCode(otp);
-        user.setOtpExpiry(new Date(System.currentTimeMillis() + 5 * 60 * 1000)); // 5 min expiry
-        userRepo.save(user);
-
+        String otp = createOrReplaceOtp(user, OtpPurpose.PASSWORD_RESET, null);
         emailService.sendOtpEmail(normalizedEmail, otp);
         return "OTP sent to your email.";
     }
@@ -84,18 +84,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepo.findByEmail(normalizedEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        if (user.getOtpCode() == null || user.getOtpExpiry() == null) {
-            throw new RuntimeException("OTP expired");
-        }
-
-        if (!otp.equals(user.getOtpCode())) {
-            throw new RuntimeException("Invalid OTP");
-        }
-
-        if (user.getOtpExpiry().before(new Date())) {
-            throw new RuntimeException("OTP expired");
-        }
-
+        consumeOtpOrThrow(user, OtpPurpose.PASSWORD_RESET, otp);
         return true;
     }
 
@@ -108,8 +97,6 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         user.setPassword(passwordEncoder.encode(newPassword));
-        user.setOtpCode(null);
-        user.setOtpExpiry(null);
         userRepo.save(user);
 
         return "Password reset successfully.";
@@ -144,9 +131,6 @@ public class UserServiceImpl implements UserService {
 
         if (requestedRole == Role.RECRUITER) {
             user.setEnabled(false);
-            String otp = String.valueOf(new Random().nextInt(900000) + 100000);
-            user.setOtpCode(otp);
-            user.setOtpExpiry(new Date(System.currentTimeMillis() + 5 * 60 * 1000));
         } else {
             user.setEnabled(true);
         }
@@ -166,7 +150,8 @@ public class UserServiceImpl implements UserService {
             recruiter.setCompanyWebsite(req.getCompanyWebsite());
             recruiterRepo.save(recruiter);
 
-            emailService.sendRecruiterEmailVerificationOtpEmail(user.getEmail(), user.getOtpCode());
+            String otp = createOrReplaceOtp(user, OtpPurpose.RECRUITER_EMAIL_VERIFICATION, null);
+            emailService.sendRecruiterEmailVerificationOtpEmail(user.getEmail(), otp);
             return "RECRUITER_OTP_SENT";
         }
 
@@ -185,7 +170,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public String verifyRecruiterEmailOtp(String email, String otp) {
         String normalizedEmail = normalizeEmail(email);
-        verifyOtp(normalizedEmail, otp);
 
         User user = userRepo.findByEmail(normalizedEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
@@ -194,9 +178,9 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("INVALID_ROLE");
         }
 
+        consumeOtpOrThrow(user, OtpPurpose.RECRUITER_EMAIL_VERIFICATION, otp);
+
         user.setEnabled(true);
-        user.setOtpCode(null);
-        user.setOtpExpiry(null);
         userRepo.save(user);
 
         return "Email verified";
@@ -221,11 +205,7 @@ public class UserServiceImpl implements UserService {
             return "Already verified";
         }
 
-        String otp = String.valueOf(new Random().nextInt(900000) + 100000);
-        user.setOtpCode(otp);
-        user.setOtpExpiry(new Date(System.currentTimeMillis() + 5 * 60 * 1000));
-        userRepo.save(user);
-
+        String otp = createOrReplaceOtp(user, OtpPurpose.RECRUITER_EMAIL_VERIFICATION, null);
         emailService.sendRecruiterEmailVerificationOtpEmail(user.getEmail(), otp);
         return "OTP sent";
     }
@@ -244,12 +224,7 @@ public class UserServiceImpl implements UserService {
 
         User user = getCurrentUser();
 
-        String otp = String.valueOf(new Random().nextInt(900000) + 100000);
-        user.setPendingEmail(normalizedEmail);
-        user.setOtpCode(otp);
-        user.setOtpExpiry(new Date(System.currentTimeMillis() + 5 * 60 * 1000));
-        userRepo.save(user);
-
+        String otp = createOrReplaceOtp(user, OtpPurpose.EMAIL_CHANGE, normalizedEmail);
         emailService.sendOtpEmail(normalizedEmail, otp);
         return "OTP sent to new email";
     }
@@ -258,21 +233,16 @@ public class UserServiceImpl implements UserService {
     public String confirmEmailChange(String otp) {
         User user = getCurrentUser();
 
-        if (user.getPendingEmail() == null || user.getPendingEmail().trim().isEmpty()) {
+        OtpToken token = consumeOtpOrThrow(user, OtpPurpose.EMAIL_CHANGE, otp);
+        String newEmail = normalizeEmail(token.getTargetEmail());
+        if (newEmail == null) {
             throw new RuntimeException("No pending email change");
         }
-
-        verifyOtp(user.getEmail(), otp);
-
-        String newEmail = user.getPendingEmail();
         if (userRepo.existsByEmail(newEmail)) {
             throw new RuntimeException("Email already registered");
         }
 
         user.setEmail(newEmail);
-        user.setPendingEmail(null);
-        user.setOtpCode(null);
-        user.setOtpExpiry(null);
         userRepo.save(user);
 
         return "Email changed";
@@ -291,11 +261,7 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("INVALID_PASSWORD");
         }
 
-        String otp = String.valueOf(new Random().nextInt(900000) + 100000);
-        user.setOtpCode(otp);
-        user.setOtpExpiry(new Date(System.currentTimeMillis() + 5 * 60 * 1000));
-        userRepo.save(user);
-
+        String otp = createOrReplaceOtp(user, OtpPurpose.PASSWORD_CHANGE, null);
         emailService.sendOtpEmail(user.getEmail(), otp);
         return "OTP sent";
     }
@@ -316,11 +282,9 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Invalid password");
         }
 
-        verifyOtp(user.getEmail(), otp);
+        consumeOtpOrThrow(user, OtpPurpose.PASSWORD_CHANGE, otp);
 
         user.setPassword(passwordEncoder.encode(newPassword));
-        user.setOtpCode(null);
-        user.setOtpExpiry(null);
         userRepo.save(user);
 
         return "Password changed";
@@ -347,28 +311,52 @@ public class UserServiceImpl implements UserService {
         String token = jwtProvider.generateToken(user.getEmail());
 
         String name = user.getUsername();
-        String avatar = null;
 
         if (user.getRole() == Role.STUDENT) {
             Student s = studentRepo.findByUserEmail(user.getEmail()).orElse(null);
-            if (s != null) {
-                if (s.getName() != null && !s.getName().isBlank()) {
-                    name = s.getName();
-                }
-                avatar = fileUploadService.toReadSasUrl(s.getProfilePictureUrl());
+            if (s != null && s.getName() != null && !s.getName().isBlank()) {
+                name = s.getName();
             }
         } else if (user.getRole() == Role.RECRUITER) {
             Recruiter r = recruiterRepo.findByUserEmail(user.getEmail());
-            if (r != null) {
-                if (r.getCompanyName() != null && !r.getCompanyName().isBlank()) {
-                    name = r.getCompanyName();
-                }
-                avatar = fileUploadService.toReadSasUrl(r.getProfilePictureUrl());
+            if (r != null && r.getCompanyName() != null && !r.getCompanyName().isBlank()) {
+                name = r.getCompanyName();
             }
-        } else if (user.getRole() == Role.ADMIN) {
-            avatar = fileUploadService.toReadSasUrl(user.getProfilePictureUrl());
         }
 
+        String avatar = fileUploadService.toReadSasUrl(user.getProfilePictureUrl());
+
         return new AuthResponse(token, user.getEmail(), user.getRole().name(), name, avatar);
+    }
+
+    private String createOrReplaceOtp(User user, OtpPurpose purpose, String targetEmail) {
+        String otp = String.valueOf(new Random().nextInt(900000) + 100000);
+
+        OtpToken token = new OtpToken();
+        token.setUser(user);
+        token.setPurpose(purpose);
+        token.setOtpCode(otp);
+        token.setTargetEmail(targetEmail);
+        token.setCreatedAt(Instant.now());
+        token.setExpiresAt(Instant.now().plusSeconds(5 * 60));
+        otpTokenRepo.save(token);
+
+        return otp;
+    }
+
+    private OtpToken consumeOtpOrThrow(User user, OtpPurpose purpose, String otp) {
+        OtpToken token = otpTokenRepo
+                .findTopByUserAndPurposeAndConsumedAtIsNullOrderByCreatedAtDesc(user, purpose)
+                .orElseThrow(() -> new RuntimeException("OTP expired"));
+
+        if (token.getExpiresAt() == null || token.getExpiresAt().isBefore(Instant.now())) {
+            throw new RuntimeException("OTP expired");
+        }
+        if (token.getOtpCode() == null || !token.getOtpCode().equals(otp)) {
+            throw new RuntimeException("Invalid OTP");
+        }
+
+        token.setConsumedAt(Instant.now());
+        return otpTokenRepo.save(token);
     }
 }

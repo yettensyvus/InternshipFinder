@@ -39,8 +39,8 @@ public class JobServiceImpl implements JobService {
             recruiterCompany = job.getRecruiter().getCompanyName();
             if (job.getRecruiter().getUser() != null) {
                 recruiterEmail = job.getRecruiter().getUser().getEmail();
+                recruiterProfilePictureUrl = job.getRecruiter().getUser().getProfilePictureUrl();
             }
-            recruiterProfilePictureUrl = job.getRecruiter().getProfilePictureUrl();
         }
 
         String recruiterProfilePictureSas = fileUploadService.toReadSasUrl(recruiterProfilePictureUrl);

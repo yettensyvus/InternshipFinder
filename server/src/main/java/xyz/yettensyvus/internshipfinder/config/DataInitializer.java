@@ -153,9 +153,9 @@ public class DataInitializer implements CommandLineRunner {
                 s.setResumeUrl(resumeUrl);
                 changed = true;
             }
-            if ((s.getProfilePictureUrl() == null || s.getProfilePictureUrl().isBlank()) && profilePictureUrl != null) {
-                s.setProfilePictureUrl(profilePictureUrl);
-                changed = true;
+            if ((user.getProfilePictureUrl() == null || user.getProfilePictureUrl().isBlank()) && profilePictureUrl != null) {
+                user.setProfilePictureUrl(profilePictureUrl);
+                userRepository.save(user);
             }
             if (changed) {
                 return studentRepository.save(s);
@@ -171,7 +171,10 @@ public class DataInitializer implements CommandLineRunner {
         student.setBranch(branch);
         student.setYearOfPassing(yearOfPassing);
         student.setResumeUrl(resumeUrl);
-        student.setProfilePictureUrl(profilePictureUrl);
+        if (profilePictureUrl != null && !profilePictureUrl.isBlank()) {
+            user.setProfilePictureUrl(profilePictureUrl);
+            userRepository.save(user);
+        }
         Student saved = studentRepository.save(student);
         System.out.println("Student profile created for: " + user.getEmail());
         return saved;
@@ -189,9 +192,9 @@ public class DataInitializer implements CommandLineRunner {
                 existing.setCompanyWebsite(companyWebsite);
                 changed = true;
             }
-            if ((existing.getProfilePictureUrl() == null || existing.getProfilePictureUrl().isBlank()) && profilePictureUrl != null) {
-                existing.setProfilePictureUrl(profilePictureUrl);
-                changed = true;
+            if ((user.getProfilePictureUrl() == null || user.getProfilePictureUrl().isBlank()) && profilePictureUrl != null) {
+                user.setProfilePictureUrl(profilePictureUrl);
+                userRepository.save(user);
             }
             if (changed) {
                 return recruiterRepository.save(existing);
@@ -203,7 +206,10 @@ public class DataInitializer implements CommandLineRunner {
         recruiter.setUser(user);
         recruiter.setCompanyName(companyName);
         recruiter.setCompanyWebsite(companyWebsite);
-        recruiter.setProfilePictureUrl(profilePictureUrl);
+        if (profilePictureUrl != null && !profilePictureUrl.isBlank()) {
+            user.setProfilePictureUrl(profilePictureUrl);
+            userRepository.save(user);
+        }
         Recruiter saved = recruiterRepository.save(recruiter);
         System.out.println("Recruiter profile created for: " + user.getEmail());
         return saved;

@@ -39,7 +39,7 @@ public class RecruiterApplicationController {
                         app.getStudent().getBranch(),
                         app.getStudent().getYearOfPassing(),
                         fileUploadService.toReadSasUrl(app.getStudent().getResumeUrl()),
-                        fileUploadService.toReadSasUrl(app.getStudent().getProfilePictureUrl())
+                        fileUploadService.toReadSasUrl(app.getStudent().getUser().getProfilePictureUrl())
                 );
             }
 

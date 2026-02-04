@@ -24,6 +24,4 @@ public class Recruiter {
 
     private String companyWebsite;
 
-    private String profilePictureUrl;
-
 }

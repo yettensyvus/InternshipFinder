@@ -8,6 +8,7 @@ import xyz.yettensyvus.internshipfinder.dto.StudentProfileDTO;
 import xyz.yettensyvus.internshipfinder.enums.NotificationType;
 import xyz.yettensyvus.internshipfinder.model.Student;
 import xyz.yettensyvus.internshipfinder.repository.StudentRepository;
+import xyz.yettensyvus.internshipfinder.repository.UserRepository;
 import xyz.yettensyvus.internshipfinder.service.FileUploadService;
 import xyz.yettensyvus.internshipfinder.service.NotificationService;
 import xyz.yettensyvus.internshipfinder.service.StudentService;
@@ -19,6 +20,9 @@ public class StudentServiceImpl implements StudentService {
 
     @Autowired
     private StudentRepository studentRepo;
+
+    @Autowired
+    private UserRepository userRepo;
 
     @Autowired
     private NotificationService notificationService;
@@ -46,7 +50,7 @@ public class StudentServiceImpl implements StudentService {
         dto.setBranch(s.getBranch());
         dto.setYearOfPassing(s.getYearOfPassing());
         dto.setResumeUrl(fileUploadService.toReadSasUrl(s.getResumeUrl()));
-        dto.setProfilePictureUrl(fileUploadService.toReadSasUrl(s.getProfilePictureUrl()));
+        dto.setProfilePictureUrl(fileUploadService.toReadSasUrl(s.getUser().getProfilePictureUrl()));
 
         return dto;
     }
@@ -99,7 +103,10 @@ public class StudentServiceImpl implements StudentService {
 
         String imageUrl = fileUploadService.uploadFile(file, "student-profile-pictures");
 
-        student.setProfilePictureUrl(imageUrl);
+        if (student.getUser() != null) {
+            student.getUser().setProfilePictureUrl(imageUrl);
+            userRepo.save(student.getUser());
+        }
         studentRepo.save(student);
 
         return fileUploadService.toReadSasUrl(imageUrl);

@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 import xyz.yettensyvus.internshipfinder.dto.RecruiterProfileDTO;
 import xyz.yettensyvus.internshipfinder.model.Recruiter;
 import xyz.yettensyvus.internshipfinder.repository.RecruiterRepository;
+import xyz.yettensyvus.internshipfinder.repository.UserRepository;
 import xyz.yettensyvus.internshipfinder.service.FileUploadService;
 import xyz.yettensyvus.internshipfinder.service.RecruiterService;
 
@@ -18,6 +19,9 @@ public class RecruiterServiceImpl implements RecruiterService {
     private RecruiterRepository recruiterRepo;
 
     @Autowired
+    private UserRepository userRepo;
+
+    @Autowired
     private FileUploadService fileUploadService;
 
     @Override
@@ -28,7 +32,7 @@ public class RecruiterServiceImpl implements RecruiterService {
         dto.setEmail(recruiter.getUser().getEmail());
         dto.setCompanyName(recruiter.getCompanyName());
         dto.setCompanyWebsite(recruiter.getCompanyWebsite());
-        dto.setProfilePictureUrl(fileUploadService.toReadSasUrl(recruiter.getProfilePictureUrl()));
+        dto.setProfilePictureUrl(fileUploadService.toReadSasUrl(recruiter.getUser().getProfilePictureUrl()));
         return dto;
     }
 
@@ -45,7 +49,10 @@ public class RecruiterServiceImpl implements RecruiterService {
     public String uploadProfilePicture(String email, MultipartFile file) throws IOException {
         Recruiter recruiter = recruiterRepo.findByUserEmail(email);
         String imageUrl = fileUploadService.uploadFile(file, "recruiter-profile-pictures");
-        recruiter.setProfilePictureUrl(imageUrl);
+        if (recruiter.getUser() != null) {
+            recruiter.getUser().setProfilePictureUrl(imageUrl);
+            userRepo.save(recruiter.getUser());
+        }
         recruiterRepo.save(recruiter);
         return fileUploadService.toReadSasUrl(imageUrl);
     }

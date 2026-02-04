@@ -77,9 +77,6 @@ public class AdminServiceImpl implements AdminService {
                 if (student.getResumeUrl() != null && !student.getResumeUrl().isBlank()) {
                     blobsToDelete.add(student.getResumeUrl());
                 }
-                if (student.getProfilePictureUrl() != null && !student.getProfilePictureUrl().isBlank()) {
-                    blobsToDelete.add(student.getProfilePictureUrl());
-                }
                 applicationRepo.deleteByStudent(student);
                 studentRepo.delete(student);
             }
@@ -88,9 +85,6 @@ public class AdminServiceImpl implements AdminService {
         if (user.getRole() == Role.RECRUITER) {
             Recruiter recruiter = recruiterRepo.findByUserId(user.getId());
             if (recruiter != null) {
-                if (recruiter.getProfilePictureUrl() != null && !recruiter.getProfilePictureUrl().isBlank()) {
-                    blobsToDelete.add(recruiter.getProfilePictureUrl());
-                }
                 List<Job> jobs = jobRepo.findByRecruiter(recruiter);
                 for (Job job : jobs) {
                     applicationRepo.deleteByJob(job);
@@ -137,7 +131,7 @@ public class AdminServiceImpl implements AdminService {
                         s.getBranch(),
                         s.getYearOfPassing(),
                         fileUploadService.toReadSasUrl(s.getResumeUrl()),
-                        fileUploadService.toReadSasUrl(s.getProfilePictureUrl())
+                        fileUploadService.toReadSasUrl(user.getProfilePictureUrl())
                 );
             }
         }
@@ -149,7 +143,7 @@ public class AdminServiceImpl implements AdminService {
                         r.getId(),
                         r.getCompanyName(),
                         r.getCompanyWebsite(),
-                        fileUploadService.toReadSasUrl(r.getProfilePictureUrl())
+                        fileUploadService.toReadSasUrl(user.getProfilePictureUrl())
                 );
             }
         }
@@ -240,8 +234,9 @@ public class AdminServiceImpl implements AdminService {
                 if (dto.getBranch() != null) s.setBranch(dto.getBranch());
                 if (dto.getYearOfPassing() != null) s.setYearOfPassing(dto.getYearOfPassing());
                 if (dto.getResumeUrl() != null) s.setResumeUrl(fileUploadService.toStableBlobUrl(dto.getResumeUrl()));
-                if (dto.getProfilePictureUrl() != null) s.setProfilePictureUrl(fileUploadService.toStableBlobUrl(dto.getProfilePictureUrl()));
+                if (dto.getProfilePictureUrl() != null) user.setProfilePictureUrl(fileUploadService.toStableBlobUrl(dto.getProfilePictureUrl()));
                 studentRepo.save(s);
+                userRepo.save(user);
             }
         }
 
@@ -251,8 +246,9 @@ public class AdminServiceImpl implements AdminService {
                 AdminRecruiterDetailsDTO dto = req.getRecruiter();
                 if (dto.getCompanyName() != null) r.setCompanyName(dto.getCompanyName());
                 if (dto.getCompanyWebsite() != null) r.setCompanyWebsite(dto.getCompanyWebsite());
-                if (dto.getProfilePictureUrl() != null) r.setProfilePictureUrl(fileUploadService.toStableBlobUrl(dto.getProfilePictureUrl()));
+                if (dto.getProfilePictureUrl() != null) user.setProfilePictureUrl(fileUploadService.toStableBlobUrl(dto.getProfilePictureUrl()));
                 recruiterRepo.save(r);
+                userRepo.save(user);
             }
         }
 
@@ -266,9 +262,6 @@ public class AdminServiceImpl implements AdminService {
         if (student.getResumeUrl() != null && !student.getResumeUrl().isBlank()) {
             blobsToDelete.add(student.getResumeUrl());
         }
-        if (student.getProfilePictureUrl() != null && !student.getProfilePictureUrl().isBlank()) {
-            blobsToDelete.add(student.getProfilePictureUrl());
-        }
 
         applicationRepo.deleteByStudent(student);
         studentRepo.delete(student);
@@ -277,10 +270,6 @@ public class AdminServiceImpl implements AdminService {
     private void deleteRecruiterData(User user, List<String> blobsToDelete) {
         Recruiter recruiter = recruiterRepo.findByUserId(user.getId());
         if (recruiter == null) return;
-
-        if (recruiter.getProfilePictureUrl() != null && !recruiter.getProfilePictureUrl().isBlank()) {
-            blobsToDelete.add(recruiter.getProfilePictureUrl());
-        }
 
         List<Job> jobs = jobRepo.findByRecruiter(recruiter);
         for (Job job : jobs) {

@@ -6,8 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import xyz.yettensyvus.internshipfinder.enums.Role;
 
-import java.util.Date;
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
@@ -32,14 +30,5 @@ public class User {
     private String profilePictureUrl;
 
     private boolean enabled = true;
-
-    @Column(name = "pending_email")
-    private String pendingEmail;
-
-    @Column(name = "otp_code")
-    private String otpCode;
-
-    @Column(name = "otp_expiry")
-    private Date otpExpiry;
 
 }
