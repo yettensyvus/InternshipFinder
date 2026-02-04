@@ -84,17 +84,17 @@ public class UserServiceImpl implements UserService {
         User user = userRepo.findByEmail(normalizedEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        consumeOtpOrThrow(user, OtpPurpose.PASSWORD_RESET, otp);
+        validateOtpOrThrow(user, OtpPurpose.PASSWORD_RESET, otp);
         return true;
     }
 
     @Override
     public String resetPasswordWithOtp(String email, String otp, String newPassword) {
         String normalizedEmail = normalizeEmail(email);
-        verifyOtp(normalizedEmail, otp);
-
         User user = userRepo.findByEmail(normalizedEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        consumeOtpOrThrow(user, OtpPurpose.PASSWORD_RESET, otp);
 
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepo.save(user);
@@ -345,18 +345,55 @@ public class UserServiceImpl implements UserService {
     }
 
     private OtpToken consumeOtpOrThrow(User user, OtpPurpose purpose, String otp) {
-        OtpToken token = otpTokenRepo
-                .findTopByUserAndPurposeAndConsumedAtIsNullOrderByCreatedAtDesc(user, purpose)
-                .orElseThrow(() -> new RuntimeException("OTP expired"));
+        Instant now = Instant.now();
 
-        if (token.getExpiresAt() == null || token.getExpiresAt().isBefore(Instant.now())) {
-            throw new RuntimeException("OTP expired");
+        List<OtpToken> candidates = otpTokenRepo.findTop5ByUserAndPurposeAndConsumedAtIsNullOrderByCreatedAtDesc(user, purpose);
+        if (candidates.isEmpty()) {
+            throw new RuntimeException("OTP not found");
         }
-        if (token.getOtpCode() == null || !token.getOtpCode().equals(otp)) {
+
+        OtpToken matching = null;
+        for (OtpToken t : candidates) {
+            if (t.getOtpCode() != null && t.getOtpCode().equals(otp)) {
+                matching = t;
+                break;
+            }
+        }
+
+        if (matching == null) {
             throw new RuntimeException("Invalid OTP");
         }
 
-        token.setConsumedAt(Instant.now());
-        return otpTokenRepo.save(token);
+        if (matching.getExpiresAt() == null || !matching.getExpiresAt().isAfter(now)) {
+            throw new RuntimeException("OTP expired");
+        }
+
+        matching.setConsumedAt(now);
+        return otpTokenRepo.save(matching);
+    }
+
+    private void validateOtpOrThrow(User user, OtpPurpose purpose, String otp) {
+        Instant now = Instant.now();
+
+        List<OtpToken> candidates = otpTokenRepo.findTop5ByUserAndPurposeAndConsumedAtIsNullOrderByCreatedAtDesc(user, purpose);
+        if (candidates.isEmpty()) {
+            throw new RuntimeException("OTP not found");
+        }
+
+        OtpToken matching = null;
+        for (OtpToken t : candidates) {
+            if (t.getOtpCode() != null && t.getOtpCode().equals(otp)) {
+                matching = t;
+                break;
+            }
+        }
+
+        if (matching == null) {
+            throw new RuntimeException("Invalid OTP");
+        }
+
+        if (matching.getExpiresAt() == null || !matching.getExpiresAt().isAfter(now)) {
+            throw new RuntimeException("OTP expired");
+        }
     }
 }

@@ -15,6 +15,8 @@ public interface OtpTokenRepository extends JpaRepository<OtpToken, Long> {
 
     Optional<OtpToken> findTopByUserAndPurposeAndConsumedAtIsNullOrderByCreatedAtDesc(User user, OtpPurpose purpose);
 
+    java.util.List<OtpToken> findTop5ByUserAndPurposeAndConsumedAtIsNullOrderByCreatedAtDesc(User user, OtpPurpose purpose);
+
     @Modifying
     @Query("delete from OtpToken t where t.expiresAt < :now or t.consumedAt is not null")
     int deleteExpiredOrConsumed(@Param("now") Instant now);
