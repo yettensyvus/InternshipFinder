@@ -223,6 +223,117 @@ const en = {
     failedClear: 'Failed to clear notifications',
     failedMarkRead: 'Failed to mark as read'
   },
+
+  cvBuilder: {
+    title: 'CV Builder',
+    subtitle: 'Build your CV and export it as a PDF.',
+    contentTitle: 'Content',
+    reorderTitle: 'Reorder sections',
+    reorderHint: 'Drag and drop to reorder.',
+    optionalTitle: 'Optional sections',
+    optionalHint: 'Add or remove sections from your CV.',
+    optional: {
+      add: '+ {{section}}',
+      remove: 'Remove {{section}}'
+    },
+    actions: {
+      add: 'Add',
+      remove: 'Remove',
+      saveCv: 'Save CV',
+      exportPdf: 'Export PDF'
+    },
+    itemLabel: 'Item {{index}}',
+    sections: {
+      personal: 'Personal',
+      summary: 'Summary',
+      education: 'Education',
+      experience: 'Experience',
+      skills: 'Skills',
+      projects: 'Projects',
+      honors: 'Honors / Awards',
+      certifications: 'Certifications',
+      languages: 'Languages'
+    },
+    fields: {
+      fullName: 'Full name',
+      title: 'Title',
+      email: 'Email',
+      phone: 'Phone',
+      location: 'Location',
+      website: 'Website / LinkedIn',
+      summary: 'Summary',
+      school: 'School',
+      degree: 'Degree',
+      field: 'Field',
+      educationDetails: 'Education details',
+      company: 'Company',
+      role: 'Role',
+      experienceDetails: 'Experience details',
+      startYear: 'Start year',
+      endYear: 'End year'
+    },
+    placeholders: {
+      fullName: 'Full name',
+      title: 'Title (e.g. Software Engineer)',
+      email: 'Email',
+      phone: 'Phone',
+      location: 'Location',
+      website: 'Website / LinkedIn',
+      summary: 'Short professional summary',
+      school: 'School',
+      degree: 'Degree',
+      field: 'Field',
+      startYear: 'Start year',
+      endYear: 'End year',
+      educationDetails: 'Details (optional)',
+      company: 'Company',
+      role: 'Role',
+      experienceDetails: 'Details (responsibilities, achievements)',
+      skills: 'Comma-separated (e.g. Java, Spring Boot, React)',
+      projects: 'Projects (one per line or short paragraphs)',
+      honors: 'Honors, medals, awards (one per line)',
+      certifications: 'Certifications (one per line)',
+      languages: 'Languages (e.g. English (C1), Romanian (native))'
+    },
+    preview: {
+      title: 'Preview',
+      paperSize: 'A4',
+      yourName: 'Your Name',
+      sectionHeading: {
+        summary: 'SUMMARY',
+        education: 'EDUCATION',
+        experience: 'EXPERIENCE',
+        skills: 'SKILLS',
+        projects: 'PROJECTS',
+        honors: 'HONORS / AWARDS',
+        certifications: 'CERTIFICATIONS',
+        languages: 'LANGUAGES'
+      }
+    },
+    tip: 'Tip: use short bullet-like lines in details for better PDF formatting.',
+    toasts: {
+      fixHighlighted: 'Please fix the highlighted fields',
+      saving: 'Saving CV...',
+      saved: 'CV saved.',
+      savedAsResume: 'CV saved as resume.',
+      saveFailed: 'Failed to save CV'
+    },
+    validation: {
+      required: '{{field}} is required',
+      tooShort: '{{field}} is too short',
+      tooLong: '{{field}} is too long',
+      invalid: '{{field}} is invalid',
+      phoneInvalidChars: 'Phone contains invalid characters',
+      startYearNoFuture: 'Start year cannot be in the future',
+      endYearNoFuture: 'End year cannot be in the future',
+      endAfterStart: 'End year must be after start year',
+      educationAtLeastOne: 'At least one education item is required',
+      experienceAtLeastOne: 'At least one experience item is required',
+      skillsAtLeastOne: 'At least one skill is required',
+      skillsOneTooLong: 'One or more skills are too long'
+    }
+  },
+
   dashboards: {
     studentTitle: 'Student Dashboard',
     studentSubtitle:
@@ -237,6 +348,8 @@ const en = {
     viewJobsHint: 'Explore and apply for available positions.',
     trackApplications: 'Track Applications',
     trackApplicationsHint: 'Monitor the status of your applications.',
+    cvBuilder: 'CV Builder',
+    cvBuilderHint: 'Create and export your CV as a PDF.',
     postJob: 'Post a Job',
     postJobHint: 'Create a new job or internship listing.',
     myPostedJobs: 'My Posted Jobs',

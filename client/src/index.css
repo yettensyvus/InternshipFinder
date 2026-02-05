@@ -81,6 +81,30 @@
   color: var(--if-dp-text);
 }
 
+.if-datepicker .react-datepicker__month-text,
+.if-datepicker .react-datepicker__quarter-text,
+.if-datepicker .react-datepicker__year-text {
+  color: var(--if-dp-text);
+  border-radius: 12px;
+  transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.if-datepicker .react-datepicker__month-text:hover,
+.if-datepicker .react-datepicker__quarter-text:hover,
+.if-datepicker .react-datepicker__year-text:hover {
+  background: var(--if-dp-hover);
+}
+
+.if-datepicker .react-datepicker__month-text--selected,
+.if-datepicker .react-datepicker__month-text--keyboard-selected,
+.if-datepicker .react-datepicker__quarter-text--selected,
+.if-datepicker .react-datepicker__quarter-text--keyboard-selected,
+.if-datepicker .react-datepicker__year-text--selected,
+.if-datepicker .react-datepicker__year-text--keyboard-selected {
+  background: var(--if-dp-selected-bg);
+  color: var(--if-dp-selected-text);
+}
+
 .if-datepicker .react-datepicker__day-name {
   color: var(--if-dp-muted);
   font-weight: 600;

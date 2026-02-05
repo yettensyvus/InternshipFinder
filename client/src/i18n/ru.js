@@ -223,6 +223,116 @@ const ru = {
     failedClear: 'Не удалось очистить уведомления',
     failedMarkRead: 'Не удалось отметить как прочитанное'
   },
+  cvBuilder: {
+  title: 'Конструктор резюме',
+  subtitle: 'Создайте свое резюме и экспортируйте его в PDF.',
+  contentTitle: 'Содержание',
+  reorderTitle: 'Изменение порядка разделов',
+  reorderHint: 'Перетащите, чтобы изменить порядок.',
+  optionalTitle: 'Дополнительные разделы',
+  optionalHint: 'Добавляйте или удаляйте разделы из резюме.',
+  optional: {
+    add: '+ {{section}}',
+    remove: 'Удалить {{section}}'
+  },
+  actions: {
+    add: 'Добавить',
+    remove: 'Удалить',
+    saveCv: 'Сохранить резюме',
+    exportPdf: 'Экспорт PDF'
+  },
+  itemLabel: 'Элемент {{index}}',
+  sections: {
+    personal: 'Личные данные',
+    summary: 'О себе',
+    education: 'Образование',
+    experience: 'Опыт работы',
+    skills: 'Навыки',
+    projects: 'Проекты',
+    honors: 'Награды / Достижения',
+    certifications: 'Сертификаты',
+    languages: 'Языки'
+  },
+  fields: {
+    fullName: 'Полное имя',
+    title: 'Должность',
+    email: 'Email',
+    phone: 'Телефон',
+    location: 'Местоположение',
+    website: 'Сайт / LinkedIn',
+    summary: 'Краткое описание',
+    school: 'Учебное заведение',
+    degree: 'Степень',
+    field: 'Специальность',
+    educationDetails: 'Детали образования',
+    company: 'Компания',
+    role: 'Должность',
+    experienceDetails: 'Детали опыта',
+    startYear: 'Год начала',
+    endYear: 'Год окончания'
+  },
+  placeholders: {
+    fullName: 'Полное имя',
+    title: 'Должность (например, Software Engineer)',
+    email: 'Email',
+    phone: 'Телефон',
+    location: 'Местоположение',
+    website: 'Сайт / LinkedIn',
+    summary: 'Краткое профессиональное описание',
+    school: 'Учебное заведение',
+    degree: 'Степень',
+    field: 'Специальность',
+    startYear: 'Год начала',
+    endYear: 'Год окончания',
+    educationDetails: 'Детали (необязательно)',
+    company: 'Компания',
+    role: 'Должность',
+    experienceDetails: 'Детали (обязанности, достижения)',
+    skills: 'Через запятую (например, Java, Spring Boot, React)',
+    projects: 'Проекты (по одному на строку или короткие абзацы)',
+    honors: 'Награды, медали, достижения (по одной на строку)',
+    certifications: 'Сертификаты (по одному на строку)',
+    languages: 'Языки (например, Английский (C1), Румынский (родной))'
+  },
+  preview: {
+    title: 'Предпросмотр',
+    paperSize: 'A4',
+    yourName: 'Ваше имя',
+    sectionHeading: {
+      summary: 'О СЕБЕ',
+      education: 'ОБРАЗОВАНИЕ',
+      experience: 'ОПЫТ РАБОТЫ',
+      skills: 'НАВЫКИ',
+      projects: 'ПРОЕКТЫ',
+      honors: 'НАГРАДЫ / ДОСТИЖЕНИЯ',
+      certifications: 'СЕРТИФИКАТЫ',
+      languages: 'ЯЗЫКИ'
+    }
+  },
+  tip: 'Совет: используйте короткие строки в виде пунктов для лучшего форматирования PDF.',
+  toasts: {
+    fixHighlighted: 'Пожалуйста, исправьте выделенные поля',
+    saving: 'Сохранение резюме...',
+    saved: 'Резюме сохранено.',
+    savedAsResume: 'Резюме сохранено как CV.',
+    saveFailed: 'Не удалось сохранить резюме'
+  },
+  validation: {
+    required: '{{field}} обязательно для заполнения',
+    tooShort: '{{field}} слишком короткое',
+    tooLong: '{{field}} слишком длинное',
+    invalid: '{{field}} недействительно',
+    phoneInvalidChars: 'Телефон содержит недопустимые символы',
+    startYearNoFuture: 'Год начала не может быть в будущем',
+    endYearNoFuture: 'Год окончания не может быть в будущем',
+    endAfterStart: 'Год окончания должен быть после года начала',
+    educationAtLeastOne: 'Необходимо указать хотя бы одно образование',
+    experienceAtLeastOne: 'Необходимо указать хотя бы один опыт работы',
+    skillsAtLeastOne: 'Необходимо указать хотя бы один навык',
+    skillsOneTooLong: 'Один или несколько навыков слишком длинные'
+  }
+},
+
   dashboards: {
     studentTitle: 'Панель студента',
     studentSubtitle:
@@ -237,6 +347,8 @@ const ru = {
     viewJobsHint: 'Изучайте и подавайте заявки на доступные позиции.',
     trackApplications: 'Отслеживание заявок',
     trackApplicationsHint: 'Следите за статусом ваших заявок.',
+    cvBuilder: 'Конструктор резюме',
+    cvBuilderHint: 'Создайте и экспортируйте своё резюме в формате PDF.',
     postJob: 'Опубликовать вакансию',
     postJobHint: 'Создайте новую вакансию или стажировку.',
     myPostedJobs: 'Мои опубликованные вакансии',
