@@ -4,6 +4,7 @@ import axios from '../../services/axios';
 import { showToast } from '../../services/toast';
 import { useTranslation } from 'react-i18next';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import CustomDateTimePicker from '../../components/CustomDateTimePicker';
 
 export default function JobManage() {
   const navigate = useNavigate();
@@ -242,12 +243,12 @@ export default function JobManage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterJobManage.deadlineLabel')}</label>
-                      <input
-                        type="date"
-                        name="deadline"
+                      <CustomDateTimePicker
                         value={form.deadline}
-                        onChange={onChange}
-                        className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
+                        onChange={(v) => setForm(prev => ({ ...prev, deadline: v }))}
+                        placeholder={t('recruiterJobManage.deadlineLabel')}
+                        minDate={new Date()}
+                        inputClassName="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
                       />
                     </div>
                     <div>
