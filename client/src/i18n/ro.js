@@ -223,6 +223,116 @@ const ro = {
     failedClear: 'Curățarea notificărilor a eșuat',
     failedMarkRead: 'Marcarea ca citit a eșuat'
   },
+  cvBuilder: {
+  title: 'Constructor CV',
+  subtitle: 'Construiește CV-ul tău și exportă-l ca PDF.',
+  contentTitle: 'Conținut',
+  reorderTitle: 'Reordonare secțiuni',
+  reorderHint: 'Trage și plasează pentru a reordona.',
+  optionalTitle: 'Secțiuni opționale',
+  optionalHint: 'Adaugă sau elimină secțiuni din CV.',
+  optional: {
+    add: '+ {{section}}',
+    remove: 'Elimină {{section}}'
+  },
+  actions: {
+    add: 'Adaugă',
+    remove: 'Elimină',
+    saveCv: 'Salvează CV',
+    exportPdf: 'Exportă PDF'
+  },
+  itemLabel: 'Element {{index}}',
+  sections: {
+    personal: 'Personal',
+    summary: 'Rezumat',
+    education: 'Educație',
+    experience: 'Experiență',
+    skills: 'Competențe',
+    projects: 'Proiecte',
+    honors: 'Onoruri / Premii',
+    certifications: 'Certificări',
+    languages: 'Limbi'
+  },
+  fields: {
+    fullName: 'Nume complet',
+    title: 'Titlu',
+    email: 'Email',
+    phone: 'Telefon',
+    location: 'Locație',
+    website: 'Website / LinkedIn',
+    summary: 'Rezumat',
+    school: 'Instituție',
+    degree: 'Diplomă',
+    field: 'Domeniu',
+    educationDetails: 'Detalii educație',
+    company: 'Companie',
+    role: 'Funcție',
+    experienceDetails: 'Detalii experiență',
+    startYear: 'An de început',
+    endYear: 'An de sfârșit'
+  },
+  placeholders: {
+    fullName: 'Nume complet',
+    title: 'Titlu (ex. Inginer Software)',
+    email: 'Email',
+    phone: 'Telefon',
+    location: 'Locație',
+    website: 'Website / LinkedIn',
+    summary: 'Scurt rezumat profesional',
+    school: 'Instituție',
+    degree: 'Diplomă',
+    field: 'Domeniu',
+    startYear: 'An de început',
+    endYear: 'An de sfârșit',
+    educationDetails: 'Detalii (opțional)',
+    company: 'Companie',
+    role: 'Funcție',
+    experienceDetails: 'Detalii (responsabilități, realizări)',
+    skills: 'Separate prin virgulă (ex. Java, Spring Boot, React)',
+    projects: 'Proiecte (unul pe linie sau paragrafe scurte)',
+    honors: 'Onoruri, medalii, premii (unul pe linie)',
+    certifications: 'Certificări (una pe linie)',
+    languages: 'Limbi (ex. Engleză (C1), Română (nativ))'
+  },
+  preview: {
+    title: 'Previzualizare',
+    paperSize: 'A4',
+    yourName: 'Numele tău',
+    sectionHeading: {
+      summary: 'REZUMAT',
+      education: 'EDUCAȚIE',
+      experience: 'EXPERIENȚĂ',
+      skills: 'COMPETENȚE',
+      projects: 'PROIECTE',
+      honors: 'ONORURI / PREMII',
+      certifications: 'CERTIFICĂRI',
+      languages: 'LIMBI'
+    }
+  },
+  tip: 'Sfat: folosește linii scurte tip bullet pentru o formatare PDF mai bună.',
+  toasts: {
+    fixHighlighted: 'Te rugăm să corectezi câmpurile evidențiate',
+    saving: 'Se salvează CV-ul...',
+    saved: 'CV salvat.',
+    savedAsResume: 'CV salvat ca rezumat.',
+    saveFailed: 'Salvarea CV-ului a eșuat'
+  },
+  validation: {
+    required: '{{field}} este obligatoriu',
+    tooShort: '{{field}} este prea scurt',
+    tooLong: '{{field}} este prea lung',
+    invalid: '{{field}} este invalid',
+    phoneInvalidChars: 'Telefonul conține caractere invalide',
+    startYearNoFuture: 'Anul de început nu poate fi în viitor',
+    endYearNoFuture: 'Anul de sfârșit nu poate fi în viitor',
+    endAfterStart: 'Anul de sfârșit trebuie să fie după anul de început',
+    educationAtLeastOne: 'Este necesar cel puțin un element de educație',
+    experienceAtLeastOne: 'Este necesar cel puțin un element de experiență',
+    skillsAtLeastOne: 'Este necesară cel puțin o competență',
+    skillsOneTooLong: 'Una sau mai multe competențe sunt prea lungi'
+  }
+},
+
   dashboards: {
     studentTitle: 'Panou de control student',
     studentSubtitle:
@@ -237,6 +347,8 @@ const ro = {
     viewJobsHint: 'Explorează și aplică la posturile disponibile.',
     trackApplications: 'Urmărește aplicațiile',
     trackApplicationsHint: 'Monitorizează starea aplicațiilor tale.',
+    cvBuilder: 'Constructor CV',
+    cvBuilderHint: 'Creează și exportă CV-ul tău ca PDF.',
     postJob: 'Postează un job',
     postJobHint: 'Creează o nouă listare de job sau stagiu.',
     myPostedJobs: 'Joburile mele postate',
