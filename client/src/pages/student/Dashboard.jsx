@@ -42,6 +42,19 @@ export default function StudentDashboard() {
           </p>
         </Link>
 
+         <Link
+          to="/student/cv-builder"
+          className="group bg-white/60 dark:bg-gray-800/60 border border-emerald-100 dark:border-emerald-800 backdrop-blur-md p-6 rounded-3xl shadow-lg hover:shadow-2xl transform hover:scale-[1.03] transition-all duration-300"
+        >
+          <div className="text-emerald-600 dark:text-emerald-400 text-4xl mb-4">📑</div>
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+            {t('dashboards.cvBuilder')}
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {t('dashboards.cvBuilderHint')}
+          </p>
+        </Link>
+
         <Link
           to="/student/jobs"
           className="group bg-white/60 dark:bg-gray-800/60 border border-purple-100 dark:border-purple-800 backdrop-blur-md p-6 rounded-3xl shadow-lg hover:shadow-2xl transform hover:scale-[1.03] transition-all duration-300"

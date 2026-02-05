@@ -23,6 +23,7 @@ import Profile from './pages/student/Profile';
 import ResumeUpload from './pages/student/ResumeUpload';
 import JobList from './pages/student/JobList';
 import Applications from './pages/student/Applications';
+import CvBuilder from './pages/student/CvBuilder';
 
 // 🧑‍💼 Recruiter
 import RecruiterDashboard from './pages/recruiter/Dashboard';
@@ -114,6 +115,15 @@ export default function App() {
           element={
             <ProtectedRoute role="STUDENT">
               <Applications />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/cv-builder"
+          element={
+            <ProtectedRoute role="STUDENT">
+              <CvBuilder />
             </ProtectedRoute>
           }
         />
