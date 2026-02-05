@@ -18,6 +18,45 @@
   --toastify-icon-color-success: #6366f1;
   --toastify-icon-color-warning: #f59e0b;
   --toastify-icon-color-error: #ef4444;
+  --if-scrollbar-thumb: rgba(100, 116, 139, 0.55);
+  --if-scrollbar-thumb-hover: rgba(100, 116, 139, 0.8);
+  --if-scrollbar-track: rgba(148, 163, 184, 0.18);
+}
+
+.dark {
+  --if-scrollbar-thumb: rgba(148, 163, 184, 0.35);
+  --if-scrollbar-thumb-hover: rgba(148, 163, 184, 0.55);
+  --if-scrollbar-track: rgba(148, 163, 184, 0.12);
+}
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--if-scrollbar-thumb) var(--if-scrollbar-track);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--if-scrollbar-thumb) var(--if-scrollbar-track);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--if-scrollbar-track);
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--if-scrollbar-thumb);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--if-scrollbar-thumb-hover);
 }
 
 .if-datepicker {
