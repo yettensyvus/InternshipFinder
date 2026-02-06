@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }) => {
 
   const logoutTimerRef = useRef(null);
   const axiosInterceptorRef = useRef(null);
+  const axiosRequestInterceptorRef = useRef(null);
 
   const parseJwtExpMs = (token) => {
     if (!token || typeof token !== 'string') return null;
@@ -103,6 +104,18 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (axiosInterceptorRef.current != null) return;
 
+    axiosRequestInterceptorRef.current = axios.interceptors.request.use(
+      (config) => {
+        const token = auth?.token || localStorage.getItem('token');
+        if (token && !config?.headers?.Authorization) {
+          config.headers = config.headers || {};
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+
     axiosInterceptorRef.current = axios.interceptors.response.use(
       (response) => response,
       (error) => {
@@ -115,12 +128,60 @@ export const AuthProvider = ({ children }) => {
     );
 
     return () => {
+      if (axiosRequestInterceptorRef.current != null) {
+        axios.interceptors.request.eject(axiosRequestInterceptorRef.current);
+        axiosRequestInterceptorRef.current = null;
+      }
       if (axiosInterceptorRef.current != null) {
         axios.interceptors.response.eject(axiosInterceptorRef.current);
         axiosInterceptorRef.current = null;
       }
     };
   }, [logout]);
+
+  useEffect(() => {
+    const token = auth?.token;
+    const role = auth?.role;
+    if (!token || !role) return;
+
+    const endpoint = (() => {
+      switch (role) {
+        case 'STUDENT':
+          return '/student/profile';
+        case 'RECRUITER':
+          return '/recruiter/profile';
+        case 'ADMIN':
+          return '/admin/profile';
+        default:
+          return null;
+      }
+    })();
+
+    if (!endpoint) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await axios.get(endpoint);
+        const profilePictureUrl = res?.data?.profilePictureUrl;
+        if (!cancelled && profilePictureUrl && profilePictureUrl !== auth?.avatar) {
+          localStorage.setItem('avatar', profilePictureUrl);
+          setAuth((prev) => {
+            if (!prev) return prev;
+            const next = { ...prev, avatar: profilePictureUrl };
+            localStorage.setItem('user', JSON.stringify(next));
+            return next;
+          });
+        }
+      } catch {
+        return;
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [auth?.token, auth?.role]);
 
   const updateAvatar = (avatar) => {
     if (!avatar) {
