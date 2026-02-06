@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import axios from '../services/axios';
 
 export const AuthContext = createContext();
 
@@ -12,7 +13,27 @@ export const AuthProvider = ({ children }) => {
     return token ? { token, role, name, email, avatar } : null;
   });
 
-  const login = (tokenOrData, role, name, email, avatar = null) => {
+  const logoutTimerRef = useRef(null);
+  const axiosInterceptorRef = useRef(null);
+
+  const parseJwtExpMs = (token) => {
+    if (!token || typeof token !== 'string') return null;
+    const parts = token.split('.');
+    if (parts.length < 2) return null;
+    try {
+      const base64Url = parts[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+      const payload = JSON.parse(atob(padded));
+      const expSec = payload?.exp;
+      if (typeof expSec !== 'number') return null;
+      return expSec * 1000;
+    } catch {
+      return null;
+    }
+  };
+
+  const login = useCallback((tokenOrData, role, name, email, avatar = null) => {
     const normalized = (() => {
       if (tokenOrData && typeof tokenOrData === 'object') {
         const data = tokenOrData;
@@ -38,9 +59,9 @@ export const AuthProvider = ({ children }) => {
 
     localStorage.setItem('user', JSON.stringify(normalized));
     setAuth(normalized);
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     localStorage.removeItem('name');
@@ -48,7 +69,58 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('avatar');
     localStorage.removeItem('user');
     setAuth(null);
-  };
+  }, []);
+
+  useEffect(() => {
+    if (logoutTimerRef.current) {
+      clearTimeout(logoutTimerRef.current);
+      logoutTimerRef.current = null;
+    }
+
+    const token = auth?.token;
+    const expMs = parseJwtExpMs(token);
+    if (!token || !expMs) return;
+
+    const now = Date.now();
+    const msUntilExpiry = expMs - now;
+    if (msUntilExpiry <= 0) {
+      logout();
+      return;
+    }
+
+    logoutTimerRef.current = setTimeout(() => {
+      logout();
+    }, msUntilExpiry);
+
+    return () => {
+      if (logoutTimerRef.current) {
+        clearTimeout(logoutTimerRef.current);
+        logoutTimerRef.current = null;
+      }
+    };
+  }, [auth?.token, logout]);
+
+  useEffect(() => {
+    if (axiosInterceptorRef.current != null) return;
+
+    axiosInterceptorRef.current = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        const status = error?.response?.status;
+        if (status === 401) {
+          logout();
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      if (axiosInterceptorRef.current != null) {
+        axios.interceptors.response.eject(axiosInterceptorRef.current);
+        axiosInterceptorRef.current = null;
+      }
+    };
+  }, [logout]);
 
   const updateAvatar = (avatar) => {
     if (!avatar) {
