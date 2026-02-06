@@ -16,7 +16,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 export default function Navbar() {
-  const { auth, logout } = useAuth();
+  const { auth, logout, updateAvatar } = useAuth();
   const { t, i18n } = useTranslation();
   const getThemeMode = () => localStorage.getItem('themeMode') || 'light';
   const [themeMode, setThemeMode] = useState(getThemeMode);
@@ -182,6 +182,10 @@ export default function Navbar() {
 
   const displayName = auth?.name || auth?.username || t('common.user');
 
+  const handleAvatarError = () => {
+    updateAvatar?.(null);
+  };
+
   const changeLanguage = (lng) => {
     localStorage.setItem('lng', lng);
     i18n.changeLanguage(lng);
@@ -264,6 +268,7 @@ export default function Navbar() {
                       src={auth.avatar}
                       alt={t('common.user')}
                       className="w-8 h-8 rounded-full object-cover border-2 border-violet-200 dark:border-violet-700"
+                      onError={handleAvatarError}
                     />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center text-white text-sm font-semibold">
@@ -294,6 +299,7 @@ export default function Navbar() {
                           src={auth.avatar}
                           alt={t('common.user')}
                           className="w-10 h-10 rounded-full object-cover"
+                          onError={handleAvatarError}
                         />
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center text-white font-semibold">

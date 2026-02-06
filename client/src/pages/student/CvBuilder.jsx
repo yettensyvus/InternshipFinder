@@ -56,8 +56,11 @@ function YearPicker({ value, onChange, placeholder, inputClassName }) {
 
 export default function CvBuilder() {
   const { t } = useTranslation();
-  const previewRef = useRef(null);
+
   const logoDataUrlRef = useRef(null);
+  const pdfFontsReadyRef = useRef(false);
+  const pdfFontDataRef = useRef({ regular: null, bold: null });
+  const previewRef = useRef(null);
   const previewViewportRef = useRef(null);
 
   const [personal, setPersonal] = useState({
@@ -89,6 +92,7 @@ export default function CvBuilder() {
   ]);
 
   const [enabledSections, setEnabledSections] = useState({
+    experience: true,
     projects: true,
     honors: false,
     certifications: false,
@@ -270,35 +274,38 @@ export default function CvBuilder() {
       });
     }
 
-    // Experience (validate only items that are filled; if none filled, validate first item)
-    if (!Array.isArray(experience) || experience.length === 0) {
-      next.experience = t('cvBuilder.validation.experienceAtLeastOne');
-    } else {
-      const filledIdx = experience
-        .map((ex, idx) => ({ ex, idx }))
-        .filter(({ ex }) => hasAny(ex))
-        .map(({ idx }) => idx);
+    // Experience (optional)
+    if (enabledSections.experience) {
+      // validate only items that are filled; if none filled, validate first item
+      if (!Array.isArray(experience) || experience.length === 0) {
+        next.experience = t('cvBuilder.validation.experienceAtLeastOne');
+      } else {
+        const filledIdx = experience
+          .map((ex, idx) => ({ ex, idx }))
+          .filter(({ ex }) => hasAny(ex))
+          .map(({ idx }) => idx);
 
-      const toValidate = filledIdx.length > 0 ? filledIdx : [0];
-      toValidate.forEach((idx) => {
-        const ex = experience[idx] || {};
-        requireText(`experience.${idx}.company`, ex.company, t('cvBuilder.fields.company'), 2, 120);
-        requireText(`experience.${idx}.role`, ex.role, t('cvBuilder.fields.role'), 2, 120);
-        requireText(`experience.${idx}.details`, ex.details, t('cvBuilder.fields.experienceDetails'), 5, 1500);
+        const toValidate = filledIdx.length > 0 ? filledIdx : [0];
+        toValidate.forEach((idx) => {
+          const ex = experience[idx] || {};
+          requireText(`experience.${idx}.company`, ex.company, t('cvBuilder.fields.company'), 2, 120);
+          requireText(`experience.${idx}.role`, ex.role, t('cvBuilder.fields.role'), 2, 120);
+          requireText(`experience.${idx}.details`, ex.details, t('cvBuilder.fields.experienceDetails'), 5, 1500);
 
-        validateYearRange(
-          `experience.${idx}.start`,
-          `experience.${idx}.end`,
-          ex.start,
-          ex.end,
-          {
-            allowFutureEnd: false,
-            disallowFutureStart: true,
-            disallowFutureEnd: true,
-            requireEnd: true
-          }
-        );
-      });
+          validateYearRange(
+            `experience.${idx}.start`,
+            `experience.${idx}.end`,
+            ex.start,
+            ex.end,
+            {
+              allowFutureEnd: false,
+              disallowFutureStart: true,
+              disallowFutureEnd: true,
+              requireEnd: true
+            }
+          );
+        });
+      }
     }
 
     // Skills
@@ -344,7 +351,7 @@ export default function CvBuilder() {
   };
 
   const isSectionEnabled = (id) => {
-    if (id === 'summary' || id === 'education' || id === 'experience' || id === 'skills') return true;
+    if (id === 'summary' || id === 'education' || id === 'skills') return true;
     return Boolean(enabledSections?.[id]);
   };
 
@@ -387,9 +394,55 @@ export default function CvBuilder() {
     }
   };
 
+  const arrayBufferToBase64 = (buffer) => {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.length; i += 1) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  };
+
+  const ensurePdfUnicodeFonts = async (pdf) => {
+    try {
+      if (!pdfFontsReadyRef.current) {
+        const [regularRes, boldRes] = await Promise.all([
+          fetch('/fonts/NotoSans-Regular.ttf'),
+          fetch('/fonts/NotoSans-Bold.ttf')
+        ]);
+        if (!regularRes.ok || !boldRes.ok) return false;
+
+        const [regularBuf, boldBuf] = await Promise.all([
+          regularRes.arrayBuffer(),
+          boldRes.arrayBuffer()
+        ]);
+
+        pdfFontDataRef.current = {
+          regular: arrayBufferToBase64(regularBuf),
+          bold: arrayBufferToBase64(boldBuf)
+        };
+        pdfFontsReadyRef.current = true;
+      }
+
+      const { regular, bold } = pdfFontDataRef.current || {};
+      if (!regular || !bold) return false;
+
+      pdf.addFileToVFS('NotoSans-Regular.ttf', regular);
+      pdf.addFileToVFS('NotoSans-Bold.ttf', bold);
+      pdf.addFont('NotoSans-Regular.ttf', 'NotoSans', 'normal');
+      pdf.addFont('NotoSans-Bold.ttf', 'NotoSans', 'bold');
+      return true;
+    } catch {
+      // If fonts fail to load, fall back to default jsPDF fonts
+      return false;
+    }
+  };
+
   const buildPdf = async () => {
     const logoDataUrl = await loadLogoDataUrl();
     const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+
+    const useUnicodeFonts = await ensurePdfUnicodeFonts(pdf);
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
 
@@ -430,7 +483,11 @@ export default function CvBuilder() {
     const text = (value) => String(value ?? '').trim();
 
     const set = (size, style = 'normal') => {
-      pdf.setFont('helvetica', style);
+      if (useUnicodeFonts) {
+        pdf.setFont('NotoSans', style);
+      } else {
+        pdf.setFont('helvetica', style);
+      }
       pdf.setFontSize(size);
     };
 
@@ -469,7 +526,7 @@ export default function CvBuilder() {
       }
     };
 
-    const fullName = text(personal.fullName) || 'Your Name';
+    const fullName = text(personal.fullName) || t('cvBuilder.preview.yourName');
     const title = text(personal.title);
     const email = text(personal.email);
     const phone = text(personal.phone);
@@ -812,6 +869,11 @@ export default function CvBuilder() {
             <div className="mb-6">
               <div className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('cvBuilder.optionalTitle')}</div>
               <div className="flex flex-wrap gap-2">
+                {!enabledSections.experience ? (
+                  <button type="button" onClick={() => enableSection('experience')} className={smallGhostBtn}>{t('cvBuilder.optional.add', { section: t('cvBuilder.sections.experience') })}</button>
+                ) : (
+                  <button type="button" onClick={() => disableSection('experience')} className={smallDangerBtn}>{t('cvBuilder.optional.remove', { section: t('cvBuilder.sections.experience') })}</button>
+                )}
                 {!enabledSections.projects ? (
                   <button type="button" onClick={() => enableSection('projects')} className={smallGhostBtn}>{t('cvBuilder.optional.add', { section: t('cvBuilder.sections.projects') })}</button>
                 ) : (
@@ -1001,87 +1063,89 @@ export default function CvBuilder() {
                 </div>
               </section>
 
-              <section className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.experience')}</h3>
-                  <button
-                    type="button"
-                    onClick={() => setExperience(prev => [...prev, emptyExperience()])}
-                    className={addBtn}
-                  >
-                    {t('cvBuilder.actions.add')}
-                  </button>
-                </div>
+              {enabledSections.experience ? (
+                <section className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.experience')}</h3>
+                    <button
+                      type="button"
+                      onClick={() => setExperience(prev => [...prev, emptyExperience()])}
+                      className={addBtn}
+                    >
+                      {t('cvBuilder.actions.add')}
+                    </button>
+                  </div>
 
-                <div className="space-y-4">
-                  {experience.map((ex, idx) => (
-                    <div key={idx} className={sectionCardClass}>
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{t('cvBuilder.itemLabel', { index: idx + 1 })}</div>
-                        {experience.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => setExperience(prev => prev.filter((_, i) => i !== idx))}
-                            className={smallDangerBtn}
-                          >
-                            {t('cvBuilder.actions.remove')}
-                          </button>
-                        )}
-                      </div>
+                  <div className="space-y-4">
+                    {experience.map((ex, idx) => (
+                      <div key={idx} className={sectionCardClass}>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{t('cvBuilder.itemLabel', { index: idx + 1 })}</div>
+                          {experience.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setExperience(prev => prev.filter((_, i) => i !== idx))}
+                              className={smallDangerBtn}
+                            >
+                              {t('cvBuilder.actions.remove')}
+                            </button>
+                          )}
+                        </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <input
-                            value={ex.company}
-                            onChange={(e) => setExperience(prev => prev.map((x, i) => i === idx ? { ...x, company: e.target.value } : x))}
-                            className={fieldClass(inputClass, `experience.${idx}.company`)}
-                            placeholder={t('cvBuilder.placeholders.company')}
-                          />
-                          <ErrorLine msg={fieldError(`experience.${idx}.company`)} />
-                        </div>
-                        <div>
-                          <input
-                            value={ex.role}
-                            onChange={(e) => setExperience(prev => prev.map((x, i) => i === idx ? { ...x, role: e.target.value } : x))}
-                            className={fieldClass(inputClass, `experience.${idx}.role`)}
-                            placeholder={t('cvBuilder.placeholders.role')}
-                          />
-                          <ErrorLine msg={fieldError(`experience.${idx}.role`)} />
-                        </div>
-                        <div className="grid grid-cols-2 gap-3 sm:col-span-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div>
-                            <YearPicker
-                              value={ex.start}
-                              onChange={(value) => setExperience(prev => prev.map((x, i) => i === idx ? { ...x, start: value } : x))}
-                              inputClassName={fieldClass(inputClass, `experience.${idx}.start`)}
-                              placeholder={t('cvBuilder.placeholders.startYear')}
+                            <input
+                              value={ex.company}
+                              onChange={(e) => setExperience(prev => prev.map((x, i) => i === idx ? { ...x, company: e.target.value } : x))}
+                              className={fieldClass(inputClass, `experience.${idx}.company`)}
+                              placeholder={t('cvBuilder.placeholders.company')}
                             />
-                            <ErrorLine msg={fieldError(`experience.${idx}.start`)} />
+                            <ErrorLine msg={fieldError(`experience.${idx}.company`)} />
                           </div>
                           <div>
-                            <YearPicker
-                              value={ex.end}
-                              onChange={(value) => setExperience(prev => prev.map((x, i) => i === idx ? { ...x, end: value } : x))}
-                              inputClassName={fieldClass(inputClass, `experience.${idx}.end`)}
-                              placeholder={t('cvBuilder.placeholders.endYear')}
+                            <input
+                              value={ex.role}
+                              onChange={(e) => setExperience(prev => prev.map((x, i) => i === idx ? { ...x, role: e.target.value } : x))}
+                              className={fieldClass(inputClass, `experience.${idx}.role`)}
+                              placeholder={t('cvBuilder.placeholders.role')}
                             />
-                            <ErrorLine msg={fieldError(`experience.${idx}.end`)} />
+                            <ErrorLine msg={fieldError(`experience.${idx}.role`)} />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3 sm:col-span-2">
+                            <div>
+                              <YearPicker
+                                value={ex.start}
+                                onChange={(value) => setExperience(prev => prev.map((x, i) => i === idx ? { ...x, start: value } : x))}
+                                inputClassName={fieldClass(inputClass, `experience.${idx}.start`)}
+                                placeholder={t('cvBuilder.placeholders.startYear')}
+                              />
+                              <ErrorLine msg={fieldError(`experience.${idx}.start`)} />
+                            </div>
+                            <div>
+                              <YearPicker
+                                value={ex.end}
+                                onChange={(value) => setExperience(prev => prev.map((x, i) => i === idx ? { ...x, end: value } : x))}
+                                inputClassName={fieldClass(inputClass, `experience.${idx}.end`)}
+                                placeholder={t('cvBuilder.placeholders.endYear')}
+                              />
+                              <ErrorLine msg={fieldError(`experience.${idx}.end`)} />
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <textarea
-                        value={ex.details}
-                        onChange={(e) => setExperience(prev => prev.map((x, i) => i === idx ? { ...x, details: e.target.value } : x))}
-                        rows={3}
-                        className={fieldClass(`${textAreaClass} mt-3`, `experience.${idx}.details`)}
-                        placeholder={t('cvBuilder.placeholders.experienceDetails')}
-                      />
-                      <ErrorLine msg={fieldError(`experience.${idx}.details`)} />
-                    </div>
-                  ))}
-                </div>
-              </section>
+                        <textarea
+                          value={ex.details}
+                          onChange={(e) => setExperience(prev => prev.map((x, i) => i === idx ? { ...x, details: e.target.value } : x))}
+                          rows={3}
+                          className={fieldClass(`${textAreaClass} mt-3`, `experience.${idx}.details`)}
+                          placeholder={t('cvBuilder.placeholders.experienceDetails')}
+                        />
+                        <ErrorLine msg={fieldError(`experience.${idx}.details`)} />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
 
               <section className="space-y-3">
                 <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.skills')}</h3>
