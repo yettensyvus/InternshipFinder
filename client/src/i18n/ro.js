@@ -624,6 +624,12 @@ const ro = {
     subtitle: 'Încarcă un CV PDF pentru a aplica mai rapid.',
     fileTitle: 'Fișier CV',
     fileHint: 'Doar PDF, până la 5MB.',
+    meta: {
+      formatLabel: 'Format',
+      formatValue: 'PDF',
+      maxSizeLabel: 'Dimensiune maximă',
+      maxSizeValue: '5 MB'
+    },
     selected: 'Selectat',
     chooseFileButton: 'Alege fișier',
     noFileChosen: 'Niciun fișier ales',
