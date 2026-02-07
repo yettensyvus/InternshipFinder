@@ -239,9 +239,12 @@ const en = {
     actions: {
       add: 'Add',
       remove: 'Remove',
+      back: 'Back',
+      next: 'Next',
       saveCv: 'Save CV',
       exportPdf: 'Export PDF'
     },
+    stepLabel: 'Step {{current}} / {{total}}',
     itemLabel: 'Item {{index}}',
     sections: {
       personal: 'Personal',

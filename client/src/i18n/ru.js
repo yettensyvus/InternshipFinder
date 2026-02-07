@@ -238,9 +238,12 @@ const ru = {
   actions: {
     add: 'Добавить',
     remove: 'Удалить',
+    back: 'Назад',
+    next: 'Далее',
     saveCv: 'Сохранить резюме',
     exportPdf: 'Экспорт PDF'
   },
+  stepLabel: 'Шаг {{current}} / {{total}}',
   itemLabel: 'Элемент {{index}}',
   sections: {
     personal: 'Личные данные',

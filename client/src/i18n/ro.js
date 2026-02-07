@@ -238,9 +238,12 @@ const ro = {
   actions: {
     add: 'Adaugă',
     remove: 'Elimină',
+    back: 'Înapoi',
+    next: 'Înainte',
     saveCv: 'Salvează CV',
     exportPdf: 'Exportă PDF'
   },
+  stepLabel: 'Pasul {{current}} / {{total}}',
   itemLabel: 'Element {{index}}',
   sections: {
     personal: 'Personal',
