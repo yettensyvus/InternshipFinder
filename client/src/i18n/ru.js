@@ -238,9 +238,12 @@ const ru = {
   actions: {
     add: 'Добавить',
     remove: 'Удалить',
+    back: 'Назад',
+    next: 'Далее',
     saveCv: 'Сохранить резюме',
     exportPdf: 'Экспорт PDF'
   },
+  stepLabel: 'Шаг {{current}} / {{total}}',
   itemLabel: 'Элемент {{index}}',
   sections: {
     personal: 'Личные данные',
@@ -621,6 +624,12 @@ const ru = {
     subtitle: 'Загрузите резюме в формате PDF, чтобы подавать заявки быстрее.',
     fileTitle: 'Файл резюме',
     fileHint: 'Только PDF, до 5 МБ.',
+    meta: {
+      formatLabel: 'Формат',
+      formatValue: 'PDF',
+      maxSizeLabel: 'Макс. размер',
+      maxSizeValue: '5 МБ'
+    },
     selected: 'Выбрано',
     chooseFileButton: 'Выберите файл',
     noFileChosen: 'Файл не выбран',

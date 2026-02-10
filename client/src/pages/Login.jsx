@@ -4,6 +4,7 @@ import axios from '../services/axios';
 import { useAuth } from '../hooks/useAuth';
 import { showLoadingToast, showToast } from '../services/toast';
 import { useTranslation } from 'react-i18next';
+import { getDashboardPathForRole } from '../utils/rolePaths';
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -34,14 +35,8 @@ export default function Login() {
 
       showToast(toastId, 'success', t('auth.loginSuccessful'), { autoClose: 1800 });
 
-      const roleRoutes = {
-        STUDENT: '/student/dashboard',
-        RECRUITER: '/recruiter/dashboard',
-        ADMIN: '/admin/dashboard',
-      };
-
       setTimeout(() => {
-        navigate(roleRoutes[res.data.role] || '/dashboard');
+        navigate(getDashboardPathForRole(res.data.role));
       }, 1000);
     } catch (err) {
       const msg = err.response?.data;

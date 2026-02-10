@@ -161,12 +161,11 @@ export default function Applications() {
           </div>
         </div>
 
-        <div className="overflow-auto w-full" style={{ maxHeight: '380px' }}>
+        <div className="w-full h-[600px] overflow-auto">
           <iframe
             title={t('recruiterApplications.resumePreviewTitle')}
-            src={resumeUrl}
-            className="w-full bg-white"
-            style={{ height: '900px' }}
+            src={`${resumeUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+            className="w-full min-h-[900px] bg-white"
           />
         </div>
       </div>

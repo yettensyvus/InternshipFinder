@@ -103,6 +103,8 @@ export default function CvBuilder() {
 
   const [draggingSection, setDraggingSection] = useState(null);
 
+  const [activeStepIndex, setActiveStepIndex] = useState(0);
+
   const skillsList = useMemo(() => {
     return skills
       .split(',')
@@ -354,6 +356,20 @@ export default function CvBuilder() {
     if (id === 'summary' || id === 'education' || id === 'skills') return true;
     return Boolean(enabledSections?.[id]);
   };
+
+  const steps = useMemo(() => {
+    const ids = ['personal', ...sectionOrder.filter(isSectionEnabled)];
+    return ids;
+  }, [sectionOrder, enabledSections]);
+
+  const activeStepId = steps[Math.min(activeStepIndex, Math.max(0, steps.length - 1))] || 'personal';
+
+  useEffect(() => {
+    setActiveStepIndex((prev) => {
+      if (steps.length === 0) return 0;
+      return Math.min(prev, steps.length - 1);
+    });
+  }, [steps]);
 
   const enableSection = (id) => {
     setEnabledSections(prev => ({ ...prev, [id]: true }));
@@ -804,6 +820,11 @@ export default function CvBuilder() {
     }
   };
 
+  const stepLabel = (id) => {
+    if (id === 'personal') return t('cvBuilder.sections.personal');
+    return sectionLabel(id);
+  };
+
   const onSectionDragStart = (id) => {
     setDraggingSection(id);
   };
@@ -898,172 +919,202 @@ export default function CvBuilder() {
               <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">{t('cvBuilder.optionalHint')}</div>
             </div>
 
-            <div className="space-y-6">
-              <section className="space-y-3">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.personal')}</h3>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <input
-                      value={personal.fullName}
-                      onChange={(e) => updatePersonal('fullName', e.target.value)}
-                      className={fieldClass(inputClass, 'personal.fullName')}
-                      placeholder={t('cvBuilder.placeholders.fullName')}
-                    />
-                    <ErrorLine msg={fieldError('personal.fullName')} />
-                  </div>
-                  <div>
-                    <input
-                      value={personal.title}
-                      onChange={(e) => updatePersonal('title', e.target.value)}
-                      className={fieldClass(inputClass, 'personal.title')}
-                      placeholder={t('cvBuilder.placeholders.title')}
-                    />
-                    <ErrorLine msg={fieldError('personal.title')} />
-                  </div>
-                  <div>
-                    <input
-                      value={personal.email}
-                      onChange={(e) => updatePersonal('email', e.target.value)}
-                      className={fieldClass(inputClass, 'personal.email')}
-                      placeholder={t('cvBuilder.placeholders.email')}
-                    />
-                    <ErrorLine msg={fieldError('personal.email')} />
-                  </div>
-                  <div>
-                    <input
-                      value={personal.phone}
-                      onChange={(e) => updatePersonal('phone', e.target.value)}
-                      className={fieldClass(inputClass, 'personal.phone')}
-                      placeholder={t('cvBuilder.placeholders.phone')}
-                    />
-                    <ErrorLine msg={fieldError('personal.phone')} />
-                  </div>
-                  <div>
-                    <input
-                      value={personal.location}
-                      onChange={(e) => updatePersonal('location', e.target.value)}
-                      className={fieldClass(inputClass, 'personal.location')}
-                      placeholder={t('cvBuilder.placeholders.location')}
-                    />
-                    <ErrorLine msg={fieldError('personal.location')} />
-                  </div>
-                  <div>
-                    <input
-                      value={personal.website}
-                      onChange={(e) => updatePersonal('website', e.target.value)}
-                      className={fieldClass(inputClass, 'personal.website')}
-                      placeholder={t('cvBuilder.placeholders.website')}
-                    />
-                    <ErrorLine msg={fieldError('personal.website')} />
+            <div className="mb-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-sm font-semibold text-gray-900 dark:text-white">{stepLabel(activeStepId)}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    {t('cvBuilder.stepLabel', { current: activeStepIndex + 1, total: steps.length })}
                   </div>
                 </div>
-              </section>
+              </div>
 
-              <section className="space-y-3">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.summary')}</h3>
-                <textarea
-                  value={summary}
-                  onChange={(e) => setSummary(e.target.value)}
-                  rows={4}
-                  className={fieldClass(textAreaClass, 'summary')}
-                  placeholder={t('cvBuilder.placeholders.summary')}
-                />
-                <ErrorLine msg={fieldError('summary')} />
-              </section>
-
-              <section className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.education')}</h3>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {steps.map((id, idx) => (
                   <button
+                    key={id}
                     type="button"
-                    onClick={() => setEducation(prev => [...prev, emptyEducation()])}
-                    className={addBtn}
+                    onClick={() => setActiveStepIndex(idx)}
+                    className={`select-none px-3 py-2 rounded-2xl border text-sm font-semibold transition ${idx === activeStepIndex ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-200 shadow-sm' : 'border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-900/30 text-gray-800 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-900/40'}`}
                   >
-                    {t('cvBuilder.actions.add')}
+                    {stepLabel(id)}
                   </button>
-                </div>
+                ))}
+              </div>
+            </div>
 
-                <div className="space-y-4">
-                  {education.map((ed, idx) => (
-                    <div key={idx} className={sectionCardClass}>
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{t('cvBuilder.itemLabel', { index: idx + 1 })}</div>
-                        {education.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => setEducation(prev => prev.filter((_, i) => i !== idx))}
-                            className={smallDangerBtn}
-                          >
-                            {t('cvBuilder.actions.remove')}
-                          </button>
-                        )}
-                      </div>
+            <div className="space-y-6">
+              {activeStepId === 'personal' ? (
+                <section className="space-y-3">
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.personal')}</h3>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <input
-                            value={ed.school}
-                            onChange={(e) => setEducation(prev => prev.map((x, i) => i === idx ? { ...x, school: e.target.value } : x))}
-                            className={fieldClass(inputClass, `education.${idx}.school`)}
-                            placeholder={t('cvBuilder.placeholders.school')}
-                          />
-                          <ErrorLine msg={fieldError(`education.${idx}.school`)} />
-                        </div>
-                        <div>
-                          <input
-                            value={ed.degree}
-                            onChange={(e) => setEducation(prev => prev.map((x, i) => i === idx ? { ...x, degree: e.target.value } : x))}
-                            className={fieldClass(inputClass, `education.${idx}.degree`)}
-                            placeholder={t('cvBuilder.placeholders.degree')}
-                          />
-                          <ErrorLine msg={fieldError(`education.${idx}.degree`)} />
-                        </div>
-                        <div>
-                          <input
-                            value={ed.field}
-                            onChange={(e) => setEducation(prev => prev.map((x, i) => i === idx ? { ...x, field: e.target.value } : x))}
-                            className={fieldClass(inputClass, `education.${idx}.field`)}
-                            placeholder={t('cvBuilder.placeholders.field')}
-                          />
-                          <ErrorLine msg={fieldError(`education.${idx}.field`)} />
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <YearPicker
-                              value={ed.start}
-                              onChange={(value) => setEducation(prev => prev.map((x, i) => i === idx ? { ...x, start: value } : x))}
-                              inputClassName={fieldClass(inputClass, `education.${idx}.start`)}
-                              placeholder={t('cvBuilder.placeholders.startYear')}
-                            />
-                            <ErrorLine msg={fieldError(`education.${idx}.start`)} />
-                          </div>
-                          <div>
-                            <YearPicker
-                              value={ed.end}
-                              onChange={(value) => setEducation(prev => prev.map((x, i) => i === idx ? { ...x, end: value } : x))}
-                              inputClassName={fieldClass(inputClass, `education.${idx}.end`)}
-                              placeholder={t('cvBuilder.placeholders.endYear')}
-                            />
-                            <ErrorLine msg={fieldError(`education.${idx}.end`)} />
-                          </div>
-                        </div>
-                      </div>
-
-                      <textarea
-                        value={ed.details}
-                        onChange={(e) => setEducation(prev => prev.map((x, i) => i === idx ? { ...x, details: e.target.value } : x))}
-                        rows={3}
-                        className={fieldClass(`${textAreaClass} mt-3`, `education.${idx}.details`)}
-                        placeholder={t('cvBuilder.placeholders.educationDetails')}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <input
+                        value={personal.fullName}
+                        onChange={(e) => updatePersonal('fullName', e.target.value)}
+                        className={fieldClass(inputClass, 'personal.fullName')}
+                        placeholder={t('cvBuilder.placeholders.fullName')}
                       />
-                      <ErrorLine msg={fieldError(`education.${idx}.details`)} />
+                      <ErrorLine msg={fieldError('personal.fullName')} />
                     </div>
-                  ))}
-                </div>
-              </section>
+                    <div>
+                      <input
+                        value={personal.title}
+                        onChange={(e) => updatePersonal('title', e.target.value)}
+                        className={fieldClass(inputClass, 'personal.title')}
+                        placeholder={t('cvBuilder.placeholders.title')}
+                      />
+                      <ErrorLine msg={fieldError('personal.title')} />
+                    </div>
+                    <div>
+                      <input
+                        value={personal.email}
+                        onChange={(e) => updatePersonal('email', e.target.value)}
+                        className={fieldClass(inputClass, 'personal.email')}
+                        placeholder={t('cvBuilder.placeholders.email')}
+                      />
+                      <ErrorLine msg={fieldError('personal.email')} />
+                    </div>
+                    <div>
+                      <input
+                        value={personal.phone}
+                        onChange={(e) => updatePersonal('phone', e.target.value)}
+                        className={fieldClass(inputClass, 'personal.phone')}
+                        placeholder={t('cvBuilder.placeholders.phone')}
+                      />
+                      <ErrorLine msg={fieldError('personal.phone')} />
+                    </div>
+                    <div>
+                      <input
+                        value={personal.location}
+                        onChange={(e) => updatePersonal('location', e.target.value)}
+                        className={fieldClass(inputClass, 'personal.location')}
+                        placeholder={t('cvBuilder.placeholders.location')}
+                      />
+                      <ErrorLine msg={fieldError('personal.location')} />
+                    </div>
+                    <div>
+                      <input
+                        value={personal.website}
+                        onChange={(e) => updatePersonal('website', e.target.value)}
+                        className={fieldClass(inputClass, 'personal.website')}
+                        placeholder={t('cvBuilder.placeholders.website')}
+                      />
+                      <ErrorLine msg={fieldError('personal.website')} />
+                    </div>
+                  </div>
+                </section>
+              ) : null}
 
-              {enabledSections.experience ? (
+              {activeStepId === 'summary' ? (
+                <section className="space-y-3">
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.summary')}</h3>
+                  <textarea
+                    value={summary}
+                    onChange={(e) => setSummary(e.target.value)}
+                    rows={4}
+                    className={fieldClass(textAreaClass, 'summary')}
+                    placeholder={t('cvBuilder.placeholders.summary')}
+                  />
+                  <ErrorLine msg={fieldError('summary')} />
+                </section>
+              ) : null}
+
+              {activeStepId === 'education' ? (
+                <section className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.education')}</h3>
+                    <button
+                      type="button"
+                      onClick={() => setEducation(prev => [...prev, emptyEducation()])}
+                      className={addBtn}
+                    >
+                      {t('cvBuilder.actions.add')}
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    {education.map((ed, idx) => (
+                      <div key={idx} className={sectionCardClass}>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{t('cvBuilder.itemLabel', { index: idx + 1 })}</div>
+                          {education.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setEducation(prev => prev.filter((_, i) => i !== idx))}
+                              className={smallDangerBtn}
+                            >
+                              {t('cvBuilder.actions.remove')}
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <input
+                              value={ed.school}
+                              onChange={(e) => setEducation(prev => prev.map((x, i) => i === idx ? { ...x, school: e.target.value } : x))}
+                              className={fieldClass(inputClass, `education.${idx}.school`)}
+                              placeholder={t('cvBuilder.placeholders.school')}
+                            />
+                            <ErrorLine msg={fieldError(`education.${idx}.school`)} />
+                          </div>
+                          <div>
+                            <input
+                              value={ed.degree}
+                              onChange={(e) => setEducation(prev => prev.map((x, i) => i === idx ? { ...x, degree: e.target.value } : x))}
+                              className={fieldClass(inputClass, `education.${idx}.degree`)}
+                              placeholder={t('cvBuilder.placeholders.degree')}
+                            />
+                            <ErrorLine msg={fieldError(`education.${idx}.degree`)} />
+                          </div>
+                          <div>
+                            <input
+                              value={ed.field}
+                              onChange={(e) => setEducation(prev => prev.map((x, i) => i === idx ? { ...x, field: e.target.value } : x))}
+                              className={fieldClass(inputClass, `education.${idx}.field`)}
+                              placeholder={t('cvBuilder.placeholders.field')}
+                            />
+                            <ErrorLine msg={fieldError(`education.${idx}.field`)} />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <YearPicker
+                                value={ed.start}
+                                onChange={(value) => setEducation(prev => prev.map((x, i) => i === idx ? { ...x, start: value } : x))}
+                                inputClassName={fieldClass(inputClass, `education.${idx}.start`)}
+                                placeholder={t('cvBuilder.placeholders.startYear')}
+                              />
+                              <ErrorLine msg={fieldError(`education.${idx}.start`)} />
+                            </div>
+                            <div>
+                              <YearPicker
+                                value={ed.end}
+                                onChange={(value) => setEducation(prev => prev.map((x, i) => i === idx ? { ...x, end: value } : x))}
+                                inputClassName={fieldClass(inputClass, `education.${idx}.end`)}
+                                placeholder={t('cvBuilder.placeholders.endYear')}
+                              />
+                              <ErrorLine msg={fieldError(`education.${idx}.end`)} />
+                            </div>
+                          </div>
+                        </div>
+
+                        <textarea
+                          value={ed.details}
+                          onChange={(e) => setEducation(prev => prev.map((x, i) => i === idx ? { ...x, details: e.target.value } : x))}
+                          rows={3}
+                          className={fieldClass(`${textAreaClass} mt-3`, `education.${idx}.details`)}
+                          placeholder={t('cvBuilder.placeholders.educationDetails')}
+                        />
+                        <ErrorLine msg={fieldError(`education.${idx}.details`)} />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+
+              {activeStepId === 'experience' && enabledSections.experience ? (
                 <section className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.experience')}</h3>
@@ -1147,18 +1198,20 @@ export default function CvBuilder() {
                 </section>
               ) : null}
 
-              <section className="space-y-3">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.skills')}</h3>
-                <input
-                  value={skills}
-                  onChange={(e) => setSkills(e.target.value)}
-                  className={fieldClass(inputClass, 'skills')}
-                  placeholder={t('cvBuilder.placeholders.skills')}
-                />
-                <ErrorLine msg={fieldError('skills')} />
-              </section>
+              {activeStepId === 'skills' ? (
+                <section className="space-y-3">
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.skills')}</h3>
+                  <input
+                    value={skills}
+                    onChange={(e) => setSkills(e.target.value)}
+                    className={fieldClass(inputClass, 'skills')}
+                    placeholder={t('cvBuilder.placeholders.skills')}
+                  />
+                  <ErrorLine msg={fieldError('skills')} />
+                </section>
+              ) : null}
 
-              {enabledSections.projects ? (
+              {activeStepId === 'projects' && enabledSections.projects ? (
                 <section className="space-y-3">
                   <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.projects')}</h3>
                   <textarea
@@ -1172,7 +1225,7 @@ export default function CvBuilder() {
                 </section>
               ) : null}
 
-              {enabledSections.honors ? (
+              {activeStepId === 'honors' && enabledSections.honors ? (
                 <section className="space-y-3">
                   <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.honors')}</h3>
                   <textarea
@@ -1186,7 +1239,7 @@ export default function CvBuilder() {
                 </section>
               ) : null}
 
-              {enabledSections.certifications ? (
+              {activeStepId === 'certifications' && enabledSections.certifications ? (
                 <section className="space-y-3">
                   <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.certifications')}</h3>
                   <textarea
@@ -1200,7 +1253,7 @@ export default function CvBuilder() {
                 </section>
               ) : null}
 
-              {enabledSections.languages ? (
+              {activeStepId === 'languages' && enabledSections.languages ? (
                 <section className="space-y-3">
                   <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.languages')}</h3>
                   <input
@@ -1212,6 +1265,28 @@ export default function CvBuilder() {
                   <ErrorLine msg={fieldError('languages')} />
                 </section>
               ) : null}
+            </div>
+
+            <div className="mt-6 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => setActiveStepIndex((i) => Math.max(0, i - 1))}
+                className={smallGhostBtn}
+                disabled={activeStepIndex === 0}
+                style={activeStepIndex === 0 ? { opacity: 0.5, pointerEvents: 'none' } : undefined}
+              >
+                {t('cvBuilder.actions.back')}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveStepIndex((i) => Math.min(steps.length - 1, i + 1))}
+                className={smallPrimaryBtn}
+                disabled={activeStepIndex >= steps.length - 1}
+                style={activeStepIndex >= steps.length - 1 ? { opacity: 0.5, pointerEvents: 'none' } : undefined}
+              >
+                {t('cvBuilder.actions.next')}
+              </button>
             </div>
           </div>
 

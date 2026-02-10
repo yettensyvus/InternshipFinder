@@ -102,7 +102,6 @@ public class UserServiceImpl implements UserService {
         return "Password reset successfully.";
     }
 
-    // Registration
     @Override
     public String register(RegisterRequest req) {
         String email = normalizeEmail(req.getEmail());
@@ -210,7 +209,6 @@ public class UserServiceImpl implements UserService {
         return "OTP sent";
     }
 
-    // Settings: change email (OTP sent to new email)
     @Override
     public String requestEmailChange(String newEmail) {
         String normalizedEmail = normalizeEmail(newEmail);
@@ -248,7 +246,6 @@ public class UserServiceImpl implements UserService {
         return "Email changed";
     }
 
-    // Settings: change password (OTP sent to current email)
     @Override
     public String requestPasswordChange(String currentPassword) {
         User user = getCurrentUser();
@@ -290,7 +287,6 @@ public class UserServiceImpl implements UserService {
         return "Password changed";
     }
 
-    // Login
     @Override
     public AuthResponse login(LoginRequest req) {
         String email = normalizeEmail(req.getEmail());

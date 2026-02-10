@@ -239,9 +239,12 @@ const en = {
     actions: {
       add: 'Add',
       remove: 'Remove',
+      back: 'Back',
+      next: 'Next',
       saveCv: 'Save CV',
       exportPdf: 'Export PDF'
     },
+    stepLabel: 'Step {{current}} / {{total}}',
     itemLabel: 'Item {{index}}',
     sections: {
       personal: 'Personal',
@@ -622,6 +625,12 @@ const en = {
     subtitle: 'Upload a PDF resume to apply faster.',
     fileTitle: 'Resume file',
     fileHint: 'PDF only, up to 5MB.',
+    meta: {
+      formatLabel: 'Format',
+      formatValue: 'PDF',
+      maxSizeLabel: 'Max size',
+      maxSizeValue: '5 MB'
+    },
     selected: 'Selected',
     chooseFileButton: 'Choose file',
     noFileChosen: 'No file chosen',

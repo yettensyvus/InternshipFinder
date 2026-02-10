@@ -238,9 +238,12 @@ const ro = {
   actions: {
     add: 'Adaugă',
     remove: 'Elimină',
+    back: 'Înapoi',
+    next: 'Înainte',
     saveCv: 'Salvează CV',
     exportPdf: 'Exportă PDF'
   },
+  stepLabel: 'Pasul {{current}} / {{total}}',
   itemLabel: 'Element {{index}}',
   sections: {
     personal: 'Personal',
@@ -621,6 +624,12 @@ const ro = {
     subtitle: 'Încarcă un CV PDF pentru a aplica mai rapid.',
     fileTitle: 'Fișier CV',
     fileHint: 'Doar PDF, până la 5MB.',
+    meta: {
+      formatLabel: 'Format',
+      formatValue: 'PDF',
+      maxSizeLabel: 'Dimensiune maximă',
+      maxSizeValue: '5 MB'
+    },
     selected: 'Selectat',
     chooseFileButton: 'Alege fișier',
     noFileChosen: 'Niciun fișier ales',
