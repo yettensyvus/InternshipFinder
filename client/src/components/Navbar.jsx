@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useEffect, useState, useRef } from 'react';
 import { fetchUnreadCount, subscribeToNotifications } from '../services/notifications';
 import { useTranslation } from 'react-i18next';
+import { getDashboardPathForRole, getProfilePathForRole } from '../utils/rolePaths';
 import {
   SunIcon,
   MoonIcon,
@@ -143,24 +144,6 @@ export default function Navbar() {
     setDarkMode(nextMode === 'dark');
   };
   const toggleProfileDropdown = () => setIsProfileDropdownOpen(!isProfileDropdownOpen);
-
-  const getDashboardLink = () => {
-    switch (auth?.role) {
-      case 'STUDENT': return '/student/dashboard';
-      case 'RECRUITER': return '/recruiter/dashboard';
-      case 'ADMIN': return '/admin/dashboard';
-      default: return '/dashboard';
-    }
-  };
-
-  const getProfileLink = () => {
-    switch (auth?.role) {
-      case 'STUDENT': return '/student/profile';
-      case 'RECRUITER': return '/recruiter/profile';
-      case 'ADMIN': return '/admin/profile';
-      default: return '/profile';
-    }
-  };
 
   const getInitials = (name) => {
     if (!name) return 'U';
@@ -319,7 +302,7 @@ export default function Navbar() {
 
                   <div className="py-2">
                     <Link
-                      to={getDashboardLink()}
+                      to={getDashboardPathForRole(auth?.role)}
                       className="flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                       onClick={() => setIsProfileDropdownOpen(false)}
                     >
@@ -327,7 +310,7 @@ export default function Navbar() {
                       {t('common.dashboard')}
                     </Link>
                     <Link
-                      to={getProfileLink()}
+                      to={getProfilePathForRole(auth?.role)}
                       className="flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                       onClick={() => setIsProfileDropdownOpen(false)}
                     >
@@ -457,7 +440,7 @@ export default function Navbar() {
                 </Link>
 
                 <Link
-                  to={getDashboardLink()}
+                  to={getDashboardPathForRole(auth?.role)}
                   className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 text-gray-700 dark:text-gray-200"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
@@ -466,7 +449,7 @@ export default function Navbar() {
                 </Link>
 
                 <Link
-                  to={getProfileLink()}
+                  to={getProfilePathForRole(auth?.role)}
                   className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 text-gray-700 dark:text-gray-200"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >

@@ -6,7 +6,6 @@ import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import FloatingBackButton from './components/FloatingBackButton';
 
-// Public Pages
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -17,15 +16,13 @@ import ResetPassword from './pages/ResetPassword';
 import VerifyEmailOtp from './pages/VerifyEmailOtp';
 import Settings from './pages/Settings';
 
-// 🧑‍🎓 Student
 import StudentDashboard from './pages/student/Dashboard';
-import Profile from './pages/student/Profile';
-import ResumeUpload from './pages/student/ResumeUpload';
-import JobList from './pages/student/JobList';
-import Applications from './pages/student/Applications';
-import CvBuilder from './pages/student/CvBuilder';
+import StudentProfile from './pages/student/Profile';
+import StudentResumeUpload from './pages/student/ResumeUpload';
+import StudentJobList from './pages/student/JobList';
+import StudentApplications from './pages/student/Applications';
+import StudentCvBuilder from './pages/student/CvBuilder';
 
-// 🧑‍💼 Recruiter
 import RecruiterDashboard from './pages/recruiter/Dashboard';
 import PostJob from './pages/recruiter/PostJob';
 import MyJobs from './pages/recruiter/MyJobs';
@@ -33,7 +30,6 @@ import RecruiterApplications from './pages/recruiter/Applications';
 import RecruiterProfile from './pages/recruiter/Profile';
 import JobManage from './pages/recruiter/JobManage';
 
-// 🛠️ Admin
 import AdminDashboard from './pages/admin/Dashboard';
 import ManageUsers from './pages/admin/ManageUsers';
 import AdminProfile from './pages/admin/Profile';
@@ -43,6 +39,7 @@ import ProfileRedirect from './pages/ProfileRedirect';
 import Notifications from './pages/Notifications';
 import JobDetails from './pages/JobDetails';
 import AccountBlocked from './pages/AccountBlocked';
+import Unauthorized from './pages/Unauthorized';
 
 export default function App() {
   const { t, i18n } = useTranslation();
@@ -67,6 +64,7 @@ export default function App() {
         <Route path="/verify-email-otp" element={<VerifyEmailOtp />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/account-blocked" element={<AccountBlocked />} />
+        <Route path="/unauthorized" element={<Unauthorized />} />
 
         <Route
           path="/settings"
@@ -90,7 +88,7 @@ export default function App() {
           path="/student/profile"
           element={
             <ProtectedRoute role="STUDENT">
-              <Profile />
+              <StudentProfile />
             </ProtectedRoute>
           }
         />
@@ -98,7 +96,7 @@ export default function App() {
           path="/student/resume"
           element={
             <ProtectedRoute role="STUDENT">
-              <ResumeUpload />
+              <StudentResumeUpload />
             </ProtectedRoute>
           }
         />
@@ -106,7 +104,7 @@ export default function App() {
           path="/student/jobs"
           element={
             <ProtectedRoute role="STUDENT">
-              <JobList />
+              <StudentJobList />
             </ProtectedRoute>
           }
         />
@@ -114,7 +112,7 @@ export default function App() {
           path="/student/applications"
           element={
             <ProtectedRoute role="STUDENT">
-              <Applications />
+              <StudentApplications />
             </ProtectedRoute>
           }
         />
@@ -123,7 +121,7 @@ export default function App() {
           path="/student/cv-builder"
           element={
             <ProtectedRoute role="STUDENT">
-              <CvBuilder />
+              <StudentCvBuilder />
             </ProtectedRoute>
           }
         />
