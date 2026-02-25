@@ -4,15 +4,11 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import { showLoadingToast, showToast } from '../services/toast';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 
 export default function Register() {
-  const [form, setForm] = useState({
-    username: '',
-    email: '',
-    password: '',
-    role: 'STUDENT'
-  });
-
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const roleDropdownRef = useRef(null);
 
@@ -22,16 +18,38 @@ export default function Register() {
 
   const navigate = useNavigate();
 
-  const handleChange = (field) => (e) => {
-    setForm({ ...form, [field]: e.target.value });
-  };
+  const schema = yup.object({
+    username: yup.string().trim().required().min(2),
+    email: yup.string().trim().required(),
+    password: yup.string().trim().required().min(6),
+    role: yup.string().required().oneOf(['STUDENT', 'RECRUITER'])
+  });
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    getValues,
+    watch,
+    formState: { errors }
+  } = useForm({
+    defaultValues: {
+      username: '',
+      email: '',
+      password: '',
+      role: 'STUDENT'
+    },
+    resolver: yupResolver(schema),
+    mode: 'onSubmit'
+  });
 
   const roles = [
     { code: 'STUDENT', label: `🎓 ${t('auth.student')}` },
     { code: 'RECRUITER', label: `💼 ${t('auth.recruiter')}` }
   ];
 
-  const activeRole = roles.find(r => r.code === form.role) || roles[0];
+  const role = watch('role');
+  const activeRole = roles.find(r => r.code === role) || roles[0];
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -43,43 +61,20 @@ export default function Register() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const onSubmit = async (data) => {
     const toastId = 'register';
 
-    const username = (form.username || '').trim();
-    const email = (form.email || '').trim();
-    const password = (form.password || '').trim();
-
-    if (!username) {
-      showToast(toastId, 'error', t('auth.pleaseFillAllFields'));
-      return;
-    }
-    if (username.length < 2) {
-      showToast(toastId, 'error', t('auth.usernameMin'));
-      return;
-    }
-    if (!email) {
-      showToast(toastId, 'error', t('auth.pleaseFillAllFields'));
-      return;
-    }
-    if (!password) {
-      showToast(toastId, 'error', t('auth.pleaseFillAllFields'));
-      return;
-    }
-    if (password.length < 6) {
-      showToast(toastId, 'error', t('auth.passwordMin'));
-      return;
-    }
+    const username = (data.username || '').trim();
+    const email = (data.email || '').trim();
+    const password = (data.password || '').trim();
 
     setLoading(true);
-    showLoadingToast(toastId, form.role === 'RECRUITER' ? t('auth.creatingAccountSendingOtp') : t('auth.creatingAccount'));
+    showLoadingToast(toastId, data.role === 'RECRUITER' ? t('auth.creatingAccountSendingOtp') : t('auth.creatingAccount'));
     try {
-      const res = await axios.post('/auth/register', { ...form, name: username, username, email, password });
+      const res = await axios.post('/auth/register', { ...data, name: username, username, email, password });
       if (res.data === 'RECRUITER_OTP_SENT') {
         showToast(toastId, 'success', t('auth.registrationSuccessVerifyEmail'), { autoClose: 1800 });
-        setTimeout(() => navigate('/verify-email-otp', { state: { email: form.email } }), 1200);
+        setTimeout(() => navigate('/verify-email-otp', { state: { email } }), 1200);
         return;
       }
 
@@ -90,6 +85,24 @@ export default function Register() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const onInvalid = () => {
+    const toastId = 'register';
+    const { username, email, password } = getValues();
+    if (!String(username || '').trim() || !String(email || '').trim() || !String(password || '').trim()) {
+      showToast(toastId, 'error', t('auth.pleaseFillAllFields'));
+      return;
+    }
+    if (String(username || '').trim().length < 2) {
+      showToast(toastId, 'error', t('auth.usernameMin'));
+      return;
+    }
+    if (String(password || '').trim().length < 6) {
+      showToast(toastId, 'error', t('auth.passwordMin'));
+      return;
+    }
+    showToast(toastId, 'error', t('auth.pleaseFillAllFields'));
   };
 
   return (
@@ -104,17 +117,19 @@ export default function Register() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-5">
           <div>
             <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">{t('auth.username')}</label>
             <input
               type="text"
               placeholder={t('auth.usernamePlaceholder')}
-              value={form.username}
-              onChange={handleChange('username')}
+              {...register('username')}
               className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               required
             />
+            {errors.username ? (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{t('auth.usernameMin')}</p>
+            ) : null}
           </div>
 
           <div>
@@ -122,11 +137,13 @@ export default function Register() {
             <input
               type="email"
               placeholder={t('auth.emailPlaceholder')}
-              value={form.email}
-              onChange={handleChange('email')}
+              {...register('email')}
               className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               required
             />
+            {errors.email ? (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{t('auth.pleaseFillAllFields')}</p>
+            ) : null}
           </div>
 
           <div>
@@ -134,11 +151,13 @@ export default function Register() {
             <input
               type="password"
               placeholder={t('auth.passwordPlaceholder')}
-              value={form.password}
-              onChange={handleChange('password')}
+              {...register('password')}
               className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               required
             />
+            {errors.password ? (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{t('auth.passwordMin')}</p>
+            ) : null}
           </div>
 
           <div>
@@ -160,10 +179,10 @@ export default function Register() {
                       key={r.code}
                       type="button"
                       onClick={() => {
-                        setForm(prev => ({ ...prev, role: r.code }));
+                        setValue('role', r.code, { shouldValidate: true, shouldDirty: true });
                         setIsRoleDropdownOpen(false);
                       }}
-                      className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${form.role === r.code ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                      className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${role === r.code ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                     >
                       <span className="font-medium">{r.label}</span>
                       <span className="text-xs text-gray-500 dark:text-gray-400">{r.code}</span>
@@ -172,6 +191,10 @@ export default function Register() {
                 </div>
               )}
             </div>
+            <input type="hidden" {...register('role')} />
+            {errors.role ? (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{t('auth.pleaseFillAllFields')}</p>
+            ) : null}
           </div>
 
           <button

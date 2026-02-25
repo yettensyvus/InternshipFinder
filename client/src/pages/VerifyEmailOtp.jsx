@@ -4,15 +4,32 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { showLoadingToast, showToast } from '../services/toast';
 import { useOtpCooldown } from '../hooks/useOtpCooldown';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 
 export default function VerifyEmailOtp() {
-  const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email;
   const { t } = useTranslation();
+
+  const schema = yup.object({
+    otp: yup.string().trim().required()
+  });
+
+  const {
+    register,
+    handleSubmit,
+    getValues,
+    formState: { errors }
+  } = useForm({
+    defaultValues: { otp: '' },
+    resolver: yupResolver(schema),
+    mode: 'onSubmit'
+  });
 
   const { isCoolingDown, remainingSeconds, startCooldown } = useOtpCooldown(
     email ? `otp:verify-email:${email}` : ''
@@ -25,18 +42,13 @@ export default function VerifyEmailOtp() {
     }
   }, [email, navigate, t]);
 
-  const handleVerify = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     const toastId = 'verify-email-otp';
-    if (!otp.trim()) {
-      showToast(toastId, 'error', t('auth.pleaseEnterOtp'));
-      return;
-    }
 
     setLoading(true);
     showLoadingToast(toastId, t('auth.verifyingOtp'));
     try {
-      await axios.post('/auth/verify-email-otp', { email, otp });
+      await axios.post('/auth/verify-email-otp', { email, otp: data.otp });
       showToast(toastId, 'success', t('auth.emailVerifiedNowLogin'), { autoClose: 1800 });
       setTimeout(() => {
         navigate('/login', { state: { email } });
@@ -46,6 +58,16 @@ export default function VerifyEmailOtp() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const onInvalid = () => {
+    const toastId = 'verify-email-otp';
+    const { otp } = getValues();
+    if (!String(otp || '').trim()) {
+      showToast(toastId, 'error', t('auth.pleaseEnterOtp'));
+      return;
+    }
+    showToast(toastId, 'error', t('auth.pleaseEnterOtp'));
   };
 
   const handleResend = async () => {
@@ -98,7 +120,7 @@ export default function VerifyEmailOtp() {
           </p>
         </div>
 
-        <form onSubmit={handleVerify} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-5">
           <div>
             <label htmlFor="otp" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               {t('auth.emailVerificationOtp')}
@@ -106,13 +128,15 @@ export default function VerifyEmailOtp() {
             <input
               id="otp"
               type="text"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
+              {...register('otp')}
               className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder={t('auth.otpPlaceholder')}
               required
               disabled={loading}
             />
+            {errors.otp ? (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{t('auth.pleaseEnterOtp')}</p>
+            ) : null}
           </div>
 
           <button

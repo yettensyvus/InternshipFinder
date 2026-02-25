@@ -4,6 +4,9 @@ import { showLoadingToast, showToast } from '../../services/toast';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -17,6 +20,29 @@ export default function Profile() {
   const [picUploading, setPicUploading] = useState(false);
   const picInputRef = useRef(null);
 
+  const schema = yup.object({
+    name: yup.string().trim().required().min(2),
+    phone: yup.string().trim(),
+    yearOfPassing: yup.string().trim()
+  });
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors }
+  } = useForm({
+    defaultValues: {
+      name: '',
+      phone: '',
+      yearOfPassing: '',
+      college: '',
+      branch: ''
+    },
+    resolver: yupResolver(schema),
+    mode: 'onSubmit'
+  });
+
   useEffect(() => {
     const load = async () => {
       try {
@@ -26,6 +52,13 @@ export default function Profile() {
         ]);
         setForm(profileRes.data);
         setApplicationsCount(Array.isArray(appsRes.data) ? appsRes.data.length : 0);
+        reset({
+          name: profileRes.data?.name || '',
+          phone: profileRes.data?.phone || '',
+          yearOfPassing: profileRes.data?.yearOfPassing ? String(profileRes.data?.yearOfPassing) : '',
+          college: profileRes.data?.college || '',
+          branch: profileRes.data?.branch || ''
+        });
       } catch (err) {
         showToast('student-profile-load', 'error', t('studentProfile.failedLoad'));
         console.error('Profile fetch error:', err);
@@ -38,34 +71,15 @@ export default function Profile() {
   }, []);
 
 
-  const handleChange = (field) => (e) => {
-    setForm({ ...form, [field]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const onSubmit = async (data) => {
     const toastId = 'student-profile-update';
-    const name = (form.name || '').trim();
-    const phone = (form.phone || '').trim();
-    const yearOfPassing = (form.yearOfPassing || '').toString().trim();
-
-    if (!name) {
-      showToast(toastId, 'error', t('studentProfile.nameRequired'));
-      return;
-    }
-    if (name.length < 2) {
-      showToast(toastId, 'error', t('studentProfile.nameMin'));
-      return;
-    }
-    if (phone && phone.length < 6) {
-      showToast(toastId, 'error', t('studentProfile.phoneMin'));
-      return;
-    }
-    if (yearOfPassing && !/^\d{4}$/.test(yearOfPassing)) {
-      showToast(toastId, 'error', t('studentProfile.yearInvalid'));
-      return;
-    }
+    const name = (data.name || '').trim();
+    const phone = (data.phone || '').trim();
+    const yearOfPassing = (data.yearOfPassing || '').toString().trim();
+    const college = (data.college || '').trim();
+    const branch = (data.branch || '').trim();
+    if (phone && phone.length < 6) return showToast(toastId, 'error', t('studentProfile.phoneMin'));
+    if (yearOfPassing && !/^\d{4}$/.test(yearOfPassing)) return showToast(toastId, 'error', t('studentProfile.yearInvalid'));
 
     setSaving(true);
     try {
@@ -73,6 +87,8 @@ export default function Profile() {
         ...form,
         name,
         phone,
+        college,
+        branch,
         yearOfPassing: yearOfPassing || ''
       });
       showToast(toastId, 'info', t('studentProfile.updated'));
@@ -82,6 +98,15 @@ export default function Profile() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const onInvalid = () => {
+    const toastId = 'student-profile-update';
+    if (errors?.name) {
+      showToast(toastId, 'error', t('studentProfile.nameMin'));
+      return;
+    }
+    showToast(toastId, 'error', t('studentProfile.nameRequired'));
   };
 
   const handleProfilePictureAction = () => {
@@ -212,7 +237,7 @@ export default function Profile() {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('studentProfile.personal')}</h2>
                 <div className="space-y-4">
@@ -225,11 +250,14 @@ export default function Profile() {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
                       <input
                         className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
-                        value={form[key] || ''}
-                        onChange={disabled ? undefined : handleChange(key)}
+                        value={disabled ? (form[key] || '') : undefined}
+                        {...(!disabled ? register(key) : {})}
                         disabled={disabled}
                         readOnly={disabled}
                       />
+                      {!disabled && key === 'name' && errors.name ? (
+                        <p className="mt-1 text-sm text-red-600 dark:text-red-400">{t('studentProfile.nameMin')}</p>
+                      ) : null}
                     </div>
                   ))}
                 </div>
@@ -247,8 +275,7 @@ export default function Profile() {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
                       <input
                         className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
-                        value={form[key] || ''}
-                        onChange={handleChange(key)}
+                        {...register(key)}
                       />
                     </div>
                   ))}

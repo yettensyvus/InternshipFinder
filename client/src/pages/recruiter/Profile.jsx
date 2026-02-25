@@ -4,6 +4,9 @@ import { showToast } from '../../services/toast';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 
 export default function RecruiterProfile() {
   const navigate = useNavigate();
@@ -16,6 +19,22 @@ export default function RecruiterProfile() {
   const [picPreviewUrl, setPicPreviewUrl] = useState('');
   const [picUploading, setPicUploading] = useState(false);
   const picInputRef = useRef(null);
+
+  const schema = yup.object({
+    companyName: yup.string().trim().required().min(2),
+    companyWebsite: yup.string().trim()
+  });
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors }
+  } = useForm({
+    defaultValues: { companyName: '', companyWebsite: '' },
+    resolver: yupResolver(schema),
+    mode: 'onSubmit'
+  });
 
   useEffect(() => {
     if (!picFile) {
@@ -32,6 +51,10 @@ export default function RecruiterProfile() {
       try {
         const res = await axios.get('/recruiter/profile');
         setForm(res.data);
+        reset({
+          companyName: res.data?.companyName || '',
+          companyWebsite: res.data?.companyWebsite || ''
+        });
       } catch (err) {
         showToast('recruiter-profile-load', 'error', t('recruiterProfile.failedLoad'));
         console.error('Recruiter profile fetch error:', err);
@@ -43,25 +66,10 @@ export default function RecruiterProfile() {
     load();
   }, []);
 
-  const handleChange = (field) => (e) => {
-    setForm({ ...form, [field]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const onSubmit = async (data) => {
     const toastId = 'recruiter-profile-update';
-    const companyName = (form.companyName || '').trim();
-    const companyWebsite = (form.companyWebsite || '').trim();
-
-    if (!companyName) {
-      showToast(toastId, 'error', t('recruiterProfile.companyNameRequired'));
-      return;
-    }
-    if (companyName.length < 2) {
-      showToast(toastId, 'error', t('recruiterProfile.companyNameMin'));
-      return;
-    }
+    const companyName = (data.companyName || '').trim();
+    const companyWebsite = (data.companyWebsite || '').trim();
     if (companyWebsite && companyWebsite.length < 4) {
       showToast(toastId, 'error', t('recruiterProfile.companyWebsiteMin'));
       return;
@@ -81,6 +89,15 @@ export default function RecruiterProfile() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const onInvalid = () => {
+    const toastId = 'recruiter-profile-update';
+    if (errors?.companyName) {
+      showToast(toastId, 'error', t('recruiterProfile.companyNameMin'));
+      return;
+    }
+    showToast(toastId, 'error', t('recruiterProfile.companyNameRequired'));
   };
 
   const handleProfilePictureAction = () => {
@@ -174,7 +191,7 @@ export default function RecruiterProfile() {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('recruiterProfile.companySection')}</h2>
                 <div className="space-y-4">
@@ -187,11 +204,17 @@ export default function RecruiterProfile() {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
                       <input
                         className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
-                        value={form[key] || ''}
-                        onChange={disabled ? undefined : handleChange(key)}
+                        value={disabled ? (form[key] || '') : undefined}
+                        {...(!disabled ? register(key) : {})}
                         disabled={disabled}
                         readOnly={disabled}
                       />
+                      {!disabled && key === 'companyName' && errors.companyName ? (
+                        <p className="mt-1 text-sm text-red-600 dark:text-red-400">{t('recruiterProfile.companyNameMin')}</p>
+                      ) : null}
+                      {!disabled && key === 'companyWebsite' && errors.companyWebsite ? (
+                        <p className="mt-1 text-sm text-red-600 dark:text-red-400">{t('recruiterProfile.companyWebsiteMin')}</p>
+                      ) : null}
                     </div>
                   ))}
                 </div>

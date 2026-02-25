@@ -5,6 +5,10 @@ import { showToast } from '../../services/toast';
 import { useTranslation } from 'react-i18next';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import CustomDateTimePicker from '../../components/CustomDateTimePicker';
+import { sanitizeHtml } from '../../utils/sanitizeHtml';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 
 export default function JobManage() {
   const navigate = useNavigate();
@@ -15,20 +19,47 @@ export default function JobManage() {
   const typeDropdownRef = useRef(null);
 
   const [job, setJob] = useState(null);
-  const [form, setForm] = useState({
-    title: '',
-    company: '',
-    location: '',
-    type: '',
-    paid: false,
-    duration: '',
-    compensation: '',
-    deadline: '',
-    description: '',
-    active: true
-  });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const schema = yup.object({
+    title: yup.string().trim().required(),
+    company: yup.string().trim().required(),
+    location: yup.string().trim().required(),
+    type: yup.string().required().oneOf(['JOB', 'INTERNSHIP']),
+    paid: yup.boolean(),
+    duration: yup.string().trim().required().min(2),
+    compensation: yup.string().trim(),
+    deadline: yup.mixed().required(),
+    description: yup.string().trim().required().min(20).max(5000),
+    active: yup.boolean()
+  });
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    getValues,
+    watch
+  } = useForm({
+    defaultValues: {
+      title: '',
+      company: '',
+      location: '',
+      type: 'JOB',
+      paid: false,
+      duration: '',
+      compensation: '',
+      deadline: '',
+      description: '',
+      active: true
+    },
+    resolver: yupResolver(schema),
+    mode: 'onSubmit'
+  });
+
+  const form = watch();
 
   useEffect(() => {
     const load = async () => {
@@ -37,11 +68,11 @@ export default function JobManage() {
         const res = await axios.get(`/recruiter/jobs/${id}`);
         setJob(res.data);
         const activeValue = res.data?.active ?? res.data?.isActive;
-        setForm({
+        reset({
           title: res.data?.title || '',
           company: res.data?.company || '',
           location: res.data?.location || '',
-          type: res.data?.type || '',
+          type: res.data?.type || 'JOB',
           paid: !!res.data?.paid,
           duration: res.data?.duration || '',
           compensation: res.data?.compensation || '',
@@ -78,63 +109,41 @@ export default function JobManage() {
   ];
   const activeType = typeOptions.find(o => o.value === form.type) || typeOptions[0];
 
-  const onChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setForm(prev => {
-      const next = { ...prev, [name]: type === 'checkbox' ? checked : value };
-      if (name === 'paid' && !checked) {
-        next.compensation = '';
-      }
-      if (name === 'type' && value === 'JOB') {
-        next.paid = true;
-      }
-      return next;
-    });
-  };
-
-  const save = async () => {
+  const save = async (data) => {
     if (!id) return;
     const toastId = `recruiter-job-update-${id}`;
-    const title = (form.title || '').trim();
-    const company = (form.company || '').trim();
-    const location = (form.location || '').trim();
-    const description = (form.description || '').trim();
-    const deadline = form.deadline;
-    const duration = (form.duration || '').trim();
-    const compensation = (form.compensation || '').trim();
 
-    if (!title) return showToast(toastId, 'error', t('recruiterJobManage.titleRequired'));
-    if (!company) return showToast(toastId, 'error', t('recruiterJobManage.companyRequired'));
-    if (!location) return showToast(toastId, 'error', t('recruiterJobManage.locationRequired'));
-    if (!description || description.length < 20) return showToast(toastId, 'error', t('recruiterJobManage.descriptionMin'));
+    const title = (data.title || '').trim();
+    const company = (data.company || '').trim();
+    const location = (data.location || '').trim();
+    const description = (data.description || '').trim();
+    const deadline = data.deadline;
+    const duration = (data.duration || '').trim();
+    const compensation = (data.compensation || '').trim();
 
-    if (!deadline) return showToast(toastId, 'error', t('recruiterJobManage.deadlineRequired'));
     const deadlineDate = new Date(deadline);
     if (Number.isNaN(deadlineDate.getTime())) return showToast(toastId, 'error', t('recruiterJobManage.deadlineInvalid'));
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (deadlineDate < today) return showToast(toastId, 'error', t('recruiterJobManage.deadlinePast'));
 
-    if (!duration) return showToast(toastId, 'error', t('recruiterJobManage.durationRequired'));
+    if ((data.type === 'JOB' || data.paid) && !compensation) return showToast(toastId, 'error', t('recruiterJobManage.compensationRequired'));
 
-    if (duration && duration.length < 2) return showToast(toastId, 'error', t('recruiterJobManage.durationMin'));
-
-    if ((form.type === 'JOB' || form.paid) && !compensation) return showToast(toastId, 'error', t('recruiterJobManage.compensationRequired'));
-
-    if ((form.type === 'JOB' || form.paid) && compensation.length < 2) return showToast(toastId, 'error', t('recruiterJobManage.compensationMin'));
+    if ((data.type === 'JOB' || data.paid) && compensation.length < 2) return showToast(toastId, 'error', t('recruiterJobManage.compensationMin'));
 
     setSaving(true);
     try {
-      const res = await axios.put(`/recruiter/jobs/${id}`, {
-        ...form,
-        location,
-        deadline,
-        duration: duration || '',
-        compensation: (form.type === 'JOB' || form.paid) ? compensation : '',
-        title,
-        company,
-        description
-      });
+      const res = await axios.put(`/recruiter/jobs/${id}`,
+        {
+          ...data,
+          location,
+          deadline,
+          duration: duration || '',
+          compensation: (data.type === 'JOB' || data.paid) ? compensation : '',
+          title,
+          company,
+          description: sanitizeHtml(description)
+        });
       setJob(res.data);
       showToast(toastId, 'info', t('recruiterJobManage.updated'));
     } catch (err) {
@@ -143,6 +152,27 @@ export default function JobManage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const onInvalid = () => {
+    if (!id) return;
+    const toastId = `recruiter-job-update-${id}`;
+    const values = getValues();
+    const title = String(values?.title || '').trim();
+    const company = String(values?.company || '').trim();
+    const location = String(values?.location || '').trim();
+    const description = String(values?.description || '').trim();
+    const deadline = values?.deadline;
+    const duration = String(values?.duration || '').trim();
+
+    if (!title) return showToast(toastId, 'error', t('recruiterJobManage.titleRequired'));
+    if (!company) return showToast(toastId, 'error', t('recruiterJobManage.companyRequired'));
+    if (!location) return showToast(toastId, 'error', t('recruiterJobManage.locationRequired'));
+    if (!description || description.length < 20) return showToast(toastId, 'error', t('recruiterJobManage.descriptionMin'));
+    if (!deadline) return showToast(toastId, 'error', t('recruiterJobManage.deadlineRequired'));
+    if (!duration) return showToast(toastId, 'error', t('recruiterJobManage.durationRequired'));
+    if (duration.length < 2) return showToast(toastId, 'error', t('recruiterJobManage.durationMin'));
+    return showToast(toastId, 'error', t('recruiterJobManage.failedUpdate'));
   };
 
   return (
@@ -180,27 +210,21 @@ export default function JobManage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterJobManage.titleLabel')}</label>
                       <input
-                        name="title"
-                        value={form.title}
-                        onChange={onChange}
+                        {...register('title')}
                         className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterJobManage.companyLabel')}</label>
                       <input
-                        name="company"
-                        value={form.company}
-                        onChange={onChange}
+                        {...register('company')}
                         className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterJobManage.locationLabel')}</label>
                       <input
-                        name="location"
-                        value={form.location}
-                        onChange={onChange}
+                        {...register('location')}
                         className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
                       />
                     </div>
@@ -223,13 +247,10 @@ export default function JobManage() {
                                 key={opt.value}
                                 type="button"
                                 onClick={() => {
-                                  setForm(prev => {
-                                    const next = { ...prev, type: opt.value };
-                                    if (opt.value === 'JOB') {
-                                      next.paid = true;
-                                    }
-                                    return next;
-                                  });
+                                  setValue('type', opt.value, { shouldDirty: true });
+                                  if (opt.value === 'JOB') {
+                                    setValue('paid', true, { shouldDirty: true });
+                                  }
                                   setIsTypeDropdownOpen(false);
                                 }}
                                 className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${form.type === opt.value ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
@@ -245,7 +266,7 @@ export default function JobManage() {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterJobManage.deadlineLabel')}</label>
                       <CustomDateTimePicker
                         value={form.deadline}
-                        onChange={(v) => setForm(prev => ({ ...prev, deadline: v }))}
+                        onChange={(v) => setValue('deadline', v, { shouldDirty: true })}
                         placeholder={t('recruiterJobManage.deadlineLabel')}
                         minDate={new Date()}
                         inputClassName="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
@@ -256,9 +277,7 @@ export default function JobManage() {
                       <label className="inline-flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2">
                         <input
                           type="checkbox"
-                          name="paid"
-                          checked={!!form.paid}
-                          onChange={onChange}
+                          {...register('paid')}
                           className="h-4 w-4"
                         />
                         <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
@@ -269,9 +288,7 @@ export default function JobManage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterJobManage.duration')}</label>
                       <input
-                        name="duration"
-                        value={form.duration}
-                        onChange={onChange}
+                        {...register('duration')}
                         className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
                         placeholder={t('recruiterJobManage.durationPlaceholder')}
                         maxLength={60}
@@ -281,9 +298,7 @@ export default function JobManage() {
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterJobManage.compensation')}</label>
                         <input
-                          name="compensation"
-                          value={form.compensation}
-                          onChange={onChange}
+                          {...register('compensation')}
                           className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
                           placeholder={t('recruiterJobManage.compensationPlaceholder')}
                           maxLength={80}
@@ -294,9 +309,7 @@ export default function JobManage() {
                       <input
                         id="active"
                         type="checkbox"
-                        name="active"
-                        checked={form.active}
-                        onChange={onChange}
+                        {...register('active')}
                         className="h-4 w-4"
                       />
                       <label htmlFor="active" className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('recruiterJobManage.openForApps')}</label>
@@ -306,9 +319,7 @@ export default function JobManage() {
                   <div className="mt-4">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterJobManage.descriptionLabel')}</label>
                     <textarea
-                      name="description"
-                      value={form.description}
-                      onChange={onChange}
+                      {...register('description')}
                       className="w-full min-h-[200px] border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
                     />
                   </div>
@@ -316,7 +327,7 @@ export default function JobManage() {
                   <div className="mt-6 flex items-center justify-end gap-3">
                     <button
                       type="button"
-                      onClick={save}
+                      onClick={handleSubmit(save, onInvalid)}
                       disabled={saving}
                       className="px-6 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 text-white font-semibold shadow-lg hover:shadow-xl disabled:opacity-60"
                     >

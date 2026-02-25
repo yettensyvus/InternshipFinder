@@ -5,6 +5,9 @@ import { showLoadingToast, showToast } from '../../services/toast';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useTranslation } from 'react-i18next';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 
 const emptyEducation = () => ({
   school: '',
@@ -63,25 +66,256 @@ export default function CvBuilder() {
   const previewRef = useRef(null);
   const previewViewportRef = useRef(null);
 
-  const [personal, setPersonal] = useState({
-    fullName: '',
-    title: '',
-    email: '',
-    phone: '',
-    location: '',
-    website: ''
+  const [enabledSections, setEnabledSections] = useState({
+    experience: true,
+    projects: true,
+    honors: false,
+    certifications: false,
+    languages: false
   });
 
-  const [summary, setSummary] = useState('');
-  const [education, setEducation] = useState([emptyEducation()]);
-  const [experience, setExperience] = useState([emptyExperience()]);
-  const [skills, setSkills] = useState('');
-  const [projects, setProjects] = useState('');
-  const [honors, setHonors] = useState('');
-  const [certifications, setCertifications] = useState('');
-  const [languages, setLanguages] = useState('');
+  const schema = useMemo(() => {
+    const msgRequired = (fieldLabel) => t('cvBuilder.validation.required', { field: fieldLabel });
+    const msgTooShort = (fieldLabel) => t('cvBuilder.validation.tooShort', { field: fieldLabel });
+    const msgTooLong = (fieldLabel) => t('cvBuilder.validation.tooLong', { field: fieldLabel });
+    const msgInvalid = (fieldLabel) => t('cvBuilder.validation.invalid', { field: fieldLabel });
 
-  const [errors, setErrors] = useState({});
+    const educationItemSchema = yup.object({
+      school: yup
+        .string()
+        .trim()
+        .required(msgRequired(t('cvBuilder.fields.school')))
+        .min(2, msgTooShort(t('cvBuilder.fields.school')))
+        .max(120, msgTooLong(t('cvBuilder.fields.school'))),
+      degree: yup
+        .string()
+        .trim()
+        .required(msgRequired(t('cvBuilder.fields.degree')))
+        .min(2, msgTooShort(t('cvBuilder.fields.degree')))
+        .max(120, msgTooLong(t('cvBuilder.fields.degree'))),
+      field: yup
+        .string()
+        .trim()
+        .required(msgRequired(t('cvBuilder.fields.field')))
+        .min(2, msgTooShort(t('cvBuilder.fields.field')))
+        .max(120, msgTooLong(t('cvBuilder.fields.field'))),
+      start: yup
+        .string()
+        .trim()
+        .required(msgRequired(t('cvBuilder.fields.startYear')))
+        .matches(/^\d{4}$/, msgInvalid(t('cvBuilder.fields.startYear'))),
+      end: yup
+        .string()
+        .trim()
+        .required(msgRequired(t('cvBuilder.fields.endYear')))
+        .matches(/^\d{4}$/, msgInvalid(t('cvBuilder.fields.endYear'))),
+      details: yup
+        .string()
+        .trim()
+        .required(msgRequired(t('cvBuilder.fields.educationDetails')))
+        .min(5, msgTooShort(t('cvBuilder.fields.educationDetails')))
+        .max(1500, msgTooLong(t('cvBuilder.fields.educationDetails')))
+    });
+
+    const experienceItemSchema = yup.object({
+      company: yup
+        .string()
+        .trim()
+        .required(msgRequired(t('cvBuilder.fields.company')))
+        .min(2, msgTooShort(t('cvBuilder.fields.company')))
+        .max(120, msgTooLong(t('cvBuilder.fields.company'))),
+      role: yup
+        .string()
+        .trim()
+        .required(msgRequired(t('cvBuilder.fields.role')))
+        .min(2, msgTooShort(t('cvBuilder.fields.role')))
+        .max(120, msgTooLong(t('cvBuilder.fields.role'))),
+      start: yup
+        .string()
+        .trim()
+        .required(msgRequired(t('cvBuilder.fields.startYear')))
+        .matches(/^\d{4}$/, msgInvalid(t('cvBuilder.fields.startYear'))),
+      end: yup
+        .string()
+        .trim()
+        .required(msgRequired(t('cvBuilder.fields.endYear')))
+        .matches(/^\d{4}$/, msgInvalid(t('cvBuilder.fields.endYear'))),
+      details: yup
+        .string()
+        .trim()
+        .required(msgRequired(t('cvBuilder.fields.experienceDetails')))
+        .min(5, msgTooShort(t('cvBuilder.fields.experienceDetails')))
+        .max(1500, msgTooLong(t('cvBuilder.fields.experienceDetails')))
+    });
+
+    const experienceItemRelaxedSchema = yup.object({
+      company: yup.string().trim(),
+      role: yup.string().trim(),
+      start: yup.string().trim(),
+      end: yup.string().trim(),
+      details: yup.string().trim()
+    });
+
+    return yup.object({
+      personal: yup.object({
+        fullName: yup
+          .string()
+          .trim()
+          .required(msgRequired(t('cvBuilder.fields.fullName')))
+          .min(2, msgTooShort(t('cvBuilder.fields.fullName')))
+          .max(80, msgTooLong(t('cvBuilder.fields.fullName'))),
+        title: yup
+          .string()
+          .trim()
+          .required(msgRequired(t('cvBuilder.fields.title')))
+          .min(2, msgTooShort(t('cvBuilder.fields.title')))
+          .max(80, msgTooLong(t('cvBuilder.fields.title'))),
+        email: yup
+          .string()
+          .trim()
+          .required(msgRequired(t('cvBuilder.fields.email')))
+          .min(5, msgTooShort(t('cvBuilder.fields.email')))
+          .max(120, msgTooLong(t('cvBuilder.fields.email')))
+          .email(msgInvalid(t('cvBuilder.fields.email'))),
+        phone: yup
+          .string()
+          .trim()
+          .required(msgRequired(t('cvBuilder.fields.phone')))
+          .min(6, msgTooShort(t('cvBuilder.fields.phone')))
+          .max(30, msgTooLong(t('cvBuilder.fields.phone')))
+          .matches(/^[+()\d\s-]+$/, t('cvBuilder.validation.phoneInvalidChars')),
+        location: yup
+          .string()
+          .trim()
+          .required(msgRequired(t('cvBuilder.fields.location')))
+          .min(2, msgTooShort(t('cvBuilder.fields.location')))
+          .max(80, msgTooLong(t('cvBuilder.fields.location'))),
+        website: yup
+          .string()
+          .trim()
+          .required(msgRequired(t('cvBuilder.fields.website')))
+          .test('website', msgInvalid(t('cvBuilder.fields.website')), (v) => {
+            const raw = String(v || '').trim();
+            if (!raw) return false;
+            return /^https?:\/\//i.test(raw) || /^\w+[\w.-]*\.[a-z]{2,}/i.test(raw);
+          })
+      }),
+      summary: yup
+        .string()
+        .trim()
+        .required(msgRequired(t('cvBuilder.fields.summary')))
+        .min(20, msgTooShort(t('cvBuilder.fields.summary')))
+        .max(1500, msgTooLong(t('cvBuilder.fields.summary'))),
+      education: yup
+        .array()
+        .of(educationItemSchema)
+        .min(1, t('cvBuilder.validation.educationAtLeastOne')),
+      experience: yup.array().when('$enabledSections', {
+        is: (v) => Boolean(v?.experience),
+        then: (s) => s.of(experienceItemSchema).min(1, t('cvBuilder.validation.experienceAtLeastOne')),
+        otherwise: (s) => s.of(experienceItemRelaxedSchema).notRequired()
+      }),
+      skills: yup
+        .string()
+        .trim()
+        .required(msgRequired(t('cvBuilder.sections.skills')))
+        .test('skills', t('cvBuilder.validation.skillsAtLeastOne'), (v) => {
+          const list = String(v || '')
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean);
+          if (list.length === 0) return false;
+          if (list.some(s => s.length > 40)) return false;
+          return true;
+        })
+        .test('skills-length', t('cvBuilder.validation.skillsOneTooLong'), (v) => {
+          const list = String(v || '')
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean);
+          if (list.length === 0) return true;
+          return !list.some(s => s.length > 40);
+        }),
+      projects: yup.string().trim().test('projects-enabled', msgInvalid(t('cvBuilder.sections.projects')), function (v) {
+        const enabled = this?.options?.context?.enabledSections?.projects;
+        if (!enabled) return true;
+        const raw = String(v || '').trim();
+        if (!raw) return true;
+        if (raw.length < 10) return this.createError({ message: msgTooShort(t('cvBuilder.sections.projects')) });
+        if (raw.length > 2000) return this.createError({ message: msgTooLong(t('cvBuilder.sections.projects')) });
+        return true;
+      }),
+      honors: yup.string().trim().test('honors-enabled', msgInvalid(t('cvBuilder.sections.honors')), function (v) {
+        const enabled = this?.options?.context?.enabledSections?.honors;
+        if (!enabled) return true;
+        const raw = String(v || '').trim();
+        if (!raw) return true;
+        if (raw.length > 2000) return this.createError({ message: msgTooLong(t('cvBuilder.sections.honors')) });
+        return true;
+      }),
+      certifications: yup.string().trim().test('certifications-enabled', msgInvalid(t('cvBuilder.sections.certifications')), function (v) {
+        const enabled = this?.options?.context?.enabledSections?.certifications;
+        if (!enabled) return true;
+        const raw = String(v || '').trim();
+        if (!raw) return true;
+        if (raw.length > 2000) return this.createError({ message: msgTooLong(t('cvBuilder.sections.certifications')) });
+        return true;
+      }),
+      languages: yup.string().trim().test('languages-enabled', msgInvalid(t('cvBuilder.sections.languages')), function (v) {
+        const enabled = this?.options?.context?.enabledSections?.languages;
+        if (!enabled) return true;
+        const raw = String(v || '').trim();
+        if (!raw) return true;
+        if (raw.length > 300) return this.createError({ message: msgTooLong(t('cvBuilder.sections.languages')) });
+        return true;
+      })
+    });
+  }, [t]);
+
+  const {
+    register,
+    control,
+    getValues,
+    setValue,
+    watch,
+    trigger,
+    formState: { errors }
+  } = useForm({
+    defaultValues: {
+      personal: {
+        fullName: '',
+        title: '',
+        email: '',
+        phone: '',
+        location: '',
+        website: ''
+      },
+      summary: '',
+      education: [emptyEducation()],
+      experience: [emptyExperience()],
+      skills: '',
+      projects: '',
+      honors: '',
+      certifications: '',
+      languages: ''
+    },
+    resolver: yupResolver(schema, { context: { enabledSections } }),
+    mode: 'onSubmit'
+  });
+
+  const values = watch();
+  const personal = values?.personal || {};
+  const summary = values?.summary || '';
+  const education = Array.isArray(values?.education) ? values.education : [];
+  const experience = Array.isArray(values?.experience) ? values.experience : [];
+  const skills = values?.skills || '';
+  const projects = values?.projects || '';
+  const honors = values?.honors || '';
+  const certifications = values?.certifications || '';
+  const languages = values?.languages || '';
+
+  const educationArray = useFieldArray({ control, name: 'education' });
+  const experienceArray = useFieldArray({ control, name: 'experience' });
 
   const [sectionOrder, setSectionOrder] = useState([
     'summary',
@@ -90,14 +324,6 @@ export default function CvBuilder() {
     'skills',
     'projects'
   ]);
-
-  const [enabledSections, setEnabledSections] = useState({
-    experience: true,
-    projects: true,
-    honors: false,
-    certifications: false,
-    languages: false
-  });
 
   const [previewScale, setPreviewScale] = useState(1);
 
@@ -120,7 +346,17 @@ export default function CvBuilder() {
   const smallDangerBtn = 'inline-flex items-center justify-center px-3 py-2 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50/70 dark:bg-red-900/20 text-red-700 dark:text-red-200 text-sm font-semibold hover:bg-red-100/80 dark:hover:bg-red-900/30 transition';
   const addBtn = 'inline-flex items-center justify-center px-4 py-2.5 rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white text-sm font-semibold shadow hover:shadow-md transition';
 
-  const fieldError = (key) => errors?.[key];
+  const getError = (path) => {
+    const keys = String(path || '').split('.').filter(Boolean);
+    let cur = errors;
+    for (const k of keys) {
+      if (!cur) return null;
+      cur = cur?.[k];
+    }
+    return cur?.message || null;
+  };
+
+  const fieldError = (key) => Boolean(getError(key));
   const fieldClass = (base, key) => (fieldError(key)
     ? `${base} border-red-400 dark:border-red-700 focus:ring-red-500/40 focus:border-red-500`
     : base);
@@ -133,224 +369,6 @@ export default function CvBuilder() {
       {msg || 'x'}
     </div>
   );
-
-  const validate = () => {
-    const next = {};
-    const nowYear = new Date().getFullYear();
-    const trim = (v) => String(v ?? '').trim();
-
-    const msgRequired = (field) => t('cvBuilder.validation.required', { field });
-    const msgTooShort = (field) => t('cvBuilder.validation.tooShort', { field });
-    const msgTooLong = (field) => t('cvBuilder.validation.tooLong', { field });
-    const msgInvalid = (field) => t('cvBuilder.validation.invalid', { field });
-
-    const hasAny = (obj) => {
-      if (!obj) return false;
-      return Object.values(obj).some(v => String(v ?? '').trim().length > 0);
-    };
-
-    const requireText = (key, value, label, minLen = 2, maxLen = 120) => {
-      const v = trim(value);
-      if (!v) {
-        next[key] = msgRequired(label);
-        return null;
-      }
-      if (v.length < minLen) {
-        next[key] = msgTooShort(label);
-        return null;
-      }
-      if (v.length > maxLen) {
-        next[key] = msgTooLong(label);
-        return null;
-      }
-      return v;
-    };
-
-    const parseYear = (raw) => {
-      const v = trim(raw);
-      if (!v) return null;
-      if (!/^\d{4}$/.test(v)) return NaN;
-      return Number(v);
-    };
-
-    const validateYearRange = (startKey, endKey, startRaw, endRaw, opts) => {
-      const {
-        allowFutureEnd,
-        disallowFutureStart,
-        disallowFutureEnd,
-        requireEnd
-      } = opts;
-
-      const start = parseYear(startRaw);
-      const end = parseYear(endRaw);
-
-      if (start === null) {
-        next[startKey] = msgRequired(t('cvBuilder.fields.startYear'));
-      } else if (Number.isNaN(start)) {
-        next[startKey] = msgInvalid(t('cvBuilder.fields.startYear'));
-      } else if (disallowFutureStart && start > nowYear) {
-        next[startKey] = t('cvBuilder.validation.startYearNoFuture');
-      }
-
-      if (requireEnd) {
-        if (end === null) {
-          next[endKey] = msgRequired(t('cvBuilder.fields.endYear'));
-        } else if (Number.isNaN(end)) {
-          next[endKey] = msgInvalid(t('cvBuilder.fields.endYear'));
-        }
-      } else if (end !== null && Number.isNaN(end)) {
-        next[endKey] = msgInvalid(t('cvBuilder.fields.endYear'));
-      }
-
-      if (end !== null && !Number.isNaN(end)) {
-        if (!allowFutureEnd && disallowFutureEnd && end > nowYear) {
-          next[endKey] = t('cvBuilder.validation.endYearNoFuture');
-        }
-      }
-
-      if (start != null && end != null && !Number.isNaN(start) && !Number.isNaN(end)) {
-        if (end < start) {
-          next[endKey] = t('cvBuilder.validation.endAfterStart');
-        }
-      }
-    };
-
-    // Personal
-    requireText('personal.fullName', personal.fullName, t('cvBuilder.fields.fullName'), 2, 80);
-    requireText('personal.title', personal.title, t('cvBuilder.fields.title'), 2, 80);
-    const email = requireText('personal.email', personal.email, t('cvBuilder.fields.email'), 5, 120);
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      next['personal.email'] = msgInvalid(t('cvBuilder.fields.email'));
-    }
-    const phone = requireText('personal.phone', personal.phone, t('cvBuilder.fields.phone'), 6, 30);
-    if (phone && !/^[+()\d\s-]+$/.test(phone)) {
-      next['personal.phone'] = t('cvBuilder.validation.phoneInvalidChars');
-    }
-    requireText('personal.location', personal.location, t('cvBuilder.fields.location'), 2, 80);
-    const website = trim(personal.website);
-    if (!website) {
-      next['personal.website'] = msgRequired(t('cvBuilder.fields.website'));
-    } else if (!/^https?:\/\//i.test(website) && !/^\w+[\w.-]*\.[a-z]{2,}/i.test(website)) {
-      next['personal.website'] = msgInvalid(t('cvBuilder.fields.website'));
-    }
-
-    // Summary
-    const sum = trim(summary);
-    if (!sum) {
-      next.summary = msgRequired(t('cvBuilder.fields.summary'));
-    } else if (sum.length < 20) {
-      next.summary = msgTooShort(t('cvBuilder.fields.summary'));
-    } else if (sum.length > 1500) {
-      next.summary = msgTooLong(t('cvBuilder.fields.summary'));
-    }
-
-    // Education (validate only items that are filled; if none filled, validate first item)
-    if (!Array.isArray(education) || education.length === 0) {
-      next.education = t('cvBuilder.validation.educationAtLeastOne');
-    } else {
-      const filledIdx = education
-        .map((ed, idx) => ({ ed, idx }))
-        .filter(({ ed }) => hasAny(ed))
-        .map(({ idx }) => idx);
-
-      const toValidate = filledIdx.length > 0 ? filledIdx : [0];
-      toValidate.forEach((idx) => {
-        const ed = education[idx] || {};
-        requireText(`education.${idx}.school`, ed.school, t('cvBuilder.fields.school'), 2, 120);
-        requireText(`education.${idx}.degree`, ed.degree, t('cvBuilder.fields.degree'), 2, 120);
-        requireText(`education.${idx}.field`, ed.field, t('cvBuilder.fields.field'), 2, 120);
-        requireText(`education.${idx}.details`, ed.details, t('cvBuilder.fields.educationDetails'), 5, 1500);
-
-        validateYearRange(
-          `education.${idx}.start`,
-          `education.${idx}.end`,
-          ed.start,
-          ed.end,
-          {
-            allowFutureEnd: true,
-            disallowFutureStart: true,
-            disallowFutureEnd: false,
-            requireEnd: true
-          }
-        );
-      });
-    }
-
-    // Experience (optional)
-    if (enabledSections.experience) {
-      // validate only items that are filled; if none filled, validate first item
-      if (!Array.isArray(experience) || experience.length === 0) {
-        next.experience = t('cvBuilder.validation.experienceAtLeastOne');
-      } else {
-        const filledIdx = experience
-          .map((ex, idx) => ({ ex, idx }))
-          .filter(({ ex }) => hasAny(ex))
-          .map(({ idx }) => idx);
-
-        const toValidate = filledIdx.length > 0 ? filledIdx : [0];
-        toValidate.forEach((idx) => {
-          const ex = experience[idx] || {};
-          requireText(`experience.${idx}.company`, ex.company, t('cvBuilder.fields.company'), 2, 120);
-          requireText(`experience.${idx}.role`, ex.role, t('cvBuilder.fields.role'), 2, 120);
-          requireText(`experience.${idx}.details`, ex.details, t('cvBuilder.fields.experienceDetails'), 5, 1500);
-
-          validateYearRange(
-            `experience.${idx}.start`,
-            `experience.${idx}.end`,
-            ex.start,
-            ex.end,
-            {
-              allowFutureEnd: false,
-              disallowFutureStart: true,
-              disallowFutureEnd: true,
-              requireEnd: true
-            }
-          );
-        });
-      }
-    }
-
-    // Skills
-    if (skillsList.length === 0) {
-      next.skills = t('cvBuilder.validation.skillsAtLeastOne');
-    } else if (skillsList.some(s => s.length > 40)) {
-      next.skills = t('cvBuilder.validation.skillsOneTooLong');
-    }
-
-    // Projects
-    if (enabledSections.projects) {
-      const proj = trim(projects);
-      if (proj && proj.length < 10) {
-        next.projects = msgTooShort(t('cvBuilder.sections.projects'));
-      } else if (proj && proj.length > 2000) {
-        next.projects = msgTooLong(t('cvBuilder.sections.projects'));
-      }
-    }
-
-    if (enabledSections.honors) {
-      const v = trim(honors);
-      if (v && v.length > 2000) {
-        next.honors = msgTooLong(t('cvBuilder.sections.honors'));
-      }
-    }
-
-    if (enabledSections.certifications) {
-      const v = trim(certifications);
-      if (v && v.length > 2000) {
-        next.certifications = msgTooLong(t('cvBuilder.sections.certifications'));
-      }
-    }
-
-    if (enabledSections.languages) {
-      const v = trim(languages);
-      if (v && v.length > 300) {
-        next.languages = msgTooLong(t('cvBuilder.sections.languages'));
-      }
-    }
-
-    setErrors(next);
-    return Object.keys(next).length === 0;
-  };
 
   const isSectionEnabled = (id) => {
     if (id === 'summary' || id === 'education' || id === 'skills') return true;
@@ -379,17 +397,13 @@ export default function CvBuilder() {
   const disableSection = (id) => {
     setEnabledSections(prev => ({ ...prev, [id]: false }));
     setSectionOrder(prev => prev.filter(x => x !== id));
-    setErrors(prev => {
-      const next = { ...(prev || {}) };
-      Object.keys(next).forEach((k) => {
-        if (k === id || k.startsWith(`${id}.`)) delete next[k];
-      });
-      return next;
-    });
-    if (id === 'projects') setProjects('');
-    if (id === 'honors') setHonors('');
-    if (id === 'certifications') setCertifications('');
-    if (id === 'languages') setLanguages('');
+    if (id === 'projects') setValue('projects', '');
+    if (id === 'honors') setValue('honors', '');
+    if (id === 'certifications') setValue('certifications', '');
+    if (id === 'languages') setValue('languages', '');
+    if (id === 'experience') {
+      setValue('experience', [emptyExperience()]);
+    }
   };
 
   const loadLogoDataUrl = async () => {
@@ -454,7 +468,23 @@ export default function CvBuilder() {
     }
   };
 
-  const buildPdf = async () => {
+  const buildPdf = async (data) => {
+    const safe = data || {};
+    const personalData = safe.personal || {};
+    const summaryData = safe.summary || '';
+    const educationData = Array.isArray(safe.education) ? safe.education : [];
+    const experienceData = Array.isArray(safe.experience) ? safe.experience : [];
+    const skillsData = safe.skills || '';
+    const projectsData = safe.projects || '';
+    const honorsData = safe.honors || '';
+    const certificationsData = safe.certifications || '';
+    const languagesData = safe.languages || '';
+
+    const skillsListPdf = String(skillsData || '')
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+
     const logoDataUrl = await loadLogoDataUrl();
     const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
 
@@ -542,12 +572,12 @@ export default function CvBuilder() {
       }
     };
 
-    const fullName = text(personal.fullName) || t('cvBuilder.preview.yourName');
-    const title = text(personal.title);
-    const email = text(personal.email);
-    const phone = text(personal.phone);
-    const location = text(personal.location);
-    const website = text(personal.website);
+    const fullName = text(personalData.fullName) || t('cvBuilder.preview.yourName');
+    const title = text(personalData.title);
+    const email = text(personalData.email);
+    const phone = text(personalData.phone);
+    const location = text(personalData.location);
+    const website = text(personalData.website);
 
     drawHeader();
 
@@ -584,16 +614,16 @@ export default function CvBuilder() {
 
     const renderSection = (id) => {
       if (id === 'summary') {
-        if (!text(summary)) return;
+        if (!text(summaryData)) return;
         addHeading(t('cvBuilder.sections.summary'));
         set(10, 'normal');
-        addWrapped(summary, marginX, contentWidth, 5);
+        addWrapped(summaryData, marginX, contentWidth, 5);
         y += sectionGap;
         return;
       }
 
       if (id === 'education') {
-        const items = education.filter(ed => text(ed.school) || text(ed.degree) || text(ed.field) || text(ed.details) || text(ed.start) || text(ed.end));
+        const items = educationData.filter(ed => text(ed.school) || text(ed.degree) || text(ed.field) || text(ed.details) || text(ed.start) || text(ed.end));
         if (items.length === 0) return;
         addHeading(t('cvBuilder.sections.education'));
         for (const ed of items) {
@@ -618,7 +648,7 @@ export default function CvBuilder() {
       }
 
       if (id === 'experience') {
-        const items = experience.filter(ex => text(ex.company) || text(ex.role) || text(ex.details) || text(ex.start) || text(ex.end));
+        const items = experienceData.filter(ex => text(ex.company) || text(ex.role) || text(ex.details) || text(ex.start) || text(ex.end));
         if (items.length === 0) return;
         addHeading(t('cvBuilder.sections.experience'));
         for (const ex of items) {
@@ -643,50 +673,50 @@ export default function CvBuilder() {
       }
 
       if (id === 'skills') {
-        if (skillsList.length === 0) return;
+        if (skillsListPdf.length === 0) return;
         addHeading(t('cvBuilder.sections.skills'));
         set(10, 'normal');
-        addBulletLines(skillsList.join('\n'), marginX, contentWidth);
+        addBulletLines(skillsListPdf.join('\n'), marginX, contentWidth);
         y += sectionGap;
         return;
       }
 
       if (id === 'projects') {
         if (!enabledSections.projects) return;
-        if (!text(projects)) return;
+        if (!text(projectsData)) return;
         addHeading(t('cvBuilder.sections.projects'));
         set(10, 'normal');
-        addBulletLines(projects, marginX, contentWidth);
+        addBulletLines(projectsData, marginX, contentWidth);
         y += sectionGap;
         return;
       }
 
       if (id === 'honors') {
         if (!enabledSections.honors) return;
-        if (!text(honors)) return;
+        if (!text(honorsData)) return;
         addHeading(t('cvBuilder.sections.honors'));
         set(10, 'normal');
-        addBulletLines(honors, marginX, contentWidth);
+        addBulletLines(honorsData, marginX, contentWidth);
         y += sectionGap;
         return;
       }
 
       if (id === 'certifications') {
         if (!enabledSections.certifications) return;
-        if (!text(certifications)) return;
+        if (!text(certificationsData)) return;
         addHeading(t('cvBuilder.sections.certifications'));
         set(10, 'normal');
-        addBulletLines(certifications, marginX, contentWidth);
+        addBulletLines(certificationsData, marginX, contentWidth);
         y += sectionGap;
         return;
       }
 
       if (id === 'languages') {
         if (!enabledSections.languages) return;
-        if (!text(languages)) return;
+        if (!text(languagesData)) return;
         addHeading(t('cvBuilder.sections.languages'));
         set(10, 'normal');
-        addWrapped(languages, marginX, contentWidth);
+        addWrapped(languagesData, marginX, contentWidth);
         y += sectionGap;
       }
     };
@@ -707,23 +737,25 @@ export default function CvBuilder() {
         if (cancelled) return;
         const p = res?.data || {};
 
-        setPersonal(prev => ({
-          ...prev,
-          fullName: prev.fullName || p.name || '',
-          email: prev.email || p.email || '',
-          phone: prev.phone || p.phone || ''
-        }));
+        const current = getValues();
+        const nextPersonal = {
+          fullName: current?.personal?.fullName || p.name || '',
+          title: current?.personal?.title || '',
+          email: current?.personal?.email || p.email || '',
+          phone: current?.personal?.phone || p.phone || '',
+          location: current?.personal?.location || '',
+          website: current?.personal?.website || ''
+        };
+        setValue('personal', nextPersonal, { shouldDirty: false });
 
-        setEducation(prev => {
-          const hasUserInput = prev.some(e => Object.values(e).some(v => String(v || '').trim().length > 0));
-          if (hasUserInput) return prev;
-          if (!p.college && !p.branch && !p.yearOfPassing) return prev;
+        const ed = (current?.education || []).some(e => Object.values(e || {}).some(v => String(v || '').trim().length > 0));
+        if (!ed && (p.college || p.branch || p.yearOfPassing)) {
           const next = emptyEducation();
           next.school = p.college || '';
           next.field = p.branch || '';
           next.end = p.yearOfPassing ? String(p.yearOfPassing) : '';
-          return [next];
-        });
+          setValue('education', [next], { shouldDirty: false });
+        }
       } catch {
       }
     };
@@ -762,11 +794,12 @@ export default function CvBuilder() {
 
   const exportPdf = async () => {
     const toastId = 'cv-builder-validate';
-    if (!validate()) {
+    const ok = await trigger();
+    if (!ok) {
       showToast(toastId, 'error', t('cvBuilder.toasts.fixHighlighted'));
       return;
     }
-    const pdf = await buildPdf();
+    const pdf = await buildPdf(getValues());
     const safeName = (personal.fullName || 'cv').replace(/[^a-z0-9\-\s]/gi, '').trim().replace(/\s+/g, '_');
     pdf.save(`${safeName || 'cv'}.pdf`);
   };
@@ -774,12 +807,13 @@ export default function CvBuilder() {
   const saveCv = async () => {
     const toastId = 'cv-builder-save';
     try {
-      if (!validate()) {
+      const ok = await trigger();
+      if (!ok) {
         showToast(toastId, 'error', t('cvBuilder.toasts.fixHighlighted'), { autoClose: 2500 });
         return;
       }
       showLoadingToast(toastId, t('cvBuilder.toasts.saving'));
-      const pdf = await buildPdf();
+      const pdf = await buildPdf(getValues());
       const blob = pdf.output('blob');
       const file = new File([blob], 'cv.pdf', { type: 'application/pdf' });
       const formData = new FormData();
@@ -791,10 +825,6 @@ export default function CvBuilder() {
     } catch (err) {
       showToast(toastId, 'error', err.response?.data || t('cvBuilder.toasts.saveFailed'), { autoClose: 2500 });
     }
-  };
-
-  const updatePersonal = (key, value) => {
-    setPersonal(prev => ({ ...prev, [key]: value }));
   };
 
   const sectionLabel = (id) => {
@@ -951,57 +981,51 @@ export default function CvBuilder() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <input
-                        value={personal.fullName}
-                        onChange={(e) => updatePersonal('fullName', e.target.value)}
+                        {...register('personal.fullName')}
                         className={fieldClass(inputClass, 'personal.fullName')}
                         placeholder={t('cvBuilder.placeholders.fullName')}
                       />
-                      <ErrorLine msg={fieldError('personal.fullName')} />
+                      <ErrorLine msg={getError('personal.fullName')} />
                     </div>
                     <div>
                       <input
-                        value={personal.title}
-                        onChange={(e) => updatePersonal('title', e.target.value)}
+                        {...register('personal.title')}
                         className={fieldClass(inputClass, 'personal.title')}
                         placeholder={t('cvBuilder.placeholders.title')}
                       />
-                      <ErrorLine msg={fieldError('personal.title')} />
+                      <ErrorLine msg={getError('personal.title')} />
                     </div>
                     <div>
                       <input
-                        value={personal.email}
-                        onChange={(e) => updatePersonal('email', e.target.value)}
+                        {...register('personal.email')}
                         className={fieldClass(inputClass, 'personal.email')}
                         placeholder={t('cvBuilder.placeholders.email')}
                       />
-                      <ErrorLine msg={fieldError('personal.email')} />
+                      <ErrorLine msg={getError('personal.email')} />
                     </div>
                     <div>
                       <input
-                        value={personal.phone}
-                        onChange={(e) => updatePersonal('phone', e.target.value)}
+                        {...register('personal.phone')}
                         className={fieldClass(inputClass, 'personal.phone')}
                         placeholder={t('cvBuilder.placeholders.phone')}
                       />
-                      <ErrorLine msg={fieldError('personal.phone')} />
+                      <ErrorLine msg={getError('personal.phone')} />
                     </div>
                     <div>
                       <input
-                        value={personal.location}
-                        onChange={(e) => updatePersonal('location', e.target.value)}
+                        {...register('personal.location')}
                         className={fieldClass(inputClass, 'personal.location')}
                         placeholder={t('cvBuilder.placeholders.location')}
                       />
-                      <ErrorLine msg={fieldError('personal.location')} />
+                      <ErrorLine msg={getError('personal.location')} />
                     </div>
                     <div>
                       <input
-                        value={personal.website}
-                        onChange={(e) => updatePersonal('website', e.target.value)}
+                        {...register('personal.website')}
                         className={fieldClass(inputClass, 'personal.website')}
                         placeholder={t('cvBuilder.placeholders.website')}
                       />
-                      <ErrorLine msg={fieldError('personal.website')} />
+                      <ErrorLine msg={getError('personal.website')} />
                     </div>
                   </div>
                 </section>
@@ -1011,13 +1035,12 @@ export default function CvBuilder() {
                 <section className="space-y-3">
                   <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.summary')}</h3>
                   <textarea
-                    value={summary}
-                    onChange={(e) => setSummary(e.target.value)}
+                    {...register('summary')}
                     rows={4}
                     className={fieldClass(textAreaClass, 'summary')}
                     placeholder={t('cvBuilder.placeholders.summary')}
                   />
-                  <ErrorLine msg={fieldError('summary')} />
+                  <ErrorLine msg={getError('summary')} />
                 </section>
               ) : null}
 
@@ -1027,7 +1050,7 @@ export default function CvBuilder() {
                     <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.education')}</h3>
                     <button
                       type="button"
-                      onClick={() => setEducation(prev => [...prev, emptyEducation()])}
+                      onClick={() => educationArray.append(emptyEducation())}
                       className={addBtn}
                     >
                       {t('cvBuilder.actions.add')}
@@ -1035,14 +1058,14 @@ export default function CvBuilder() {
                   </div>
 
                   <div className="space-y-4">
-                    {education.map((ed, idx) => (
-                      <div key={idx} className={sectionCardClass}>
+                    {educationArray.fields.map((field, idx) => (
+                      <div key={field.id} className={sectionCardClass}>
                         <div className="flex items-center justify-between mb-3">
                           <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{t('cvBuilder.itemLabel', { index: idx + 1 })}</div>
-                          {education.length > 1 && (
+                          {educationArray.fields.length > 1 && (
                             <button
                               type="button"
-                              onClick={() => setEducation(prev => prev.filter((_, i) => i !== idx))}
+                              onClick={() => educationArray.remove(idx)}
                               className={smallDangerBtn}
                             >
                               {t('cvBuilder.actions.remove')}
@@ -1053,61 +1076,69 @@ export default function CvBuilder() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div>
                             <input
-                              value={ed.school}
-                              onChange={(e) => setEducation(prev => prev.map((x, i) => i === idx ? { ...x, school: e.target.value } : x))}
+                              {...register(`education.${idx}.school`)}
                               className={fieldClass(inputClass, `education.${idx}.school`)}
                               placeholder={t('cvBuilder.placeholders.school')}
                             />
-                            <ErrorLine msg={fieldError(`education.${idx}.school`)} />
+                            <ErrorLine msg={getError(`education.${idx}.school`)} />
                           </div>
                           <div>
                             <input
-                              value={ed.degree}
-                              onChange={(e) => setEducation(prev => prev.map((x, i) => i === idx ? { ...x, degree: e.target.value } : x))}
+                              {...register(`education.${idx}.degree`)}
                               className={fieldClass(inputClass, `education.${idx}.degree`)}
                               placeholder={t('cvBuilder.placeholders.degree')}
                             />
-                            <ErrorLine msg={fieldError(`education.${idx}.degree`)} />
+                            <ErrorLine msg={getError(`education.${idx}.degree`)} />
                           </div>
                           <div>
                             <input
-                              value={ed.field}
-                              onChange={(e) => setEducation(prev => prev.map((x, i) => i === idx ? { ...x, field: e.target.value } : x))}
+                              {...register(`education.${idx}.field`)}
                               className={fieldClass(inputClass, `education.${idx}.field`)}
                               placeholder={t('cvBuilder.placeholders.field')}
                             />
-                            <ErrorLine msg={fieldError(`education.${idx}.field`)} />
+                            <ErrorLine msg={getError(`education.${idx}.field`)} />
                           </div>
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <YearPicker
-                                value={ed.start}
-                                onChange={(value) => setEducation(prev => prev.map((x, i) => i === idx ? { ...x, start: value } : x))}
-                                inputClassName={fieldClass(inputClass, `education.${idx}.start`)}
-                                placeholder={t('cvBuilder.placeholders.startYear')}
+                              <Controller
+                                control={control}
+                                name={`education.${idx}.start`}
+                                render={({ field: f }) => (
+                                  <YearPicker
+                                    value={f.value}
+                                    onChange={f.onChange}
+                                    inputClassName={fieldClass(inputClass, `education.${idx}.start`)}
+                                    placeholder={t('cvBuilder.placeholders.startYear')}
+                                  />
+                                )}
                               />
-                              <ErrorLine msg={fieldError(`education.${idx}.start`)} />
+                              <ErrorLine msg={getError(`education.${idx}.start`)} />
                             </div>
                             <div>
-                              <YearPicker
-                                value={ed.end}
-                                onChange={(value) => setEducation(prev => prev.map((x, i) => i === idx ? { ...x, end: value } : x))}
-                                inputClassName={fieldClass(inputClass, `education.${idx}.end`)}
-                                placeholder={t('cvBuilder.placeholders.endYear')}
+                              <Controller
+                                control={control}
+                                name={`education.${idx}.end`}
+                                render={({ field: f }) => (
+                                  <YearPicker
+                                    value={f.value}
+                                    onChange={f.onChange}
+                                    inputClassName={fieldClass(inputClass, `education.${idx}.end`)}
+                                    placeholder={t('cvBuilder.placeholders.endYear')}
+                                  />
+                                )}
                               />
-                              <ErrorLine msg={fieldError(`education.${idx}.end`)} />
+                              <ErrorLine msg={getError(`education.${idx}.end`)} />
                             </div>
                           </div>
                         </div>
 
                         <textarea
-                          value={ed.details}
-                          onChange={(e) => setEducation(prev => prev.map((x, i) => i === idx ? { ...x, details: e.target.value } : x))}
+                          {...register(`education.${idx}.details`)}
                           rows={3}
                           className={fieldClass(`${textAreaClass} mt-3`, `education.${idx}.details`)}
                           placeholder={t('cvBuilder.placeholders.educationDetails')}
                         />
-                        <ErrorLine msg={fieldError(`education.${idx}.details`)} />
+                        <ErrorLine msg={getError(`education.${idx}.details`)} />
                       </div>
                     ))}
                   </div>
@@ -1120,7 +1151,7 @@ export default function CvBuilder() {
                     <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.experience')}</h3>
                     <button
                       type="button"
-                      onClick={() => setExperience(prev => [...prev, emptyExperience()])}
+                      onClick={() => experienceArray.append(emptyExperience())}
                       className={addBtn}
                     >
                       {t('cvBuilder.actions.add')}
@@ -1128,14 +1159,14 @@ export default function CvBuilder() {
                   </div>
 
                   <div className="space-y-4">
-                    {experience.map((ex, idx) => (
-                      <div key={idx} className={sectionCardClass}>
+                    {experienceArray.fields.map((field, idx) => (
+                      <div key={field.id} className={sectionCardClass}>
                         <div className="flex items-center justify-between mb-3">
                           <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{t('cvBuilder.itemLabel', { index: idx + 1 })}</div>
-                          {experience.length > 1 && (
+                          {experienceArray.fields.length > 1 && (
                             <button
                               type="button"
-                              onClick={() => setExperience(prev => prev.filter((_, i) => i !== idx))}
+                              onClick={() => experienceArray.remove(idx)}
                               className={smallDangerBtn}
                             >
                               {t('cvBuilder.actions.remove')}
@@ -1146,52 +1177,61 @@ export default function CvBuilder() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div>
                             <input
-                              value={ex.company}
-                              onChange={(e) => setExperience(prev => prev.map((x, i) => i === idx ? { ...x, company: e.target.value } : x))}
+                              {...register(`experience.${idx}.company`)}
                               className={fieldClass(inputClass, `experience.${idx}.company`)}
                               placeholder={t('cvBuilder.placeholders.company')}
                             />
-                            <ErrorLine msg={fieldError(`experience.${idx}.company`)} />
+                            <ErrorLine msg={getError(`experience.${idx}.company`)} />
                           </div>
                           <div>
                             <input
-                              value={ex.role}
-                              onChange={(e) => setExperience(prev => prev.map((x, i) => i === idx ? { ...x, role: e.target.value } : x))}
+                              {...register(`experience.${idx}.role`)}
                               className={fieldClass(inputClass, `experience.${idx}.role`)}
                               placeholder={t('cvBuilder.placeholders.role')}
                             />
-                            <ErrorLine msg={fieldError(`experience.${idx}.role`)} />
+                            <ErrorLine msg={getError(`experience.${idx}.role`)} />
                           </div>
                           <div className="grid grid-cols-2 gap-3 sm:col-span-2">
                             <div>
-                              <YearPicker
-                                value={ex.start}
-                                onChange={(value) => setExperience(prev => prev.map((x, i) => i === idx ? { ...x, start: value } : x))}
-                                inputClassName={fieldClass(inputClass, `experience.${idx}.start`)}
-                                placeholder={t('cvBuilder.placeholders.startYear')}
+                              <Controller
+                                control={control}
+                                name={`experience.${idx}.start`}
+                                render={({ field: f }) => (
+                                  <YearPicker
+                                    value={f.value}
+                                    onChange={f.onChange}
+                                    inputClassName={fieldClass(inputClass, `experience.${idx}.start`)}
+                                    placeholder={t('cvBuilder.placeholders.startYear')}
+                                  />
+                                )}
                               />
-                              <ErrorLine msg={fieldError(`experience.${idx}.start`)} />
+                              <ErrorLine msg={getError(`experience.${idx}.start`)} />
                             </div>
                             <div>
-                              <YearPicker
-                                value={ex.end}
-                                onChange={(value) => setExperience(prev => prev.map((x, i) => i === idx ? { ...x, end: value } : x))}
-                                inputClassName={fieldClass(inputClass, `experience.${idx}.end`)}
-                                placeholder={t('cvBuilder.placeholders.endYear')}
+                              <Controller
+                                control={control}
+                                name={`experience.${idx}.end`}
+                                render={({ field: f }) => (
+                                  <YearPicker
+                                    value={f.value}
+                                    onChange={f.onChange}
+                                    inputClassName={fieldClass(inputClass, `experience.${idx}.end`)}
+                                    placeholder={t('cvBuilder.placeholders.endYear')}
+                                  />
+                                )}
                               />
-                              <ErrorLine msg={fieldError(`experience.${idx}.end`)} />
+                              <ErrorLine msg={getError(`experience.${idx}.end`)} />
                             </div>
                           </div>
                         </div>
 
                         <textarea
-                          value={ex.details}
-                          onChange={(e) => setExperience(prev => prev.map((x, i) => i === idx ? { ...x, details: e.target.value } : x))}
+                          {...register(`experience.${idx}.details`)}
                           rows={3}
                           className={fieldClass(`${textAreaClass} mt-3`, `experience.${idx}.details`)}
                           placeholder={t('cvBuilder.placeholders.experienceDetails')}
                         />
-                        <ErrorLine msg={fieldError(`experience.${idx}.details`)} />
+                        <ErrorLine msg={getError(`experience.${idx}.details`)} />
                       </div>
                     ))}
                   </div>
@@ -1202,12 +1242,11 @@ export default function CvBuilder() {
                 <section className="space-y-3">
                   <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.skills')}</h3>
                   <input
-                    value={skills}
-                    onChange={(e) => setSkills(e.target.value)}
+                    {...register('skills')}
                     className={fieldClass(inputClass, 'skills')}
                     placeholder={t('cvBuilder.placeholders.skills')}
                   />
-                  <ErrorLine msg={fieldError('skills')} />
+                  <ErrorLine msg={getError('skills')} />
                 </section>
               ) : null}
 
@@ -1215,13 +1254,12 @@ export default function CvBuilder() {
                 <section className="space-y-3">
                   <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.projects')}</h3>
                   <textarea
-                    value={projects}
-                    onChange={(e) => setProjects(e.target.value)}
+                    {...register('projects')}
                     rows={4}
                     className={fieldClass(textAreaClass, 'projects')}
                     placeholder={t('cvBuilder.placeholders.projects')}
                   />
-                  <ErrorLine msg={fieldError('projects')} />
+                  <ErrorLine msg={getError('projects')} />
                 </section>
               ) : null}
 
@@ -1229,13 +1267,12 @@ export default function CvBuilder() {
                 <section className="space-y-3">
                   <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.honors')}</h3>
                   <textarea
-                    value={honors}
-                    onChange={(e) => setHonors(e.target.value)}
+                    {...register('honors')}
                     rows={4}
                     className={fieldClass(textAreaClass, 'honors')}
                     placeholder={t('cvBuilder.placeholders.honors')}
                   />
-                  <ErrorLine msg={fieldError('honors')} />
+                  <ErrorLine msg={getError('honors')} />
                 </section>
               ) : null}
 
@@ -1243,13 +1280,12 @@ export default function CvBuilder() {
                 <section className="space-y-3">
                   <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.certifications')}</h3>
                   <textarea
-                    value={certifications}
-                    onChange={(e) => setCertifications(e.target.value)}
+                    {...register('certifications')}
                     rows={4}
                     className={fieldClass(textAreaClass, 'certifications')}
                     placeholder={t('cvBuilder.placeholders.certifications')}
                   />
-                  <ErrorLine msg={fieldError('certifications')} />
+                  <ErrorLine msg={getError('certifications')} />
                 </section>
               ) : null}
 
@@ -1257,12 +1293,11 @@ export default function CvBuilder() {
                 <section className="space-y-3">
                   <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('cvBuilder.sections.languages')}</h3>
                   <input
-                    value={languages}
-                    onChange={(e) => setLanguages(e.target.value)}
+                    {...register('languages')}
                     className={fieldClass(inputClass, 'languages')}
                     placeholder={t('cvBuilder.placeholders.languages')}
                   />
-                  <ErrorLine msg={fieldError('languages')} />
+                  <ErrorLine msg={getError('languages')} />
                 </section>
               ) : null}
             </div>

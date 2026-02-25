@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import FloatingBackButton from './components/FloatingBackButton';
+import GuestRoute from './components/GuestRoute';
 
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -57,8 +58,22 @@ export default function App() {
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/profile" element={<ProfileRedirect />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route
+          path="/login"
+          element={
+            <GuestRoute>
+              <Login />
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <GuestRoute>
+              <Register />
+            </GuestRoute>
+          }
+        />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
         <Route path="/verify-email-otp" element={<VerifyEmailOtp />} />

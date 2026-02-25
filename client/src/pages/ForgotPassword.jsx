@@ -4,17 +4,42 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { showLoadingToast, showToast } from '../services/toast';
 import { useTranslation } from 'react-i18next';
 import { useOtpCooldown } from '../hooks/useOtpCooldown';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 
 export default function ForgotPassword() {
   const location = useLocation();
-  const [email, setEmail] = useState(location.state?.email || '');
-  const [otp, setOtp] = useState('');
-  const [newPassword, setNewPassword] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  const schema = yup.object({
+    email: yup.string().trim().required(),
+    otp: yup.string().trim(),
+    newPassword: yup.string().trim()
+  });
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    getValues,
+    watch,
+    formState: { errors }
+  } = useForm({
+    defaultValues: {
+      email: location.state?.email || '',
+      otp: '',
+      newPassword: ''
+    },
+    resolver: yupResolver(schema),
+    mode: 'onSubmit'
+  });
+
+  const email = watch('email');
 
   const { isCoolingDown, remainingSeconds, startCooldown, clearCooldown } = useOtpCooldown(
     email ? `otp:forgot-password:${email}` : ''
@@ -28,10 +53,11 @@ export default function ForgotPassword() {
     }
   }, [email, clearCooldown]);
 
-  const handleSendOtp = async (e) => {
-    e.preventDefault();
+  const handleSendOtp = async () => {
     const toastId = 'forgot-password-send-otp';
-    if (!email.trim()) {
+    const data = getValues();
+    const emailValue = String(data?.email || '').trim();
+    if (!emailValue) {
       showToast(toastId, 'error', t('auth.pleaseEnterYourEmail'));
       return;
     }
@@ -43,11 +69,11 @@ export default function ForgotPassword() {
     setLoading(true);
     showLoadingToast(toastId, t('auth.sendOtpLoading'));
     try {
-      await axios.post('/auth/request-otp', { email });
+      await axios.post('/auth/request-otp', { email: emailValue });
       showToast(toastId, 'success', t('auth.otpSentToEmail'), { autoClose: 1800 });
       setOtpSent(true);
       setOtpVerified(false);
-      setOtp('');
+      setValue('otp', '');
       startCooldown();
     } catch (err) {
       showToast(toastId, 'error', err.response?.data || t('settings.failedToSendOtp'), { autoClose: 2500 });
@@ -56,10 +82,12 @@ export default function ForgotPassword() {
     }
   };
 
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
+  const handleVerifyOtp = async () => {
     const toastId = 'forgot-password-verify-otp';
-    if (!otp.trim()) {
+    const data = getValues();
+    const emailValue = String(data?.email || '').trim();
+    const otpValue = String(data?.otp || '').trim();
+    if (!otpValue) {
       showToast(toastId, 'error', t('auth.pleaseEnterOtp'));
       return;
     }
@@ -67,7 +95,7 @@ export default function ForgotPassword() {
     setLoading(true);
     showLoadingToast(toastId, t('auth.verifyingOtp'));
     try {
-      await axios.post('/auth/verify-otp', { email, otp });
+      await axios.post('/auth/verify-otp', { email: emailValue, otp: otpValue });
       showToast(toastId, 'success', t('auth.otpVerified'), { autoClose: 1500 });
       setOtpVerified(true);
     } catch (err) {
@@ -78,15 +106,19 @@ export default function ForgotPassword() {
     }
   };
 
-  const handleResetPassword = async (e) => {
-    e.preventDefault();
+  const handleResetPassword = async () => {
     const toastId = 'forgot-password-reset';
     if (!otpVerified) {
       showToast(toastId, 'error', t('auth.pleaseVerifyOtpFirst'));
       return;
     }
 
-    if (!newPassword.trim()) {
+    const data = getValues();
+    const emailValue = String(data?.email || '').trim();
+    const otpValue = String(data?.otp || '').trim();
+    const newPasswordValue = String(data?.newPassword || '').trim();
+
+    if (!newPasswordValue) {
       showToast(toastId, 'error', t('settings.pleaseEnterNewPassword'));
       return;
     }
@@ -94,7 +126,7 @@ export default function ForgotPassword() {
     setLoading(true);
     showLoadingToast(toastId, t('auth.resettingPassword'));
     try {
-      await axios.post('/auth/reset-password-otp', { email, otp, newPassword });
+      await axios.post('/auth/reset-password-otp', { email: emailValue, otp: otpValue, newPassword: newPasswordValue });
       showToast(toastId, 'success', t('auth.resetPasswordSuccess'), { autoClose: 1500 });
       setTimeout(() => {
         navigate('/login');
@@ -114,7 +146,7 @@ export default function ForgotPassword() {
           <p className="text-gray-600 dark:text-gray-300 mt-1">{t('auth.forgotPasswordTitle')}</p>
         </div>
 
-        <form onSubmit={handleSendOtp} className="space-y-5">
+        <form onSubmit={handleSubmit(handleSendOtp)} className="space-y-5">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               {t('auth.registeredEmail')}
@@ -122,13 +154,15 @@ export default function ForgotPassword() {
             <input
               id="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              {...register('email')}
               className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder={t('auth.emailPlaceholder')}
               required
               disabled={loading}
             />
+            {errors.email ? (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{t('auth.pleaseEnterYourEmail')}</p>
+            ) : null}
           </div>
 
           <button
@@ -155,8 +189,7 @@ export default function ForgotPassword() {
                 <input
                   id="otp"
                   type="text"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
+                  {...register('otp')}
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder={t('auth.otpPlaceholder')}
                   required
@@ -191,13 +224,15 @@ export default function ForgotPassword() {
                     <input
                       id="newPassword"
                       type="password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
+                      {...register('newPassword')}
                       className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
                       placeholder={t('auth.newPasswordPlaceholder')}
                       required
                       disabled={loading}
                     />
+                    {errors.newPassword ? (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{t('settings.pleaseEnterNewPassword')}</p>
+                    ) : null}
                   </div>
 
                   <button

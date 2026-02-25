@@ -3,14 +3,31 @@ import axios from '../services/axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { showLoadingToast, showToast } from '../services/toast';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 
 export default function VerifyOtp() {
-  const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email;
   const { t } = useTranslation();
+
+  const schema = yup.object({
+    otp: yup.string().trim().required()
+  });
+
+  const {
+    register,
+    handleSubmit,
+    getValues,
+    formState: { errors }
+  } = useForm({
+    defaultValues: { otp: '' },
+    resolver: yupResolver(schema),
+    mode: 'onSubmit'
+  });
 
   useEffect(() => {
     if (!email) {
@@ -19,27 +36,32 @@ export default function VerifyOtp() {
     }
   }, [email, navigate]);
 
-  const handleVerify = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     const toastId = 'verify-otp';
-    if (!otp.trim()) {
-      showToast(toastId, 'error', t('auth.pleaseEnterOtp'));
-      return;
-    }
 
     setLoading(true);
     showLoadingToast(toastId, t('auth.verifyingOtp'));
     try {
-      await axios.post('/auth/verify-otp', { email, otp });
+      await axios.post('/auth/verify-otp', { email, otp: data.otp });
       showToast(toastId, 'success', t('auth.otpVerified'), { autoClose: 1500 });
       setTimeout(() => {
-        navigate('/reset-password', { state: { email, otp } });
+        navigate('/reset-password', { state: { email, otp: data.otp } });
       }, 1000);
     } catch (err) {
       showToast(toastId, 'error', err.response?.data || t('auth.otpInvalidOrExpired'), { autoClose: 2500 });
     } finally {
       setLoading(false);
     }
+  };
+
+  const onInvalid = () => {
+    const toastId = 'verify-otp';
+    const { otp } = getValues();
+    if (!String(otp || '').trim()) {
+      showToast(toastId, 'error', t('auth.pleaseEnterOtp'));
+      return;
+    }
+    showToast(toastId, 'error', t('auth.pleaseEnterOtp'));
   };
 
   return (
@@ -50,7 +72,7 @@ export default function VerifyOtp() {
           <p className="text-gray-600 dark:text-gray-300 mt-1">{t('auth.verifyOtpSubtitle')}</p>
         </div>
 
-        <form onSubmit={handleVerify} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-5">
           <div>
             <label htmlFor="otp" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               {t('settings.otp')}
@@ -58,13 +80,15 @@ export default function VerifyOtp() {
             <input
               id="otp"
               type="text"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
+              {...register('otp')}
               className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder={t('auth.otpPlaceholder')}
               required
               disabled={loading}
             />
+            {errors.otp ? (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{t('auth.pleaseEnterOtp')}</p>
+            ) : null}
           </div>
 
           <button

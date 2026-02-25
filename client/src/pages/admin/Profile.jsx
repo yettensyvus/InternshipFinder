@@ -4,6 +4,9 @@ import { showToast } from '../../services/toast';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 
 export default function AdminProfile() {
   const navigate = useNavigate();
@@ -16,11 +19,27 @@ export default function AdminProfile() {
   const [picUploading, setPicUploading] = useState(false);
   const picInputRef = useRef(null);
 
+  const schema = yup.object({
+    username: yup.string().trim().required().min(2)
+  });
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors }
+  } = useForm({
+    defaultValues: { username: '' },
+    resolver: yupResolver(schema),
+    mode: 'onSubmit'
+  });
+
   useEffect(() => {
     const load = async () => {
       try {
         const res = await axios.get('/admin/profile');
         setForm(res.data);
+        reset({ username: res.data?.username || '' });
       } catch (err) {
         showToast('admin-profile-load', 'error', t('adminProfile.failedLoad'));
         console.error('Admin profile fetch error:', err);
@@ -32,24 +51,9 @@ export default function AdminProfile() {
     load();
   }, []);
 
-  const handleChange = (field) => (e) => {
-    setForm({ ...form, [field]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const onSubmit = async (data) => {
     const toastId = 'admin-profile-update';
-    const username = (form.username || '').trim();
-
-    if (!username) {
-      showToast(toastId, 'error', t('adminProfile.usernameRequired'));
-      return;
-    }
-    if (username.length < 2) {
-      showToast(toastId, 'error', t('adminProfile.usernameMin'));
-      return;
-    }
+    const username = (data.username || '').trim();
 
     setSaving(true);
     try {
@@ -64,6 +68,11 @@ export default function AdminProfile() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const onInvalid = () => {
+    const toastId = 'admin-profile-update';
+    showToast(toastId, 'error', errors?.username ? t('adminProfile.usernameMin') : t('adminProfile.usernameRequired'));
   };
 
   const handleProfilePictureAction = () => {
@@ -174,7 +183,7 @@ export default function AdminProfile() {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('adminProfile.account')}</h2>
                 <div className="space-y-4">
@@ -182,9 +191,11 @@ export default function AdminProfile() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('adminProfile.username')}</label>
                     <input
                       className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
-                      value={form.username || ''}
-                      onChange={handleChange('username')}
+                      {...register('username')}
                     />
+                    {errors.username ? (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{t('adminProfile.usernameMin')}</p>
+                    ) : null}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('adminProfile.email')}</label>

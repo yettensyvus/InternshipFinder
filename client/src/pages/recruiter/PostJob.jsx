@@ -4,21 +4,51 @@ import { showToast } from '../../services/toast';
 import { useTranslation } from 'react-i18next';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import CustomDateTimePicker from '../../components/CustomDateTimePicker';
+import { sanitizeHtml } from '../../utils/sanitizeHtml';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 
 export default function PostJob() {
   const { t } = useTranslation();
-  const [job, setJob] = useState({
-    title: '',
-    company: '',
-    location: '',
-    type: 'JOB',
-    payment: '',
-    paid: false,
-    duration: '',
-    compensation: '',
-    description: '',
-    deadline: ''
+
+  const schema = yup.object({
+    title: yup.string().trim().required().min(3),
+    company: yup.string().trim().required(),
+    location: yup.string().trim().required(),
+    type: yup.string().required().oneOf(['JOB', 'INTERNSHIP']),
+    payment: yup.string().trim(),
+    paid: yup.boolean(),
+    duration: yup.string().trim().required().min(2),
+    compensation: yup.string().trim(),
+    description: yup.string().trim().required().min(20).max(5000),
+    deadline: yup.mixed().required()
   });
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    getValues,
+    watch
+  } = useForm({
+    defaultValues: {
+      title: '',
+      company: '',
+      location: '',
+      type: 'JOB',
+      payment: '',
+      paid: false,
+      duration: '',
+      compensation: '',
+      description: '',
+      deadline: ''
+    },
+    resolver: yupResolver(schema),
+    mode: 'onSubmit'
+  });
+
+  const job = watch();
 
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
   const typeDropdownRef = useRef(null);
@@ -27,22 +57,6 @@ export default function PostJob() {
   const paymentDropdownRef = useRef(null);
 
   const [submitting, setSubmitting] = useState(false);
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setJob(prev => {
-      const next = { ...prev, [name]: type === 'checkbox' ? checked : value };
-
-      if (name === 'payment') {
-        next.paid = value === 'PAID';
-        if (value !== 'PAID') {
-          next.compensation = '';
-        }
-      }
-
-      return next;
-    });
-  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -74,49 +88,14 @@ export default function PostJob() {
 
   const toastId = 'recruiter-post-job';
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const title = (job.title || '').trim();
-    const company = (job.company || '').trim();
-    const location = (job.location || '').trim();
-    const description = (job.description || '').trim();
-    const deadline = job.deadline;
-    const duration = (job.duration || '').trim();
-    const compensation = (job.compensation || '').trim();
-
-    if (!title) {
-      showToast(toastId, 'error', t('recruiterPostJob.titleRequired'));
-      return;
-    }
-    if (title.length < 3) {
-      showToast(toastId, 'error', t('recruiterPostJob.titleMin'));
-      return;
-    }
-    if (!company) {
-      showToast(toastId, 'error', t('recruiterPostJob.companyRequired'));
-      return;
-    }
-    if (!location) {
-      showToast(toastId, 'error', t('recruiterPostJob.locationRequired'));
-      return;
-    }
-    if (!description) {
-      showToast(toastId, 'error', t('recruiterPostJob.descriptionRequired'));
-      return;
-    }
-    if (description.length < 20) {
-      showToast(toastId, 'error', t('recruiterPostJob.descriptionMin'));
-      return;
-    }
-    if (description.length > 5000) {
-      showToast(toastId, 'error', t('recruiterPostJob.descriptionTooLong'));
-      return;
-    }
-    if (!deadline) {
-      showToast(toastId, 'error', t('recruiterPostJob.deadlineRequired'));
-      return;
-    }
+  const onSubmit = async (data) => {
+    const title = (data.title || '').trim();
+    const company = (data.company || '').trim();
+    const location = (data.location || '').trim();
+    const description = (data.description || '').trim();
+    const deadline = data.deadline;
+    const duration = (data.duration || '').trim();
+    const compensation = (data.compensation || '').trim();
 
     const deadlineDate = new Date(deadline);
     if (Number.isNaN(deadlineDate.getTime())) {
@@ -130,51 +109,72 @@ export default function PostJob() {
       return;
     }
 
-    if (job.type === 'INTERNSHIP' && !job.payment) {
+    if (data.type === 'INTERNSHIP' && !String(data.payment || '').trim()) {
       showToast(toastId, 'error', t('recruiterPostJob.paidRequired'));
       return;
     }
 
-    if (!duration) {
-      showToast(toastId, 'error', t('recruiterPostJob.durationRequired'));
-      return;
-    }
-
-    if (duration && duration.length < 2) {
-      showToast(toastId, 'error', t('recruiterPostJob.durationMin'));
-      return;
-    }
-
-    if (job.paid && !compensation) {
+    if (data.paid && !compensation) {
       showToast(toastId, 'error', t('recruiterPostJob.compensationRequired'));
       return;
     }
 
-    if (job.paid && compensation.length < 2) {
+    if (data.paid && compensation.length < 2) {
       showToast(toastId, 'error', t('recruiterPostJob.compensationMin'));
       return;
     }
 
     setSubmitting(true);
     try {
-      const { payment: _payment, ...jobPayload } = job;
+      const { payment: _payment, ...jobPayload } = data;
       await axios.post('/recruiter/post-job', {
         ...jobPayload,
         location,
         duration: duration || '',
-        compensation: job.paid ? compensation : '',
+        compensation: data.paid ? compensation : '',
         title,
         company,
-        description
+        description: sanitizeHtml(description)
       });
       showToast(toastId, 'success', t('recruiterPostJob.posted'));
-      setJob({ title: '', company: '', location: '', type: 'JOB', payment: '', paid: false, duration: '', compensation: '', description: '', deadline: '' });
+      setValue('title', '');
+      setValue('company', '');
+      setValue('location', '');
+      setValue('type', 'JOB');
+      setValue('payment', '');
+      setValue('paid', false);
+      setValue('duration', '');
+      setValue('compensation', '');
+      setValue('description', '');
+      setValue('deadline', '');
     } catch (err) {
       showToast(toastId, 'error', t('recruiterPostJob.failedPost'));
       console.error('Post job error:', err);
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const onInvalid = () => {
+    const values = getValues();
+    const title = String(values?.title || '').trim();
+    const company = String(values?.company || '').trim();
+    const location = String(values?.location || '').trim();
+    const description = String(values?.description || '').trim();
+    const duration = String(values?.duration || '').trim();
+    const deadline = values?.deadline;
+
+    if (!title) return showToast(toastId, 'error', t('recruiterPostJob.titleRequired'));
+    if (title.length < 3) return showToast(toastId, 'error', t('recruiterPostJob.titleMin'));
+    if (!company) return showToast(toastId, 'error', t('recruiterPostJob.companyRequired'));
+    if (!location) return showToast(toastId, 'error', t('recruiterPostJob.locationRequired'));
+    if (!description) return showToast(toastId, 'error', t('recruiterPostJob.descriptionRequired'));
+    if (description.length < 20) return showToast(toastId, 'error', t('recruiterPostJob.descriptionMin'));
+    if (description.length > 5000) return showToast(toastId, 'error', t('recruiterPostJob.descriptionTooLong'));
+    if (!duration) return showToast(toastId, 'error', t('recruiterPostJob.durationRequired'));
+    if (duration.length < 2) return showToast(toastId, 'error', t('recruiterPostJob.durationMin'));
+    if (!deadline) return showToast(toastId, 'error', t('recruiterPostJob.deadlineRequired'));
+    return showToast(toastId, 'error', t('recruiterPostJob.failedPost'));
   };
 
   return (
@@ -187,7 +187,7 @@ export default function PostJob() {
           </div>
 
           <div className="p-6">
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('recruiterPostJob.basics')}</h2>
                 <div className="space-y-4">
@@ -195,10 +195,8 @@ export default function PostJob() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterPostJob.jobTitle')}</label>
                     <input
                       className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
-                      name="title"
                       placeholder={t('recruiterPostJob.jobTitlePlaceholder')}
-                      value={job.title}
-                      onChange={handleChange}
+                      {...register('title')}
                       maxLength={120}
                     />
                   </div>
@@ -206,10 +204,8 @@ export default function PostJob() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterPostJob.company')}</label>
                     <input
                       className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
-                      name="company"
                       placeholder={t('recruiterPostJob.companyPlaceholder')}
-                      value={job.company}
-                      onChange={handleChange}
+                      {...register('company')}
                       maxLength={120}
                     />
                   </div>
@@ -217,10 +213,8 @@ export default function PostJob() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterPostJob.location')}</label>
                     <input
                       className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
-                      name="location"
                       placeholder={t('recruiterPostJob.locationPlaceholder')}
-                      value={job.location}
-                      onChange={handleChange}
+                      {...register('location')}
                       maxLength={120}
                     />
                   </div>
@@ -243,18 +237,15 @@ export default function PostJob() {
                               key={opt.value}
                               type="button"
                               onClick={() => {
-                                setJob(prev => {
-                                  const next = { ...prev, type: opt.value };
-                                  if (opt.value === 'JOB') {
-                                    next.payment = 'PAID';
-                                    next.paid = true;
-                                  } else {
-                                    next.payment = '';
-                                    next.paid = false;
-                                    next.compensation = '';
-                                  }
-                                  return next;
-                                });
+                                setValue('type', opt.value, { shouldDirty: true });
+                                if (opt.value === 'JOB') {
+                                  setValue('payment', 'PAID', { shouldDirty: true });
+                                  setValue('paid', true, { shouldDirty: true });
+                                } else {
+                                  setValue('payment', '', { shouldDirty: true });
+                                  setValue('paid', false, { shouldDirty: true });
+                                  setValue('compensation', '', { shouldDirty: true });
+                                }
                                 setIsTypeDropdownOpen(false);
                               }}
                               className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${job.type === opt.value ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
@@ -290,13 +281,11 @@ export default function PostJob() {
                                 key={opt.value || 'choose'}
                                 type="button"
                                 onClick={() => {
-                                  setJob(prev => {
-                                    const next = { ...prev, payment: opt.value, paid: opt.value === 'PAID' };
-                                    if (opt.value !== 'PAID') {
-                                      next.compensation = '';
-                                    }
-                                    return next;
-                                  });
+                                  setValue('payment', opt.value, { shouldDirty: true });
+                                  setValue('paid', opt.value === 'PAID', { shouldDirty: true });
+                                  if (opt.value !== 'PAID') {
+                                    setValue('compensation', '', { shouldDirty: true });
+                                  }
                                   setIsPaymentDropdownOpen(false);
                                 }}
                                 className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${job.payment === opt.value ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
@@ -313,10 +302,8 @@ export default function PostJob() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterPostJob.duration')}</label>
                     <input
                       className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
-                      name="duration"
                       placeholder={t('recruiterPostJob.durationPlaceholder')}
-                      value={job.duration}
-                      onChange={handleChange}
+                      {...register('duration')}
                       maxLength={60}
                     />
                   </div>
@@ -325,10 +312,8 @@ export default function PostJob() {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterPostJob.compensation')}</label>
                       <input
                         className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
-                        name="compensation"
                         placeholder={t('recruiterPostJob.compensationPlaceholder')}
-                        value={job.compensation}
-                        onChange={handleChange}
+                        {...register('compensation')}
                         maxLength={80}
                       />
                     </div>
@@ -337,7 +322,7 @@ export default function PostJob() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterPostJob.deadline')}</label>
                     <CustomDateTimePicker
                       value={job.deadline}
-                      onChange={(v) => setJob((prev) => ({ ...prev, deadline: v }))}
+                      onChange={(v) => setValue('deadline', v, { shouldDirty: true })}
                       placeholder={t('recruiterPostJob.deadline')}
                       inputClassName="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
                     />
@@ -352,10 +337,8 @@ export default function PostJob() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterPostJob.jobDescription')}</label>
                     <textarea
                       className="w-full min-h-[180px] border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
-                      name="description"
                       placeholder={t('recruiterPostJob.descriptionPlaceholder')}
-                      value={job.description}
-                      onChange={handleChange}
+                      {...register('description')}
                       maxLength={5000}
                     />
                     <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">

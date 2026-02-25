@@ -3,14 +3,34 @@ import axios from '../../services/axios';
 import { showToast } from '../../services/toast';
 import { useTranslation } from 'react-i18next';
 import { ArrowTopRightOnSquareIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 
 export default function ResumeUpload() {
-  const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const { t } = useTranslation();
   const [resumeUrl, setResumeUrl] = useState(null);
   const fileInputRef = useRef(null);
   const toastId = 'student-resume-upload';
+
+  const schema = yup.object({
+    file: yup
+      .mixed()
+      .required()
+  });
+
+  const {
+    setValue,
+    handleSubmit,
+    watch
+  } = useForm({
+    defaultValues: { file: null },
+    resolver: yupResolver(schema),
+    mode: 'onSubmit'
+  });
+
+  const file = watch('file');
 
   useEffect(() => {
     const load = async () => {
@@ -27,28 +47,27 @@ export default function ResumeUpload() {
     load();
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const onSubmit = async (data) => {
+    const selectedFile = data?.file;
     if (!file) {
       showToast(toastId, 'error', t('resumeUpload.chooseFile'));
       return;
     }
 
     const maxBytes = 5 * 1024 * 1024;
-    if (file.size > maxBytes) {
+    if (selectedFile.size > maxBytes) {
       showToast(toastId, 'error', t('resumeUpload.fileTooLarge'));
       return;
     }
 
-    const name = (file.name || '').toLowerCase();
+    const name = (selectedFile.name || '').toLowerCase();
     if (!name.endsWith('.pdf')) {
       showToast(toastId, 'error', t('resumeUpload.mustBePdf'));
       return;
     }
 
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', selectedFile);
 
     setUploading(true);
     try {
@@ -57,7 +76,7 @@ export default function ResumeUpload() {
         setResumeUrl(res.data);
       }
       showToast(toastId, 'success', t('resumeUpload.uploaded'));
-      setFile(null);
+      setValue('file', null);
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err) {
       showToast(toastId, 'error', t('resumeUpload.uploadFailed'));
@@ -78,7 +97,7 @@ export default function ResumeUpload() {
 
           <div className="p-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-6">
                 <div className="group rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/50 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
                   <div className="px-6 py-5 bg-gradient-to-r from-violet-600/10 via-indigo-600/10 to-blue-600/10 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                     <div>
@@ -99,7 +118,7 @@ export default function ResumeUpload() {
                       ref={fileInputRef}
                       type="file"
                       accept="application/pdf,.pdf"
-                      onChange={(e) => setFile(e.target.files?.[0] || null)}
+                      onChange={(e) => setValue('file', e.target.files?.[0] || null, { shouldDirty: true })}
                       className="hidden"
                     />
 
