@@ -168,6 +168,12 @@ const ro = {
     unpaid: 'Neplătit',
     description: 'Descriere'
   },
+  unauthorized: {
+    title: 'Neautorizat',
+    description: 'Nu ai permisiunea de a accesa această pagină.',
+    goHome: 'Acasă',
+    goBack: 'Înapoi'
+  },
   accountBlocked: {
     title: 'Cont blocat',
     message:

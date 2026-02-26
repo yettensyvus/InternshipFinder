@@ -168,10 +168,16 @@ const en = {
     unpaid: 'Unpaid',
     description: 'Description'
   },
+  unauthorized: {
+    title: 'Unauthorized',
+    description: "You don't have permission to access this page.",
+    goHome: 'Go home',
+    goBack: 'Go back'
+  },
   accountBlocked: {
     title: 'Account Blocked',
     message:
-      "Sorry, your account has been blocked by an administrator. You can’t log in at the moment.",
+      "Sorry, your account has been blocked by an administrator. You can't log in at the moment.",
     contactAdmin: 'Contact Admin',
     emailLabel: 'Email',
     adminEmail: 'admin@usm.edu',

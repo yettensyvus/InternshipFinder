@@ -168,6 +168,12 @@ const ru = {
     unpaid: 'Неоплачиваемая',
     description: 'Описание'
   },
+  unauthorized: {
+    title: 'Нет доступа',
+    description: 'У вас нет разрешения для доступа к этой странице.',
+    goHome: 'На главную',
+    goBack: 'Назад'
+  },
   accountBlocked: {
     title: 'Аккаунт заблокирован',
     message:

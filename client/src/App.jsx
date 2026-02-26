@@ -2,45 +2,45 @@ import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-import Navbar from './components/Navbar';
-import ProtectedRoute from './components/ProtectedRoute';
-import FloatingBackButton from './components/FloatingBackButton';
-import GuestRoute from './components/GuestRoute';
+import { MainLayout } from './shared/ui/templates';
 
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import NotFound from './pages/NotFound';
-import ForgotPassword from './pages/ForgotPassword';
-import VerifyOtp from './pages/VerifyOtp';
-import ResetPassword from './pages/ResetPassword';
-import VerifyEmailOtp from './pages/VerifyEmailOtp';
-import Settings from './pages/Settings';
+import ProtectedRoute from './shared/guards/ProtectedRoute';
+import GuestRoute from './shared/guards/GuestRoute';
 
-import StudentDashboard from './pages/student/Dashboard';
-import StudentProfile from './pages/student/Profile';
-import StudentResumeUpload from './pages/student/ResumeUpload';
-import StudentJobList from './pages/student/JobList';
-import StudentApplications from './pages/student/Applications';
-import StudentCvBuilder from './pages/student/CvBuilder';
+import Home from './features/home/pages/HomePage';
+import Login from './features/auth/pages/LoginPage';
+import Register from './features/auth/pages/RegisterPage';
+import NotFound from './features/common/pages/NotFoundPage';
+import ForgotPassword from './features/auth/pages/ForgotPasswordPage';
+import VerifyOtp from './features/auth/pages/VerifyOtpPage';
+import ResetPassword from './features/auth/pages/ResetPasswordPage';
+import VerifyEmailOtp from './features/auth/pages/VerifyEmailOtpPage';
+import Settings from './features/common/pages/SettingsPage';
 
-import RecruiterDashboard from './pages/recruiter/Dashboard';
-import PostJob from './pages/recruiter/PostJob';
-import MyJobs from './pages/recruiter/MyJobs';
-import RecruiterApplications from './pages/recruiter/Applications';
-import RecruiterProfile from './pages/recruiter/Profile';
-import JobManage from './pages/recruiter/JobManage';
+import StudentDashboard from './features/student/pages/DashboardPage';
+import StudentProfile from './features/student/pages/ProfilePage';
+import StudentResumeUpload from './features/student/pages/ResumeUploadPage';
+import StudentJobList from './features/student/pages/JobListPage';
+import StudentApplications from './features/student/pages/ApplicationsPage';
+import StudentCvBuilder from './features/student/pages/CvBuilderPage';
 
-import AdminDashboard from './pages/admin/Dashboard';
-import ManageUsers from './pages/admin/ManageUsers';
-import AdminProfile from './pages/admin/Profile';
-import AdminUserDetails from './pages/admin/UserDetails';
+import RecruiterDashboard from './features/recruiter/pages/DashboardPage';
+import PostJob from './features/recruiter/pages/PostJobPage';
+import MyJobs from './features/recruiter/pages/MyJobsPage';
+import RecruiterApplications from './features/recruiter/pages/ApplicationsPage';
+import RecruiterProfile from './features/recruiter/pages/ProfilePage';
+import JobManage from './features/recruiter/pages/JobManagePage';
 
-import ProfileRedirect from './pages/ProfileRedirect';
-import Notifications from './pages/Notifications';
-import JobDetails from './pages/JobDetails';
-import AccountBlocked from './pages/AccountBlocked';
-import Unauthorized from './pages/Unauthorized';
+import AdminDashboard from './features/admin/pages/DashboardPage';
+import ManageUsers from './features/admin/pages/ManageUsersPage';
+import AdminProfile from './features/admin/pages/ProfilePage';
+import AdminUserDetails from './features/admin/pages/UserDetailsPage';
+
+import ProfileRedirect from './features/common/pages/ProfileRedirectPage';
+import Notifications from './features/common/pages/NotificationsPage';
+import JobDetails from './features/common/pages/JobDetailsPage';
+import AccountBlocked from './features/common/pages/AccountBlockedPage';
+import Unauthorized from './features/common/pages/UnauthorizedPage';
 
 export default function App() {
   const { t, i18n } = useTranslation();
@@ -50,11 +50,8 @@ export default function App() {
   }, [t, i18n.language]);
 
   return (
-    <>
-      <Navbar />
-      <FloatingBackButton />
-
-      <Routes>
+    <Routes>
+      <Route element={<MainLayout />}>
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/profile" element={<ProfileRedirect />} />
@@ -247,7 +244,7 @@ export default function App() {
 
         {/* 404 Not Found */}
         <Route path="*" element={<NotFound />} />
-      </Routes>
-    </>
+      </Route>
+    </Routes>
   );
 }
