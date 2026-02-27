@@ -8,6 +8,7 @@ import { getDashboardPathForRole } from '../utils/rolePaths';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import { toast } from 'react-toastify';
 
 export default function Login() {
   const [loading, setLoading] = useState(false);
@@ -54,6 +55,11 @@ export default function Login() {
       if (msg === 'EMAIL_NOT_VERIFIED') {
         showToast(toastId, 'error', t('auth.pleaseVerifyEmail'));
         navigate('/verify-email-otp', { state: { email: data.email } });
+        return;
+      }
+      if (msg === 'ACCOUNT_BLOCKED') {
+        toast.dismiss(toastId);
+        navigate('/account-blocked');
         return;
       }
       showToast(toastId, 'error', msg || t('auth.invalidCredentials'));
