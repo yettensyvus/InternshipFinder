@@ -21,16 +21,21 @@ public class AuthController {
     private UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {
-        try {
-            return ResponseEntity.ok(userService.register(request));
-        } catch (RuntimeException ex) {
-            if ("INVALID_ROLE".equals(ex.getMessage())) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("INVALID_ROLE");
-            }
-            throw ex;
+public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {
+    try {
+        return ResponseEntity.ok(userService.register(request));
+    } catch (RuntimeException ex) {
+        if ("INVALID_ROLE".equals(ex.getMessage())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("INVALID_ROLE");
         }
+        throw ex;
     }
+}
+
+   @GetMapping("/me")
+public ResponseEntity<AuthResponse> me() {
+    return ResponseEntity.ok(userService.me());
+}
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest httpRequest, HttpServletResponse response) {

@@ -27,4 +27,7 @@ public interface UserService {
     String confirmPasswordChange(String otp, String currentPassword, String newPassword);
  
     AuthResponse login(LoginRequest req);
+    
+    AuthResponse me();
+
  }

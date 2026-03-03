@@ -62,6 +62,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public AuthResponse me() {
+        User user = getCurrentUser();
+        String avatar = fileUploadService.toReadSasUrl(user.getProfilePictureUrl());
+        return new AuthResponse(null, user.getEmail(), user.getRole().name(), user.getUsername(), avatar);
+    }
+
+    @Override
     public String sendOtpToEmail(String email) {
         String normalizedEmail = normalizeEmail(email);
         if (normalizedEmail == null) {

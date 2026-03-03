@@ -92,7 +92,7 @@ export default function Navbar() {
     };
 
     const refresh = async () => {
-      if (!auth?.token) {
+      if (!auth) {
         setUnreadCount(0);
         return;
       }
@@ -123,7 +123,7 @@ export default function Navbar() {
     window.addEventListener('focus', onFocus);
     document.addEventListener('visibilitychange', onVisibility);
 
-    if (auth?.token) {
+    if (auth) {
       intervalId = window.setInterval(refresh, getPollMs());
     }
 

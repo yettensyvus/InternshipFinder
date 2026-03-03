@@ -154,10 +154,10 @@ export default function Notifications() {
       }
     };
 
-    if (auth?.token) {
+    if (auth) {
       reload();
     }
-  }, [filters, auth?.token]);
+  }, [filters, auth]);
 
   const visibleItems = useMemo(() => items, [items]);
 

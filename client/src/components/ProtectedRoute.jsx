@@ -5,7 +5,7 @@ export default function ProtectedRoute({ children, role }) {
   const { auth } = useAuth();
   const location = useLocation();
 
-  if (!auth?.token) {
+  if (!auth) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

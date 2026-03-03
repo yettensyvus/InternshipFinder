@@ -6,7 +6,7 @@ export default function ProfileRedirect() {
   const { auth } = useAuth();
   const location = useLocation();
 
-  if (!auth?.token) {
+  if (!auth) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

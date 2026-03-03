@@ -39,7 +39,7 @@ export default function Login() {
     showLoadingToast(toastId, t('auth.signingIn'));
     try {
       const res = await axios.post('/auth/login', data);
-      login(res.data.token, res.data.role, res.data.name || res.data.email, res.data.email, res.data.avatar || null);
+      login(res.data);
 
       showToast(toastId, 'success', t('auth.loginSuccessful'), { autoClose: 1800 });
 

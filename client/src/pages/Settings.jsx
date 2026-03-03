@@ -57,10 +57,10 @@ export default function Settings() {
   }, [currentPassword, newPassword, clearPasswordCooldown]);
 
   useEffect(() => {
-    if (!auth?.token) {
+    if (!auth) {
       navigate('/login');
     }
-  }, [auth?.token, navigate]);
+  }, [auth, navigate]);
 
   const spinner = (
     <span className="inline-flex items-center justify-center">

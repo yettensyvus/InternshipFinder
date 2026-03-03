@@ -8,7 +8,7 @@ export default function RoleBasedRedirect() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!auth?.token || !auth?.role) return;
+    if (!auth?.role) return;
 
     navigate(getDashboardPathForRole(auth.role), { replace: true });
   }, [auth, navigate]);
