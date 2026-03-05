@@ -49,31 +49,13 @@ export const AuthProvider = ({ children }) => {
   }, [login]);
 
   useEffect(() => {
-    if (axiosInterceptorRef.current != null) return;
-    axiosInterceptorRef.current = axios.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        const status = error?.response?.status;
-        if (status === 401) {
-          setAuth(null);
-        }
-        return Promise.reject(error);
-      }
-    );
-
-    return () => {
-      if (axiosInterceptorRef.current != null) {
-        axios.interceptors.response.eject(axiosInterceptorRef.current);
-        axiosInterceptorRef.current = null;
-      }
-    };
+    return;
   }, []);
 
 
   useEffect(() => {
-    const token = auth?.token;
     const role = auth?.role;
-    if (!token || !role) return;
+    if (!auth || !role) return;
 
     const endpoint = (() => {
       switch (role) {

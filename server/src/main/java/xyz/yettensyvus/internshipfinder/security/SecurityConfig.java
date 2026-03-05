@@ -32,7 +32,18 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> {}) // Enables CORS (configured in CorsConfig.java)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(
+                                "/api/auth/login",
+                                "/api/auth/logout",
+                                "/api/auth/refresh",
+                                "/api/auth/register",
+                                "/api/auth/request-otp",
+                                "/api/auth/verify-otp",
+                                "/api/auth/verify-email-otp",
+                                "/api/auth/resend-email-otp",
+                                "/api/auth/reset-password-otp"
+                        ).permitAll()
+                        .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/api/settings/**").authenticated()
                         .requestMatchers("/api/student/**").hasRole("STUDENT")

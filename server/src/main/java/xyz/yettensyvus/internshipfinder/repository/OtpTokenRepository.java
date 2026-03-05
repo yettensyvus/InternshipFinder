@@ -9,13 +9,12 @@ import xyz.yettensyvus.internshipfinder.model.OtpToken;
 import xyz.yettensyvus.internshipfinder.model.User;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 public interface OtpTokenRepository extends JpaRepository<OtpToken, Long> {
 
-    Optional<OtpToken> findTopByUserAndPurposeAndConsumedAtIsNullOrderByCreatedAtDesc(User user, OtpPurpose purpose);
-
-    java.util.List<OtpToken> findTop5ByUserAndPurposeAndConsumedAtIsNullOrderByCreatedAtDesc(User user, OtpPurpose purpose);
+    List<OtpToken> findTop5ByUserAndPurposeAndConsumedAtIsNullOrderByCreatedAtDesc(User user, OtpPurpose purpose);
 
     @Modifying
     @Query("delete from OtpToken t where t.expiresAt < :now or t.consumedAt is not null")

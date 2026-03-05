@@ -16,8 +16,8 @@ public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
-    @Value("${jwt.expirationMs}")
-    private int jwtExpirationMs;
+    @Value("${jwt.accessExpirationMs}")
+    private int accessExpirationMs;
 
     private SecretKey key;
 
@@ -25,12 +25,12 @@ public class JwtTokenProvider {
     public void init() {
         this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
-
-    public String generateToken(String email) {
+    public String generateAccessToken(String email) {
         return Jwts.builder()
                 .setSubject(email)
+                .claim("typ", "access")
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .setExpiration(new Date(System.currentTimeMillis() + accessExpirationMs))
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
     }
@@ -44,8 +44,9 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return true;
+            Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+            Object typ = claims.get("typ");
+            return "access".equals(String.valueOf(typ));
         } catch (JwtException ex) {
             return false;
         }

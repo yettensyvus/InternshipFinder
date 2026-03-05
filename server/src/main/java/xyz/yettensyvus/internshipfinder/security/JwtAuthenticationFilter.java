@@ -35,7 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
-                if ("jwt".equals(cookie.getName())) {
+                if ("accessToken".equals(cookie.getName())) {
                     token = cookie.getValue();
                     break;
                 }
@@ -78,6 +78,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         return uri.equals("/api/auth/login")
                 || uri.equals("/api/auth/logout")
+                || uri.equals("/api/auth/refresh")
                 || uri.equals("/api/auth/register")
                 || uri.equals("/api/auth/request-otp")
                 || uri.equals("/api/auth/verify-otp")

@@ -315,8 +315,6 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("ACCOUNT_BLOCKED");
         }
 
-        String token = jwtProvider.generateToken(user.getEmail());
-
         String name = user.getUsername();
 
         if (user.getRole() == Role.STUDENT) {
@@ -333,7 +331,7 @@ public class UserServiceImpl implements UserService {
 
         String avatar = fileUploadService.toReadSasUrl(user.getProfilePictureUrl());
 
-        return new AuthResponse(token, user.getEmail(), user.getRole().name(), name, avatar);
+        return new AuthResponse(null, user.getEmail(), user.getRole().name(), name, avatar);
     }
 
     private String createOrReplaceOtp(User user, OtpPurpose purpose, String targetEmail) {
