@@ -17,4 +17,5 @@ public class RecruiterStudentDTO {
     private String yearOfPassing;
     private String resumeUrl;
     private String profilePictureUrl;
+    private java.util.List<Long> appliedJobIds;
 }

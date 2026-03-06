@@ -54,6 +54,58 @@ export default function RecruiterDashboard() {
             {t('dashboards.viewApplicationsHint')}
           </p>
         </Link>
+
+        <Link
+          to="/recruiter/shortlist"
+          className="group bg-white/60 dark:bg-gray-800/60 border border-emerald-100 dark:border-emerald-800 backdrop-blur-md p-6 rounded-3xl shadow-lg hover:shadow-2xl transform hover:scale-[1.03] transition-all duration-300"
+        >
+          <div className="text-emerald-600 dark:text-emerald-400 text-4xl mb-4">✨</div>
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+            {t('recruiterShortlist.title')}
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {t('recruiterShortlist.subtitle')}
+          </p>
+        </Link>
+
+        <Link
+          to="/recruiter/interviews"
+          className="group bg-white/60 dark:bg-gray-800/60 border border-blue-100 dark:border-blue-800 backdrop-blur-md p-6 rounded-3xl shadow-lg hover:shadow-2xl transform hover:scale-[1.03] transition-all duration-300"
+        >
+          <div className="text-blue-600 dark:text-blue-400 text-4xl mb-4">📅</div>
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+            {t('recruiterInterviews.title')}
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {t('recruiterInterviews.subtitle')}
+          </p>
+        </Link>
+
+        <Link
+          to="/recruiter/hired"
+          className="group bg-white/60 dark:bg-gray-800/60 border border-green-100 dark:border-green-800 backdrop-blur-md p-6 rounded-3xl shadow-lg hover:shadow-2xl transform hover:scale-[1.03] transition-all duration-300"
+        >
+          <div className="text-green-600 dark:text-green-400 text-4xl mb-4">✅</div>
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+            {t('recruiterHired.title')}
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {t('recruiterHired.subtitle')}
+          </p>
+        </Link>
+
+        <Link
+          to="/recruiter/students"
+          className="group bg-white/60 dark:bg-gray-800/60 border border-indigo-100 dark:border-indigo-800 backdrop-blur-md p-6 rounded-3xl shadow-lg hover:shadow-2xl transform hover:scale-[1.03] transition-all duration-300"
+        >
+          <div className="text-indigo-600 dark:text-indigo-400 text-4xl mb-4">🎓</div>
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+            {t('dashboards.viewStudents')}
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {t('dashboards.viewStudentsHint')}
+          </p>
+        </Link>
       </div>
     </div>
   );

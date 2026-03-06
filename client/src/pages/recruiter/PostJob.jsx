@@ -30,7 +30,8 @@ export default function PostJob() {
     handleSubmit,
     setValue,
     getValues,
-    watch
+    watch,
+    reset
   } = useForm({
     defaultValues: {
       title: '',
@@ -57,6 +58,25 @@ export default function PostJob() {
   const paymentDropdownRef = useRef(null);
 
   const [submitting, setSubmitting] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await axios.get('/recruiter/profile');
+        if (res.data?.companyName) {
+          setValue('company', res.data.companyName);
+        } else {
+          showToast('recruiter-profile-missing', 'error', t('recruiterProfile.companyNameRequired'));
+        }
+      } catch (err) {
+        console.error('Failed to fetch recruiter profile:', err);
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+    fetchProfile();
+  }, [setValue, t]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -178,60 +198,72 @@ export default function PostJob() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-10">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur border border-gray-200/60 dark:border-gray-700/60 rounded-3xl shadow-xl overflow-hidden">
-          <div className="px-6 py-8 bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600">
-            <h1 className="text-2xl font-bold text-white">{t('recruiterPostJob.title')}</h1>
-            <p className="text-white/80 text-sm mt-1">{t('recruiterPostJob.subtitle')}</p>
+    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 pt-12 pb-20">
+      <div className="w-full px-2 md:px-6">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 dark:from-purple-400 dark:via-violet-400 dark:to-indigo-400 pb-2">
+              {t('recruiterPostJob.title')}
+            </h1>
+            <p className="mt-4 text-gray-600 dark:text-gray-300 max-w-2xl text-lg">
+              {t('recruiterPostJob.subtitle')}
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white/70 dark:bg-gray-800/60 border border-gray-200/60 dark:border-gray-700/60 rounded-3xl shadow-xl overflow-hidden">
+          <div className="px-6 py-5 border-b border-gray-200/60 dark:border-gray-700/60">
+            <h2 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+              {t('recruiterPostJob.basics')}
+            </h2>
           </div>
 
           <div className="p-6">
-            <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('recruiterPostJob.basics')}</h2>
-                <div className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              {/* Left Side: Inputs */}
+              <div className="lg:col-span-7 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterPostJob.jobTitle')}</label>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('recruiterPostJob.jobTitle')}</label>
                     <input
-                      className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
+                      className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/40 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none transition-all shadow-sm"
                       placeholder={t('recruiterPostJob.jobTitlePlaceholder')}
                       {...register('title')}
                       maxLength={120}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterPostJob.company')}</label>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('recruiterPostJob.company')}</label>
                     <input
-                      className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
+                      className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed shadow-sm"
                       placeholder={t('recruiterPostJob.companyPlaceholder')}
                       {...register('company')}
-                      maxLength={120}
+                      readOnly
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterPostJob.location')}</label>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('recruiterPostJob.location')}</label>
                     <input
-                      className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
+                      className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/40 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none transition-all shadow-sm"
                       placeholder={t('recruiterPostJob.locationPlaceholder')}
                       {...register('location')}
                       maxLength={120}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterPostJob.type')}</label>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('recruiterPostJob.type')}</label>
                     <div className="relative" ref={typeDropdownRef}>
                       <button
                         type="button"
                         onClick={() => setIsTypeDropdownOpen(prev => !prev)}
-                        className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+                        className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm"
                       >
-                        <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">{activeType.label}</span>
+                        <span className="text-sm font-semibold">{activeType.label}</span>
                         <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isTypeDropdownOpen ? 'rotate-180' : ''}`} />
                       </button>
 
                       {isTypeDropdownOpen && (
-                        <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50">
+                        <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 overflow-hidden">
                           {typeOptions.map((opt) => (
                             <button
                               key={opt.value}
@@ -258,9 +290,9 @@ export default function PostJob() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterPostJob.paid')}</label>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('recruiterPostJob.paid')}</label>
                     {job.type === 'JOB' ? (
-                      <div className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm font-semibold text-gray-700 dark:text-gray-200">
+                      <div className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40 text-sm font-semibold text-gray-700 dark:text-gray-200 shadow-inner">
                         {t('recruiterPostJob.paidYes')}
                       </div>
                     ) : (
@@ -268,14 +300,14 @@ export default function PostJob() {
                         <button
                           type="button"
                           onClick={() => setIsPaymentDropdownOpen(prev => !prev)}
-                          className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+                          className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm"
                         >
                           <span className={`text-sm font-semibold ${job.payment ? 'text-gray-700 dark:text-gray-200' : 'text-gray-500 dark:text-gray-400'}`}>{activePayment.label}</span>
                           <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isPaymentDropdownOpen ? 'rotate-180' : ''}`} />
                         </button>
 
                         {isPaymentDropdownOpen && (
-                          <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50">
+                          <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 overflow-hidden">
                             {paymentOptions.map((opt) => (
                               <button
                                 key={opt.value || 'choose'}
@@ -299,66 +331,64 @@ export default function PostJob() {
                     )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterPostJob.duration')}</label>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('recruiterPostJob.duration')}</label>
                     <input
-                      className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
+                      className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/40 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none transition-all shadow-sm"
                       placeholder={t('recruiterPostJob.durationPlaceholder')}
                       {...register('duration')}
                       maxLength={60}
                     />
                   </div>
-                  {job.paid ? (
+                  {job.paid && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterPostJob.compensation')}</label>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('recruiterPostJob.compensation')}</label>
                       <input
-                        className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
+                        className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/40 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none transition-all shadow-sm"
                         placeholder={t('recruiterPostJob.compensationPlaceholder')}
                         {...register('compensation')}
                         maxLength={80}
                       />
                     </div>
-                  ) : null}
+                  )}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterPostJob.deadline')}</label>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('recruiterPostJob.deadline')}</label>
                     <CustomDateTimePicker
                       value={job.deadline}
                       onChange={(v) => setValue('deadline', v, { shouldDirty: true })}
                       placeholder={t('recruiterPostJob.deadline')}
-                      inputClassName="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
+                      inputClassName="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/40 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none transition-all shadow-sm"
                     />
                   </div>
                 </div>
+
+                <div className="pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-4">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    {t('recruiterPostJob.hint')}
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="px-8 py-3 rounded-xl bg-violet-600 text-white font-bold shadow-lg hover:bg-violet-700 transition disabled:opacity-50"
+                  >
+                    {submitting ? t('recruiterPostJob.posting') : t('recruiterPostJob.postJob')}
+                  </button>
+                </div>
               </div>
 
-              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('recruiterPostJob.descriptionSection')}</h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterPostJob.jobDescription')}</label>
-                    <textarea
-                      className="w-full min-h-[180px] border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
-                      placeholder={t('recruiterPostJob.descriptionPlaceholder')}
-                      {...register('description')}
-                      maxLength={5000}
-                    />
-                    <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {(job.description || '').length}/5000
-                    </div>
+              {/* Right Side: Description */}
+              <div className="lg:col-span-5 flex flex-col h-full">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('recruiterPostJob.jobDescription')}</label>
+                <div className="flex-1 min-h-[400px] relative">
+                  <textarea
+                    className="w-full h-full min-h-[400px] px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/40 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none transition-all shadow-sm resize-none"
+                    placeholder={t('recruiterPostJob.descriptionPlaceholder')}
+                    {...register('description')}
+                    maxLength={5000}
+                  />
+                  <div className="absolute bottom-3 right-4 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest bg-white/50 dark:bg-gray-900/50 px-2 py-1 rounded-lg backdrop-blur-sm">
+                    {(job.description || '').length} / 5000
                   </div>
                 </div>
-              </div>
-
-              <div className="lg:col-span-2 flex items-center justify-between gap-4">
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  {t('recruiterPostJob.hint')}
-                </div>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="px-6 py-3 rounded-2xl bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 text-white font-semibold shadow-lg hover:shadow-xl disabled:opacity-60"
-                >
-                  {submitting ? t('recruiterPostJob.posting') : t('recruiterPostJob.postJob')}
-                </button>
               </div>
             </form>
           </div>

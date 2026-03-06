@@ -33,4 +33,6 @@ public class User {
 
     private boolean recruiterEmailVerified = false;
 
+    private boolean studentEmailVerified = false;
+
 }

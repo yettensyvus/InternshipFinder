@@ -189,6 +189,7 @@ const ru = {
     types: {
       APPLICATION_SUBMITTED: 'Заявка подана',
       APPLICATION_STATUS_CHANGED: 'Статус заявки изменен',
+      JOB_RECOMMENDED: 'Рекомендована вакансия',
       USER_REGISTERED: 'Пользователь зарегистрирован',
       JOB_POSTED: 'Вакансия опубликована',
       RESUME_UPLOADED: 'Резюме загружено'
@@ -221,7 +222,9 @@ const ru = {
     failedMarkAllRead: 'Не удалось отметить все как прочитанные',
     cleared: 'Уведомления очищены',
     failedClear: 'Не удалось очистить уведомления',
-    failedMarkRead: 'Не удалось отметить как прочитанное'
+    failedMarkRead: 'Не удалось отметить как прочитанное',
+    recommendedMessage: 'Рекрутер рекомендовал вам: {{job}}',
+    clickToOpen: 'Нажмите, чтобы открыть'
   },
   cvBuilder: {
   title: 'Конструктор резюме',
@@ -357,7 +360,37 @@ const ru = {
     myPostedJobs: 'Мои опубликованные вакансии',
     myPostedJobsHint: 'Просматривайте и управляйте своими вакансиями.',
     viewApplications: 'Просмотр заявок',
-    viewApplicationsHint: 'Проверяйте заявки студентов и обновляйте их статусы.'
+    viewApplicationsHint: 'Проверяйте заявки студентов и обновляйте их статусы.',
+    viewStudents: 'Просмотр студентов',
+    viewStudentsHint: 'Просматривайте профили студентов и скачивайте резюме.'
+  },
+  recruiterStudents: {
+    title: 'Студенты',
+    subtitle: 'Просматривайте базу студентов и изучайте профили кандидатов.',
+    search: 'Поиск',
+    searchPlaceholder: 'Поиск по имени, email, колледжу, специализации…',
+    count: '{{count}} студентов',
+    selectStudent: 'Выберите студента, чтобы увидеть детали.',
+    empty: 'Студенты не найдены.',
+    failedLoad: 'Не удалось загрузить студентов',
+    failedLoadJobs: 'Не удалось загрузить ваши вакансии',
+    resume: 'Резюме',
+    openResume: 'Открыть резюме',
+    email: 'Email',
+    phone: 'Телефон',
+    college: 'Колледж',
+    branch: 'Специализация',
+    yearOfPassing: 'Год окончания',
+    recommendJob: 'Рекомендовать вакансию',
+    selectJob: 'Выберите вакансию',
+    recommend: 'Рекомендовать',
+    recommending: 'Отправка…',
+    recommendationSent: 'Рекомендация отправлена',
+    failedRecommend: 'Не удалось отправить рекомендацию',
+    noAvailableJobs: 'Студент уже подал заявку на все ваши вакансии',
+    prev: 'Назад',
+    next: 'Далее',
+    page: 'Страница {{page}} / {{total}}'
   },
   home: {
     hero: {
@@ -799,6 +832,7 @@ const ru = {
     failedLoadApps: 'Не удалось загрузить заявки',
     invalidStatus: 'Неверный статус',
     statusUpdated: 'Статус обновлен: {{status}}',
+    type: 'Тип',
     failedUpdateStatus: 'Не удалось обновить статус'
   },
   recruiterJobManage: {
@@ -842,13 +876,54 @@ const ru = {
     typeJob: 'Вакансия',
     typeInternship: 'Стажировка',
     failedLoad: 'Не удалось загрузить вакансию',
+    manage: 'Управление',
     titleRequired: 'Название обязательно',
     companyRequired: 'Компания обязательна',
     locationRequired: 'Местоположение обязательно',
     descriptionMin: 'Описание должно содержать не менее 20 символов',
     durationRequired: 'Продолжительность обязательна',
     updated: 'Вакансия обновлена',
-    failedUpdate: 'Не удалось обновить вакансию'
+    failedUpdate: 'Не удалось обновить',
+    status: 'Статус',
+    open: 'Открыто',
+    closed: 'Закрыто',
+    payment: 'Оплата',
+    recruiter: 'Рекрутер'
+  },
+  recruiterInterviews: {
+    title: 'Назначенные интервью',
+    subtitle: 'Управляйте предстоящими интервью и завершайте найм',
+    failedLoad: 'Не удалось загрузить интервью',
+    noInterviews: 'Интервью пока не назначены.'
+  },
+  recruiterHired: {
+    title: 'Нанятые кандидаты',
+    subtitle: 'Просмотр всех кандидатов, которые успешно присоединились к вашей команде.',
+    failedLoad: 'Не удалось загрузить список нанятых',
+    noHired: 'Нанятых кандидатов пока нет.',
+    statusHired: 'Нанят',
+    officialJoin: 'Член команды',
+    officialJoinHint: 'Кандидат официально нанят на эту должность.'
+  },
+  recruiterShortlist: {
+    title: 'Кандидаты в шорт-листе',
+    subtitle: 'Планируйте интервью и завершайте найм',
+    failedLoad: 'Не удалось загрузить список',
+    interview: 'Назначить интервью',
+    interviewHint: 'Отправить приглашение кандидату',
+    sendInvite: 'Отправить приглашение',
+    hiring: 'Оформление найма',
+    hiringHint: 'Отметить кандидата как нанятого',
+    hireNow: 'Нанять кандидата',
+    alreadyScheduled: 'Интервью уже назначено',
+    locationPlaceholder: 'Место или ссылка на встречу',
+    interviewDatePlaceholder: 'Выберите дату и время',
+    invalidDate: 'Интервью должно быть запланировано как минимум за 1 день',
+    formRequired: 'Пожалуйста, укажите дату и место',
+    interviewScheduled: 'Интервью назначено, письмо отправлено!',
+    failedSchedule: 'Не удалось назначить интервью',
+    hiredSuccess: 'Кандидат успешно нанят!',
+    failedHire: 'Не удалось отметить как нанятого'
   }
 };
 

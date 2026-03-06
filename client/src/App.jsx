@@ -29,7 +29,11 @@ import PostJob from './pages/recruiter/PostJob';
 import MyJobs from './pages/recruiter/MyJobs';
 import RecruiterApplications from './pages/recruiter/Applications';
 import RecruiterProfile from './pages/recruiter/Profile';
+import RecruiterStudents from './pages/recruiter/Students';
 import JobManage from './pages/recruiter/JobManage';
+import Shortlist from './pages/recruiter/Shortlist';
+import Interviews from './pages/recruiter/Interviews';
+import Hired from './pages/recruiter/Hired';
 
 import AdminDashboard from './pages/admin/Dashboard';
 import ManageUsers from './pages/admin/ManageUsers';
@@ -178,10 +182,42 @@ export default function App() {
           }
         />
         <Route
+          path="/recruiter/students"
+          element={
+            <ProtectedRoute role="RECRUITER">
+              <RecruiterStudents />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/recruiter/profile"
           element={
             <ProtectedRoute role="RECRUITER">
               <RecruiterProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/recruiter/shortlist"
+          element={
+            <ProtectedRoute role="RECRUITER">
+              <Shortlist />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/recruiter/interviews"
+          element={
+            <ProtectedRoute role="RECRUITER">
+              <Interviews />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/recruiter/hired"
+          element={
+            <ProtectedRoute role="RECRUITER">
+              <Hired />
             </ProtectedRoute>
           }
         />

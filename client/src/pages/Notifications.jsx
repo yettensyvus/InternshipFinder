@@ -97,6 +97,10 @@ export default function Notifications() {
   });
 
   useEffect(() => {
+    window.dispatchEvent(new Event('notifications:reset-toast'));
+  }, []);
+
+  useEffect(() => {
     const load = async () => {
       setLoading(true);
       try {
@@ -166,6 +170,7 @@ export default function Notifications() {
       { value: '', label: t('notificationsPage.all'), right: t('notificationsPage.type') },
       { value: 'APPLICATION_SUBMITTED', label: t('notificationsPage.types.APPLICATION_SUBMITTED'), right: 'APPLICATION_SUBMITTED' },
       { value: 'APPLICATION_STATUS_CHANGED', label: t('notificationsPage.types.APPLICATION_STATUS_CHANGED'), right: 'APPLICATION_STATUS_CHANGED' },
+      { value: 'JOB_RECOMMENDED', label: t('notificationsPage.types.JOB_RECOMMENDED'), right: 'JOB_RECOMMENDED' },
       { value: 'USER_REGISTERED', label: t('notificationsPage.types.USER_REGISTERED'), right: 'USER_REGISTERED' },
       { value: 'JOB_POSTED', label: t('notificationsPage.types.JOB_POSTED'), right: 'JOB_POSTED' },
       { value: 'RESUME_UPLOADED', label: t('notificationsPage.types.RESUME_UPLOADED'), right: 'RESUME_UPLOADED' }
@@ -347,9 +352,17 @@ export default function Notifications() {
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <div className="text-base font-semibold text-gray-900 dark:text-white">{n.title}</div>
+                        <div className="text-base font-semibold text-gray-900 dark:text-white">
+                          {n.type === 'JOB_RECOMMENDED'
+                            ? t(`notificationsPage.types.${n.type}`, { defaultValue: n.title || n.type })
+                            : n.title}
+                        </div>
                         {n.message ? (
-                          <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">{n.message}</div>
+                          <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                            {n.type === 'JOB_RECOMMENDED'
+                              ? t('notificationsPage.recommendedMessage', { job: n.message })
+                              : n.message}
+                          </div>
                         ) : null}
                         {n.type ? (
                           <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">

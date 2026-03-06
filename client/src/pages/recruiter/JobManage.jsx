@@ -176,72 +176,72 @@ export default function JobManage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-10">
-      <div className="max-w-6xl mx-auto">
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur border border-gray-200/60 dark:border-gray-700/60 rounded-3xl shadow-xl overflow-hidden">
-          <div className="px-6 py-8 bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <h1 className="text-2xl font-bold text-white">{t('recruiterJobManage.title')}</h1>
-                <p className="text-white/80 text-sm mt-1">{t('recruiterJobManage.subtitle')}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="px-4 py-2 rounded-xl bg-white/15 hover:bg-white/20 text-white text-sm font-semibold border border-white/20 transition"
-              >
-                {t('recruiterJobManage.back')}
-              </button>
-            </div>
+    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 pt-12 pb-20">
+      <div className="w-full px-2 md:px-6">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 dark:from-indigo-400 dark:via-violet-400 dark:to-purple-400 pb-2">
+              {t('recruiterJobManage.title')}
+            </h1>
+            <p className="mt-4 text-gray-600 dark:text-gray-300 max-w-2xl text-lg">
+              {t('recruiterJobManage.subtitle')}
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white/70 dark:bg-gray-800/60 border border-gray-200/60 dark:border-gray-700/60 rounded-3xl shadow-xl overflow-hidden">
+          <div className="px-6 py-5 border-b border-gray-200/60 dark:border-gray-700/60">
+            <h2 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+              {t('recruiterJobManage.edit')}
+            </h2>
           </div>
 
           <div className="p-6">
             {loading ? (
-              <div className="text-sm text-gray-600 dark:text-gray-400">{t('recruiterJobManage.loading')}</div>
+              <div className="text-gray-600 dark:text-gray-300">{t('common.pleaseWait')}</div>
             ) : !job ? (
-              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
-                <div className="text-lg font-semibold text-gray-900 dark:text-white">{t('recruiterJobManage.jobNotFound')}</div>
-              </div>
+              <div className="text-gray-600 dark:text-gray-400">{t('recruiterJobManage.jobNotFound')}</div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
-                  <div className="text-lg font-semibold text-gray-900 dark:text-white">{t('recruiterJobManage.edit')}</div>
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <form onSubmit={handleSubmit(save, onInvalid)} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Left Side: Inputs */}
+                <div className="lg:col-span-7 space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterJobManage.titleLabel')}</label>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('recruiterJobManage.titleLabel')}</label>
                       <input
                         {...register('title')}
-                        className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
+                        className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/40 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none transition-all shadow-sm"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterJobManage.companyLabel')}</label>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('recruiterJobManage.companyLabel')}</label>
                       <input
                         {...register('company')}
-                        className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
+                        className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed shadow-sm"
+                        readOnly
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterJobManage.locationLabel')}</label>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('recruiterJobManage.locationLabel')}</label>
                       <input
                         {...register('location')}
-                        className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
+                        className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/40 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none transition-all shadow-sm"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterJobManage.typeLabel')}</label>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('recruiterJobManage.typeLabel')}</label>
                       <div className="relative" ref={typeDropdownRef}>
                         <button
                           type="button"
                           onClick={() => setIsTypeDropdownOpen(prev => !prev)}
-                          className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+                          className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm"
                         >
-                          <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">{activeType.label}</span>
+                          <span className="text-sm font-semibold">{activeType.label}</span>
                           <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isTypeDropdownOpen ? 'rotate-180' : ''}`} />
                         </button>
 
                         {isTypeDropdownOpen && (
-                          <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50">
+                          <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 overflow-hidden">
                             {typeOptions.map((opt) => (
                               <button
                                 key={opt.value}
@@ -250,6 +250,9 @@ export default function JobManage() {
                                   setValue('type', opt.value, { shouldDirty: true });
                                   if (opt.value === 'JOB') {
                                     setValue('paid', true, { shouldDirty: true });
+                                  } else if (opt.value === 'INTERNSHIP' && form.type === 'JOB') {
+                                    setValue('paid', false, { shouldDirty: true });
+                                    setValue('compensation', '', { shouldDirty: true });
                                   }
                                   setIsTypeDropdownOpen(false);
                                 }}
@@ -263,95 +266,112 @@ export default function JobManage() {
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterJobManage.deadlineLabel')}</label>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('recruiterJobManage.deadlineLabel')}</label>
                       <CustomDateTimePicker
                         value={form.deadline}
                         onChange={(v) => setValue('deadline', v, { shouldDirty: true })}
                         placeholder={t('recruiterJobManage.deadlineLabel')}
                         minDate={new Date()}
-                        inputClassName="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
+                        inputClassName="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/40 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none transition-all shadow-sm"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterJobManage.paid')}</label>
-                      <label className="inline-flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2">
-                        <input
-                          type="checkbox"
-                          {...register('paid')}
-                          className="h-4 w-4"
-                        />
-                        <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                          {form.paid ? t('recruiterJobManage.paidYes') : t('recruiterJobManage.paidNo')}
-                        </span>
-                      </label>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('recruiterJobManage.paid')}</label>
+                      {form.type === 'JOB' ? (
+                        <div className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40 text-sm font-semibold text-gray-700 dark:text-gray-200 shadow-inner">
+                          {t('recruiterJobManage.paidYes')}
+                        </div>
+                      ) : (
+                        <label className="inline-flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/40 px-4 py-2 cursor-pointer w-full shadow-sm">
+                          <input
+                            type="checkbox"
+                            {...register('paid')}
+                            className="h-4 w-4 accent-violet-600"
+                          />
+                          <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                            {form.paid ? t('recruiterJobManage.paidYes') : t('recruiterJobManage.paidNo')}
+                          </span>
+                        </label>
+                      )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterJobManage.duration')}</label>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('recruiterJobManage.duration')}</label>
                       <input
                         {...register('duration')}
-                        className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
+                        className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/40 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none transition-all shadow-sm"
                         placeholder={t('recruiterJobManage.durationPlaceholder')}
                         maxLength={60}
                       />
                     </div>
-                    {form.paid ? (
+                    {form.paid && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterJobManage.compensation')}</label>
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('recruiterJobManage.compensation')}</label>
                         <input
                           {...register('compensation')}
-                          className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
+                          className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/40 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none transition-all shadow-sm"
                           placeholder={t('recruiterJobManage.compensationPlaceholder')}
                           maxLength={80}
                         />
                       </div>
-                    ) : null}
-                    <div className="flex items-center gap-3 mt-6">
-                      <input
-                        id="active"
-                        type="checkbox"
-                        {...register('active')}
-                        className="h-4 w-4"
-                      />
-                      <label htmlFor="active" className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('recruiterJobManage.openForApps')}</label>
-                    </div>
+                    )}
                   </div>
 
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('recruiterJobManage.descriptionLabel')}</label>
-                    <textarea
-                      {...register('description')}
-                      className="w-full min-h-[200px] border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
+                  <div className="flex items-center gap-3 py-2">
+                    <input
+                      id="active"
+                      type="checkbox"
+                      {...register('active')}
+                      className="h-5 w-5 accent-violet-600 cursor-pointer"
                     />
+                    <label htmlFor="active" className="text-sm font-bold text-gray-700 dark:text-gray-200 cursor-pointer">{t('recruiterJobManage.openForApps')}</label>
                   </div>
 
-                  <div className="mt-6 flex items-center justify-end gap-3">
+                  <div className="pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-end gap-4">
                     <button
-                      type="button"
-                      onClick={handleSubmit(save, onInvalid)}
+                      type="submit"
                       disabled={saving}
-                      className="px-6 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 text-white font-semibold shadow-lg hover:shadow-xl disabled:opacity-60"
+                      className="px-8 py-3 rounded-xl bg-violet-600 text-white font-bold shadow-lg hover:bg-violet-700 transition disabled:opacity-50"
                     >
                       {saving ? t('recruiterJobManage.saving') : t('recruiterJobManage.saveChanges')}
                     </button>
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
-                  <div className="text-lg font-semibold text-gray-900 dark:text-white">{t('recruiterJobManage.summary')}</div>
-                  <div className="mt-4 space-y-3 text-sm text-gray-700 dark:text-gray-300">
-                    <div><span className="font-semibold">{t('recruiterJobManage.posted')}:</span> {job.createdAt ? new Date(job.createdAt).toLocaleString() : t('common.notAvailable')}</div>
-                    <div><span className="font-semibold">{t('recruiterJobManage.status')}:</span> {(job.active ?? job.isActive) ? t('recruiterJobManage.open') : t('recruiterJobManage.closed')}</div>
-                    <div><span className="font-semibold">{t('recruiterJobManage.recruiter')}:</span> {job.recruiterCompanyName || t('common.notAvailable')}</div>
-                    <div><span className="font-semibold">{t('recruiterJobManage.email')}:</span> {job.recruiterEmail || t('common.notAvailable')}</div>
-                    <div><span className="font-semibold">{t('recruiterJobManage.deadline')}:</span> {job.deadline || t('common.notAvailable')}</div>
-                    <div><span className="font-semibold">{t('recruiterJobManage.payment')}:</span> {job.paid ? t('recruiterJobManage.paidYes') : t('recruiterJobManage.paidNo')}</div>
-                    <div><span className="font-semibold">{t('recruiterJobManage.duration')}:</span> {job.duration || t('common.notAvailable')}</div>
-                    {job.paid ? (
-                      <div><span className="font-semibold">{t('recruiterJobManage.compensation')}:</span> {job.compensation || t('common.notAvailable')}</div>
-                    ) : null}
+                {/* Right Side: Description & Summary */}
+                <div className="lg:col-span-5 space-y-6 flex flex-col">
+                  <div className="flex-1 flex flex-col">
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('recruiterJobManage.descriptionLabel')}</label>
+                    <div className="flex-1 min-h-[300px] relative">
+                      <textarea
+                        {...register('description')}
+                        className="w-full h-full min-h-[300px] px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/40 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none transition-all shadow-sm resize-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-violet-50 dark:bg-violet-900/10 border border-violet-100 dark:border-violet-900/30">
+                    <h3 className="text-xs font-bold text-violet-700 dark:text-violet-400 uppercase tracking-wider mb-3">
+                      {t('recruiterJobManage.summary')}
+                    </h3>
+                    <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                      <div className="flex justify-between">
+                        <span className="font-medium">{t('recruiterJobManage.posted')}:</span>
+                        <span className="font-bold">{job.createdAt ? new Date(job.createdAt).toLocaleDateString() : t('common.notAvailable')}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-medium">{t('recruiterJobManage.status')}:</span>
+                        <span className={`font-bold ${(job.active ?? job.isActive) ? 'text-emerald-600' : 'text-rose-600'}`}>
+                          {(job.active ?? job.isActive) ? t('recruiterJobManage.open') : t('recruiterJobManage.closed')}
+                        </span>
+                      </div>
+                      <div className="flex justify-between gap-4">
+                        <span className="font-medium flex-shrink-0">{t('recruiterJobManage.recruiter')}:</span>
+                        <span className="font-bold text-right truncate">{job.recruiterCompanyName || t('common.notAvailable')}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </form>
             )}
           </div>
         </div>

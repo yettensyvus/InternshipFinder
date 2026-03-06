@@ -50,9 +50,9 @@ export default function JobList() {
 
         const allJobs = Array.isArray(jobsRes.data) ? jobsRes.data : [];
         const apps = Array.isArray(appsRes.data) ? appsRes.data : [];
-
         const applied = new Set(
           apps
+            .filter(a => a?.status !== 'REJECTED' && a?.status !== 'HIRED')
             .map(a => a?.job?.id)
             .filter(Boolean)
         );

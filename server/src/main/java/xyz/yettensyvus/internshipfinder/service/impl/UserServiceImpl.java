@@ -140,6 +140,7 @@ public class UserServiceImpl implements UserService {
             user.setRecruiterEmailVerified(false);
         } else if (requestedRole == Role.STUDENT) {
             user.setEnabled(false);
+            user.setStudentEmailVerified(false);
         } else {
             user.setEnabled(true);
         }
@@ -196,6 +197,7 @@ public class UserServiceImpl implements UserService {
 
         if (user.getRole() == Role.STUDENT) {
             consumeOtpOrThrow(user, OtpPurpose.STUDENT_EMAIL_VERIFICATION, otp);
+            user.setStudentEmailVerified(true);
             user.setEnabled(true);
             userRepo.save(user);
             return "Email verified";
@@ -329,7 +331,7 @@ public class UserServiceImpl implements UserService {
         if (user.getRole() == Role.RECRUITER && !user.isRecruiterEmailVerified()) {
             throw new RuntimeException("EMAIL_NOT_VERIFIED");
         }
-        if (user.getRole() == Role.STUDENT && !user.isEnabled()) {
+        if (user.getRole() == Role.STUDENT && !user.isStudentEmailVerified()) {
             throw new RuntimeException("EMAIL_NOT_VERIFIED");
         }
         if (!user.isEnabled()) {

@@ -18,4 +18,6 @@ public class RecruiterApplicationDTO {
     private String jobTitle;
     private String jobCompany;
     private RecruiterStudentDTO student;
+    private Date interviewAt;
+    private String interviewLocation;
 }

@@ -189,6 +189,7 @@ const en = {
     types: {
       APPLICATION_SUBMITTED: 'Application submitted',
       APPLICATION_STATUS_CHANGED: 'Application status changed',
+      JOB_RECOMMENDED: 'Job recommended',
       USER_REGISTERED: 'User registered',
       JOB_POSTED: 'Job posted',
       RESUME_UPLOADED: 'Resume uploaded'
@@ -201,6 +202,7 @@ const en = {
     jobIdPlaceholder: 'e.g. 12',
     applicationId: 'Application ID',
     applicationIdPlaceholder: 'e.g. 34',
+    type: 'Type',
     fromTo: 'From / To',
     fromDateTime: 'From Date & Time',
     toDateTime: 'To Date & Time',
@@ -221,7 +223,9 @@ const en = {
     failedMarkAllRead: 'Failed to mark all read',
     cleared: 'Notifications cleared',
     failedClear: 'Failed to clear notifications',
-    failedMarkRead: 'Failed to mark as read'
+    failedMarkRead: 'Failed to mark as read',
+    recommendedMessage: 'A recruiter recommended you: {{job}}',
+    clickToOpen: 'Click to open'
   },
 
   cvBuilder: {
@@ -358,7 +362,37 @@ const en = {
     myPostedJobs: 'My Posted Jobs',
     myPostedJobsHint: 'Review and manage your job posts.',
     viewApplications: 'View Applications',
-    viewApplicationsHint: 'Check student applications and update statuses.'
+    viewApplicationsHint: 'Check student applications and update statuses.',
+    viewStudents: 'View Students',
+    viewStudentsHint: 'Browse student profiles and download resumes.'
+  },
+  recruiterStudents: {
+    title: 'Students',
+    subtitle: 'Browse the student database and review candidate profiles.',
+    search: 'Search',
+    searchPlaceholder: 'Search by name, email, college, branch…',
+    count: '{{count}} students',
+    selectStudent: 'Select a student to view details.',
+    empty: 'No students found.',
+    failedLoad: 'Failed to load students',
+    failedLoadJobs: 'Failed to load your jobs',
+    resume: 'Resume',
+    openResume: 'Open resume',
+    email: 'Email',
+    phone: 'Phone',
+    college: 'College',
+    branch: 'Branch',
+    yearOfPassing: 'Year of passing',
+    recommendJob: 'Recommend a job',
+    selectJob: 'Select job',
+    recommend: 'Recommend',
+    recommending: 'Recommending…',
+    recommendationSent: 'Recommendation sent',
+    failedRecommend: 'Failed to recommend job',
+    noAvailableJobs: 'Student already applied to all your jobs',
+    prev: 'Prev',
+    next: 'Next',
+    page: 'Page {{page}} / {{total}}'
   },
   home: {
     hero: {
@@ -770,7 +804,8 @@ const en = {
     noneHint: 'Post a job to start receiving applications.',
     posted: 'Posted',
     deadline: 'Deadline',
-    failedLoad: 'Failed to fetch jobs'
+    failedLoad: 'Failed to fetch jobs',
+    count: '{{count}} jobs'
   },
   recruiterApplications: {
     title: 'View Applications',
@@ -800,6 +835,7 @@ const en = {
     failedLoadApps: 'Failed to load applications',
     invalidStatus: 'Invalid status',
     statusUpdated: 'Status updated: {{status}}',
+    type: 'Type',
     failedUpdateStatus: 'Failed to update status'
   },
   recruiterJobManage: {
@@ -843,6 +879,7 @@ const en = {
     typeJob: 'Job',
     typeInternship: 'Internship',
     failedLoad: 'Failed to load job',
+    manage: 'Manage',
     titleRequired: 'Title is required',
     companyRequired: 'Company is required',
     locationRequired: 'Location is required',
@@ -850,7 +887,41 @@ const en = {
     durationRequired: 'Duration is required',
     updated: 'Job updated',
     failedUpdate: 'Failed to update job'
+  },
+  recruiterInterviews: {
+    title: 'Scheduled Interviews',
+    subtitle: 'Manage upcoming interviews and finalize hiring',
+    failedLoad: 'Failed to load interviews',
+    noInterviews: 'No interviews scheduled yet.'
+  },
+  recruiterHired: {
+    title: 'Hired Candidates',
+    subtitle: 'View all candidates who have joined your team.',
+    failedLoad: 'Failed to load hired candidates',
+    noHired: 'No hired candidates yet.',
+    statusHired: 'Hired',
+    officialJoin: 'Team Member',
+    officialJoinHint: 'The candidate is officially hired for this position.'
+  },
+  recruiterShortlist: {
+    title: 'Shortlisted Candidates',
+    subtitle: 'Schedule interviews and finalize hiring',
+    failedLoad: 'Failed to load shortlist',
+    interview: 'Schedule Interview',
+    interviewHint: 'Send an invitation to the candidate',
+    sendInvite: 'Send Invite',
+    hiring: 'Final Hiring',
+    hiringHint: 'Mark this candidate as hired',
+    hireNow: 'Hire Candidate',
+    alreadyScheduled: 'Interview already scheduled',
+    locationPlaceholder: 'Location or meeting link',
+    interviewDatePlaceholder: 'Select Date & Time',
+    invalidDate: 'Interviews must be scheduled at least 1 day in advance',
+    formRequired: 'Please fill in the date and location',
+    interviewScheduled: 'Interview scheduled and email sent!',
+    failedSchedule: 'Failed to schedule interview',
+    hiredSuccess: 'Candidate hired successfully!',
+    failedHire: 'Failed to mark as hired'
   }
 };
-
 export default en;

@@ -3,12 +3,17 @@ import { toast } from 'react-toastify';
 let lastToastId = null;
 
 export function showToast(toastId, type, message, options = {}) {
+  const resolvedOptions =
+    options && Object.prototype.hasOwnProperty.call(options, 'autoClose')
+      ? options
+      : { autoClose: 2200, ...options };
+
   if (lastToastId && toastId !== lastToastId && toast.isActive(lastToastId)) {
     toast.dismiss(lastToastId);
   }
 
   if (!toastId) {
-    lastToastId = toast[type]?.(message, options);
+    lastToastId = toast[type]?.(message, resolvedOptions);
     return;
   }
 
@@ -17,13 +22,13 @@ export function showToast(toastId, type, message, options = {}) {
       render: message,
       type,
       isLoading: false,
-      ...options
+      ...resolvedOptions
     });
     lastToastId = toastId;
     return;
   }
 
-  toast[type]?.(message, { toastId, ...options });
+  toast[type]?.(message, { toastId, ...resolvedOptions });
   lastToastId = toastId;
 }
 

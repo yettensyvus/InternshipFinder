@@ -12,9 +12,12 @@ export default function Applications() {
   const [selectedApp, setSelectedApp] = useState(null);
   const [jobsLoading, setJobsLoading] = useState(true);
   const [appsLoading, setAppsLoading] = useState(false);
+  const [page, setPage] = useState(1);
   const [updatingStatusId, setUpdatingStatusId] = useState(null);
   const [isJobDropdownOpen, setIsJobDropdownOpen] = useState(false);
   const jobDropdownRef = useRef(null);
+
+  const pageSize = 5;
 
   useEffect(() => {
     const load = async () => {
@@ -50,6 +53,7 @@ export default function Applications() {
     const toastId = `recruiter-apps-load-${jobId}`;
     setSelectedJobId(jobId);
     setSelectedApp(null);
+    setPage(1);
     setAppsLoading(true);
     try {
       const res = await axios.get(`/recruiter/applications/${jobId}`);
@@ -88,6 +92,13 @@ export default function Applications() {
   };
 
   const selectedJob = jobs.find(j => String(j.id) === String(selectedJobId));
+
+  const totalPages = Math.max(1, Math.ceil(applications.length / pageSize));
+
+  const pagedApplications = applications.slice(
+    (page - 1) * pageSize,
+    page * pageSize
+  );
 
   const statusMeta = (status) => {
     const s = String(status || '').toUpperCase();
@@ -173,174 +184,209 @@ export default function Applications() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-10">
-      <div className="max-w-6xl mx-auto">
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur border border-gray-200/60 dark:border-gray-700/60 rounded-3xl shadow-xl">
-          <div className="px-6 py-8 bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600">
-            <h1 className="text-2xl font-bold text-white">{t('recruiterApplications.title')}</h1>
-            <p className="text-white/80 text-sm mt-1">{t('recruiterApplications.subtitle')}</p>
+    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 pt-12 pb-20">
+      <div className="w-full px-2 md:px-6">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 dark:from-emerald-400 dark:via-teal-400 dark:to-cyan-400 pb-2">
+              {t('recruiterApplications.title')}
+            </h1>
+            <p className="mt-4 text-gray-600 dark:text-gray-300 max-w-2xl text-lg">
+              {t('recruiterApplications.subtitle')}
+            </p>
+          </div>
+
+          <div className="w-full md:w-[420px]">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+              {t('recruiterApplications.selectJob')}
+            </label>
+            <div className="relative" ref={jobDropdownRef}>
+              <button
+                type="button"
+                disabled={jobsLoading}
+                onClick={() => setIsJobDropdownOpen((v) => !v)}
+                className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 disabled:opacity-60 shadow-sm"
+              >
+                <span className="text-sm font-semibold truncate">
+                  {jobsLoading
+                    ? t('recruiterApplications.loadingJobs')
+                    : (selectedJob ? `${selectedJob.title} - ${selectedJob.company}` : t('recruiterApplications.selectJobPlaceholder'))}
+                </span>
+                <ChevronDownIcon
+                  className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isJobDropdownOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {isJobDropdownOpen && !jobsLoading && (
+                <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 max-h-64 overflow-auto">
+                  {jobs.map((job) => (
+                    <button
+                      key={job.id}
+                      type="button"
+                      onClick={() => {
+                        fetchApplications(job.id);
+                        setIsJobDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${String(selectedJobId) === String(job.id) ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                    >
+                      <span className="font-medium truncate">{job.title} - {job.company}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white/70 dark:bg-gray-800/60 border border-gray-200/60 dark:border-gray-700/60 rounded-3xl shadow-xl overflow-hidden">
+          <div className="px-6 py-5 border-b border-gray-200/60 dark:border-gray-700/60 flex items-center justify-between">
+            <div className="text-sm text-gray-600 dark:text-gray-300">
+              {t('recruiterStudents.count', { count: applications.length })}
+            </div>
           </div>
 
           <div className="p-6">
-            <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 mb-6">
-              <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-                <div className="w-full">
-                  <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">{t('recruiterApplications.selectJob')}</label>
-                  <div className="relative" ref={jobDropdownRef}>
-                    <button
-                      type="button"
-                      disabled={jobsLoading}
-                      onClick={() => setIsJobDropdownOpen(prev => !prev)}
-                      className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 disabled:opacity-60"
-                    >
-                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                        {jobsLoading
-                          ? t('recruiterApplications.loadingJobs')
-                          : (selectedJob ? `${selectedJob.title} - ${selectedJob.company}` : t('recruiterApplications.selectJobPlaceholder'))}
-                      </span>
-                      <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isJobDropdownOpen ? 'rotate-180' : ''}`} />
-                    </button>
+            {appsLoading ? (
+              <div className="text-gray-600 dark:text-gray-300">{t('recruiterApplications.loadingApps')}</div>
+            ) : applications.length === 0 ? (
+              <div className="text-gray-600 dark:text-gray-400">
+                {selectedJobId ? t('recruiterApplications.noAppsYet') : t('recruiterApplications.selectJobToView')}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Column 1: Applicant List */}
+                <div className="lg:col-span-3">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {t('recruiterStudents.page', { page, total: totalPages })}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setPage((p) => Math.max(1, p - 1))}
+                          disabled={page <= 1}
+                          className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 text-xs font-semibold text-gray-900 dark:text-gray-100 disabled:opacity-60"
+                        >
+                          {t('recruiterStudents.prev')}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                          disabled={page >= totalPages}
+                          className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 text-xs font-semibold text-gray-900 dark:text-gray-100 disabled:opacity-60"
+                        >
+                          {t('recruiterStudents.next')}
+                        </button>
+                      </div>
+                    </div>
 
-                    {isJobDropdownOpen && !jobsLoading && (
-                      <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 max-h-64 overflow-auto">
-                        {jobs.map(job => (
-                          <button
-                            key={job.id}
-                            type="button"
-                            onClick={() => {
-                              fetchApplications(job.id);
-                              setIsJobDropdownOpen(false);
-                            }}
-                            className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${String(selectedJobId) === String(job.id) ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-                          >
-                            <span className="font-medium">{job.title} - {job.company}</span>
-                          </button>
-                        ))}
+                    {pagedApplications.map((app) => {
+                      const isActive = selectedApp?.id === app.id;
+                      const meta = statusMeta(app.status);
+                      return (
+                        <button
+                          key={app.id}
+                          type="button"
+                          onClick={() => setSelectedApp(app)}
+                          className={`w-full text-left bg-white dark:bg-gray-900/40 border rounded-2xl p-4 shadow-sm transition-colors ${isActive ? 'border-emerald-300 dark:border-emerald-700 ring-2 ring-emerald-200/70 dark:ring-emerald-900/40' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/60'}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-700 dark:text-emerald-400 font-bold flex-shrink-0 overflow-hidden">
+                              {app.student?.profilePictureUrl ? (
+                                <img src={app.student.profilePictureUrl} className="h-full w-full object-cover" alt="" />
+                              ) : getInitials(app.student?.name)}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="font-bold text-sm text-gray-900 dark:text-white truncate">
+                                {app.student?.name}
+                              </div>
+                              <div className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 ${meta.pill}`}>
+                                {meta.label}
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Column 2: Details & Status Update */}
+                <div className="lg:col-span-4">
+                  <div className="bg-white dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm h-full overflow-y-auto">
+                    {!selectedApp ? (
+                      <div className="flex flex-col items-center justify-center h-full text-center py-10 text-gray-600 dark:text-gray-400">
+                        <div className="h-16 w-16 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-4">
+                          <DocumentTextIcon className="h-8 w-8 text-gray-400" />
+                        </div>
+                        {t('recruiterApplications.selectStudentHint')}
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div>
+                          <div className="text-2xl font-extrabold text-gray-900 dark:text-white truncate">
+                            {selectedApp.student?.name}
+                          </div>
+                          <div className="text-sm text-emerald-600 dark:text-emerald-400 font-medium mt-1 truncate">
+                            {selectedJob?.title} ({selectedJob?.company})
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-3">
+                          <div className="text-sm p-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Email</div>
+                            <div className="text-gray-800 dark:text-gray-100 font-medium break-all">{selectedApp.student?.email}</div>
+                          </div>
+                          <div className="text-sm p-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{t('recruiterApplications.phone')}</div>
+                            <div className="text-gray-800 dark:text-gray-100 font-medium">{selectedApp.student?.phone || t('common.notAvailable')}</div>
+                          </div>
+                          <div className="text-sm p-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{t('recruiterApplications.college')}</div>
+                            <div className="text-gray-800 dark:text-gray-100 font-medium">{selectedApp.student?.college || t('common.notAvailable')}</div>
+                          </div>
+                        </div>
+
+                        <div className="pt-6 border-t border-gray-100 dark:border-gray-800">
+                          <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30">
+                            <h3 className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                              {t('recruiterApplications.updateStatus', { defaultValue: 'Update Status' })}
+                            </h3>
+                            <div className="grid grid-cols-2 gap-3">
+                              <button
+                                type="button"
+                                disabled={updatingStatusId === selectedApp.id || selectedApp.status === 'SHORTLISTED'}
+                                onClick={() => updateStatus(selectedApp.id, 'SHORTLISTED')}
+                                className={`px-3 py-2.5 rounded-xl text-xs font-bold transition-all border ${selectedApp.status === 'SHORTLISTED'
+                                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-md'
+                                  : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400'} disabled:opacity-60`}
+                              >
+                                {t('recruiterApplications.shortlist')}
+                              </button>
+                              <button
+                                type="button"
+                                disabled={updatingStatusId === selectedApp.id || selectedApp.status === 'REJECTED'}
+                                onClick={() => updateStatus(selectedApp.id, 'REJECTED')}
+                                className={`px-3 py-2.5 rounded-xl text-xs font-bold transition-all border ${selectedApp.status === 'REJECTED'
+                                  ? 'bg-rose-600 text-white border-rose-600 shadow-md'
+                                  : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:border-rose-500 hover:text-rose-600 dark:hover:text-rose-400'} disabled:opacity-60`}
+                              >
+                                {t('recruiterApplications.reject')}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <div className="rounded-2xl px-4 py-2 text-center bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                    <div className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">{t('recruiterApplications.applicants')}</div>
-                    <div className="text-lg font-bold text-gray-900 dark:text-white">{applications.length}</div>
-                  </div>
+                {/* Column 3: CV Viewer */}
+                <div className="lg:col-span-5 h-full min-h-[600px]">
+                  <ResumePanel resumeUrl={selectedApp?.student?.resumeUrl} />
                 </div>
               </div>
-            </div>
-
-            {appsLoading ? (
-              <div className="text-sm text-gray-600 dark:text-gray-400">{t('recruiterApplications.loadingApps')}</div>
-            ) : applications.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden">
-                  <div className="px-5 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                    <div className="text-sm font-semibold text-gray-900 dark:text-white">{t('recruiterApplications.applicants')}</div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">{t('recruiterApplications.clickStudentHint')}</div>
-                  </div>
-                  <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {applications.map(app => (
-                      (() => {
-                        const meta = statusMeta(app.status);
-                        const active = selectedApp?.id === app.id;
-                        const name = app.student?.name || '';
-                        return (
-                      <button
-                        key={app.id}
-                        type="button"
-                        onClick={() => setSelectedApp(app)}
-                        className={`w-full text-left p-5 hover:bg-gray-50 dark:hover:bg-gray-800 transition ${active ? 'bg-gray-50 dark:bg-gray-800' : ''}`}
-                      >
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex items-start gap-3">
-                            <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center font-extrabold shadow">
-                              {getInitials(name)}
-                            </div>
-                            <div>
-                              <div className="text-sm font-semibold text-gray-900 dark:text-white">{app.student?.name || t('common.notAvailable')}</div>
-                              <div className="text-xs text-gray-600 dark:text-gray-400">{app.student?.email || t('common.notAvailable')}</div>
-                            </div>
-                          </div>
-                          <div className={`text-[11px] font-bold px-3 py-1 rounded-full ${meta.pill}`}>
-                            {meta.label}
-                          </div>
-                        </div>
-                      </button>
-                        );
-                      })()
-                    ))}
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
-                  {!selectedApp ? (
-                    <div className="text-sm text-gray-600 dark:text-gray-400">{t('recruiterApplications.selectStudentHint')}</div>
-                  ) : (
-                    <div className="space-y-5">
-                      <div className="flex items-center gap-4">
-                        <div className="h-16 w-16 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
-                          {selectedApp.student?.profilePictureUrl ? (
-                            <img
-                              src={selectedApp.student.profilePictureUrl}
-                              alt={t('recruiterApplications.studentAlt')}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : null}
-                        </div>
-                        <div>
-                          <div className="text-lg font-semibold text-gray-900 dark:text-white">{selectedApp.student?.name || t('common.notAvailable')}</div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">{selectedApp.student?.email || t('common.notAvailable')}</div>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 gap-2 text-sm text-gray-700 dark:text-gray-300">
-                        <div><span className="font-semibold">{t('recruiterApplications.phone')}:</span> {selectedApp.student?.phone || t('common.notAvailable')}</div>
-                        <div><span className="font-semibold">{t('recruiterApplications.college')}:</span> {selectedApp.student?.college || t('common.notAvailable')}</div>
-                        <div><span className="font-semibold">{t('recruiterApplications.branch')}:</span> {selectedApp.student?.branch || t('common.notAvailable')}</div>
-                        <div><span className="font-semibold">{t('recruiterApplications.year')}:</span> {selectedApp.student?.yearOfPassing || t('common.notAvailable')}</div>
-                      </div>
-
-                      <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3">
-                        <div className="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2">
-                          {t('recruiterApplications.statusUpdated', { status: selectedApp.status || t('common.notAvailable') })}
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <button
-                            type="button"
-                            disabled={updatingStatusId === selectedApp.id || selectedApp.status === 'SHORTLISTED'}
-                            onClick={() => updateStatus(selectedApp.id, 'SHORTLISTED')}
-                            className={`px-3 py-2 rounded-xl text-sm font-semibold transition border ${selectedApp.status === 'SHORTLISTED'
-                              ? 'bg-emerald-600 text-white border-emerald-600'
-                              : 'bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 border-gray-200 dark:border-gray-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/15'} disabled:opacity-60`}
-                          >
-                            {t('recruiterApplications.shortlist')}
-                          </button>
-                          <button
-                            type="button"
-                            disabled={updatingStatusId === selectedApp.id || selectedApp.status === 'REJECTED'}
-                            onClick={() => updateStatus(selectedApp.id, 'REJECTED')}
-                            className={`px-3 py-2 rounded-xl text-sm font-semibold transition border ${selectedApp.status === 'REJECTED'
-                              ? 'bg-rose-600 text-white border-rose-600'
-                              : 'bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 border-gray-200 dark:border-gray-700 hover:bg-rose-50 dark:hover:bg-rose-900/15'} disabled:opacity-60`}
-                          >
-                            {t('recruiterApplications.reject')}
-                          </button>
-                        </div>
-                      </div>
-
-                      <ResumePanel resumeUrl={selectedApp.student?.resumeUrl} />
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : selectedJobId ? (
-              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
-                <div className="text-lg font-semibold text-gray-900 dark:text-white">{t('recruiterApplications.noAppsYet')}</div>
-                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">{t('recruiterApplications.noAppsYetHint')}</div>
-              </div>
-            ) : (
-              <div className="text-sm text-gray-600 dark:text-gray-400">{t('recruiterApplications.selectJobToView')}</div>
             )}
           </div>
         </div>

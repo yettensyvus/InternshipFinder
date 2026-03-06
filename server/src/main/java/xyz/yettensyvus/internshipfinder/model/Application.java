@@ -28,10 +28,18 @@ public class Application {
     private Job job;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 50)
     private Status status = Status.APPLIED;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "applied_at")
     private Date appliedAt;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "interview_at")
+    private Date interviewAt;
+
+    @Column(name = "interview_location")
+    private String interviewLocation;
 
 }

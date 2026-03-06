@@ -26,7 +26,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             if (user.getRole() == Role.RECRUITER && !user.isRecruiterEmailVerified()) {
                 throw new DisabledException("EMAIL_NOT_VERIFIED");
             }
-            if (user.getRole() == Role.STUDENT) {
+            if (user.getRole() == Role.STUDENT && !user.isStudentEmailVerified()) {
                 throw new DisabledException("EMAIL_NOT_VERIFIED");
             }
             throw new DisabledException("ACCOUNT_BLOCKED");

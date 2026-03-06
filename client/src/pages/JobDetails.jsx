@@ -14,6 +14,7 @@ export default function JobDetails() {
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
+  const [hasApplied, setHasApplied] = useState(false);
 
   const apply = async () => {
     if (!id) return;
@@ -61,6 +62,30 @@ export default function JobDetails() {
       load();
     }
   }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+    if (!auth || auth.role !== 'STUDENT') {
+      setHasApplied(false);
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await axios.get('/student/applications');
+        const apps = Array.isArray(res.data) ? res.data : [];
+        const applied = apps.some((a) => String(a?.job?.id) === String(id));
+        if (!cancelled) setHasApplied(applied);
+      } catch {
+        if (!cancelled) setHasApplied(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [auth?.role, id]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-10">
@@ -133,14 +158,24 @@ export default function JobDetails() {
                 </div>
 
                 <div className="mt-5 flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={apply}
-                    disabled={applying || !(job.active ?? job.isActive)}
-                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white text-sm font-semibold disabled:opacity-60"
-                  >
-                    {applying ? t('studentJobs.applying') : t('studentJobs.apply')}
-                  </button>
+                  {!hasApplied ? (
+                    <button
+                      type="button"
+                      onClick={apply}
+                      disabled={applying || !(job.active ?? job.isActive)}
+                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white text-sm font-semibold disabled:opacity-60"
+                    >
+                      {applying ? t('studentJobs.applying') : t('studentJobs.apply')}
+                    </button>
+                  ) : (
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                      {t('studentJobs.alreadyApplied')}
+                      {' '}
+                      <Link to="/student/applications" className="text-violet-700 dark:text-violet-300 hover:underline font-semibold">
+                        {t('jobDetails.viewApplications', { defaultValue: 'View applications' })}
+                      </Link>
+                    </div>
+                  )}
                   {!auth ? (
                     <div className="text-xs text-gray-600 dark:text-gray-400">
                       {t('common.signIn')}

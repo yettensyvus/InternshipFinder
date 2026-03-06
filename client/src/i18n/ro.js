@@ -189,6 +189,7 @@ const ro = {
     types: {
       APPLICATION_SUBMITTED: 'Aplicație trimisă',
       APPLICATION_STATUS_CHANGED: 'Starea aplicației a fost schimbată',
+      JOB_RECOMMENDED: 'Job recomandat',
       USER_REGISTERED: 'Utilizator înregistrat',
       JOB_POSTED: 'Job postat',
       RESUME_UPLOADED: 'CV încărcat'
@@ -221,7 +222,9 @@ const ro = {
     failedMarkAllRead: 'Marcarea tuturor ca citite a eșuat',
     cleared: 'Notificări curățate',
     failedClear: 'Curățarea notificărilor a eșuat',
-    failedMarkRead: 'Marcarea ca citit a eșuat'
+    failedMarkRead: 'Marcarea ca citit a eșuat',
+    recommendedMessage: 'Un recrutor ți-a recomandat: {{job}}',
+    clickToOpen: 'Apasă pentru a deschide'
   },
   cvBuilder: {
   title: 'Constructor CV',
@@ -357,7 +360,37 @@ const ro = {
     myPostedJobs: 'Joburile mele postate',
     myPostedJobsHint: 'Revizuiește și gestionează postările tale de joburi.',
     viewApplications: 'Vezi aplicațiile',
-    viewApplicationsHint: 'Verifică aplicațiile studenților și actualizează stările.'
+    viewApplicationsHint: 'Verifică aplicațiile studenților și actualizează stările.',
+    viewStudents: 'Vezi studenți',
+    viewStudentsHint: 'Răsfoiește profilele studenților și descarcă CV-uri.'
+  },
+  recruiterStudents: {
+    title: 'Studenți',
+    subtitle: 'Răsfoiește baza de date de studenți și consultă profilurile candidaților.',
+    search: 'Căutare',
+    searchPlaceholder: 'Caută după nume, email, colegiu, specializare…',
+    count: '{{count}} studenți',
+    selectStudent: 'Selectează un student pentru a vedea detaliile.',
+    empty: 'Nu s-au găsit studenți.',
+    failedLoad: 'Nu s-au putut încărca studenții',
+    failedLoadJobs: 'Nu s-au putut încărca joburile tale',
+    resume: 'CV',
+    openResume: 'Deschide CV',
+    email: 'Email',
+    phone: 'Telefon',
+    college: 'Colegiu',
+    branch: 'Specializare',
+    yearOfPassing: 'Anul absolvirii',
+    recommendJob: 'Recomandă un job',
+    selectJob: 'Selectează jobul',
+    recommend: 'Recomandă',
+    recommending: 'Se recomandă…',
+    recommendationSent: 'Recomandarea a fost trimisă',
+    failedRecommend: 'Nu s-a putut recomanda jobul',
+    noAvailableJobs: 'Studentul a aplicat deja la toate joburile tale',
+    prev: 'Înapoi',
+    next: 'Înainte',
+    page: 'Pagina {{page}} / {{total}}'
   },
   home: {
     hero: {
@@ -769,7 +802,8 @@ const ro = {
     noneHint: 'Postează un job pentru a începe să primești aplicații.',
     posted: 'Postat',
     deadline: 'Termen limită',
-    failedLoad: 'Preluarea joburilor a eșuat'
+    failedLoad: 'Preluarea joburilor a eșuat',
+    count: '{{count}} joburi'
   },
   recruiterApplications: {
     title: 'Vezi Aplicațiile',
@@ -799,6 +833,7 @@ const ro = {
     failedLoadApps: 'Încărcarea aplicațiilor a eșuat',
     invalidStatus: 'Status invalid',
     statusUpdated: 'Status actualizat: {{status}}',
+    type: 'Tip',
     failedUpdateStatus: 'Actualizarea stării a eșuat'
   },
   recruiterJobManage: {
@@ -842,13 +877,54 @@ const ro = {
     typeJob: 'Job',
     typeInternship: 'Stagiu',
     failedLoad: 'Încărcarea jobului a eșuat',
+    manage: 'Gestionare',
     titleRequired: 'Titlul este obligatoriu',
     companyRequired: 'Compania este obligatorie',
     locationRequired: 'Locația este obligatorie',
     descriptionMin: 'Descrierea trebuie să aibă cel puțin 20 de caractere',
     durationRequired: 'Durata este obligatorie',
     updated: 'Job actualizat',
-    failedUpdate: 'Actualizarea jobului a eșuat'
+    failedUpdate: 'Actualizarea jobului a eșuat',
+    status: 'Status',
+    open: 'Deschis',
+    closed: 'Închis',
+    payment: 'Plată',
+    recruiter: 'Recrutor'
+  },
+  recruiterInterviews: {
+    title: 'Interviuri Programate',
+    subtitle: 'Gestionează interviurile viitoare și finalizează angajarea',
+    failedLoad: 'Eșec la încărcarea interviurilor',
+    noInterviews: 'Niciun interviu programat încă.'
+  },
+  recruiterHired: {
+    title: 'Candidați Angajați',
+    subtitle: 'Vezi toți candidații care s-au alăturat echipei tale.',
+    failedLoad: 'Eșec la încărcarea candidaților angajați',
+    noHired: 'Niciun candidat angajat încă.',
+    statusHired: 'Angajat',
+    officialJoin: 'Membru al Echipei',
+    officialJoinHint: 'Candidatul este angajat oficial pentru această poziție.'
+  },
+  recruiterShortlist: {
+    title: 'Candidați Selectați',
+    subtitle: 'Programează interviuri și finalizează angajarea',
+    failedLoad: 'Eșec la încărcarea listei',
+    interview: 'Programare Interviu',
+    interviewHint: 'Trimite o invitație către candidat',
+    sendInvite: 'Trimite Invitație',
+    hiring: 'Angajare Finală',
+    hiringHint: 'Marchează acest candidat ca angajat',
+    hireNow: 'Angajează Candidatul',
+    alreadyScheduled: 'Interviu deja programat',
+    locationPlaceholder: 'Locație sau link de întâlnire',
+    interviewDatePlaceholder: 'Selectează Data și Ora',
+    invalidDate: 'Interviurile trebuie programate cu cel puțin 1 zi în avans',
+    formRequired: 'Vă rugăm să completați data și locația',
+    interviewScheduled: 'Interviu programat și email trimis!',
+    failedSchedule: 'Eșec la programarea interviului',
+    hiredSuccess: 'Candidat angajat cu succes!',
+    failedHire: 'Eșec la marcarea ca angajat'
   }
 };
 

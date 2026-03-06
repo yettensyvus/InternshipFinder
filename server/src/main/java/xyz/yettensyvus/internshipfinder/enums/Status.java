@@ -3,5 +3,7 @@ package xyz.yettensyvus.internshipfinder.enums;
 public enum Status {
     APPLIED,
     SHORTLISTED,
-    REJECTED
+    INTERVIEW_SCHEDULED,
+    REJECTED,
+    HIRED
 }
