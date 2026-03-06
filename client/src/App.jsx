@@ -41,6 +41,7 @@ import Notifications from './pages/Notifications';
 import JobDetails from './pages/JobDetails';
 import AccountBlocked from './pages/AccountBlocked';
 import Unauthorized from './pages/Unauthorized';
+import Jobs from './pages/Jobs';
 
 export default function App() {
   const { t, i18n } = useTranslation();
@@ -57,6 +58,8 @@ export default function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
+        <Route path="/jobs" element={<Jobs />} />
+        <Route path="/jobs/:id" element={<JobDetails />} />
         <Route path="/profile" element={<ProfileRedirect />} />
         <Route
           path="/login"
@@ -223,15 +226,6 @@ export default function App() {
           element={
             <ProtectedRoute role={["STUDENT", "RECRUITER", "ADMIN"]}>
               <Notifications />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/jobs/:id"
-          element={
-            <ProtectedRoute role={["STUDENT", "RECRUITER", "ADMIN"]}>
-              <JobDetails />
             </ProtectedRoute>
           }
         />

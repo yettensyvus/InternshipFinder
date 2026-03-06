@@ -372,13 +372,14 @@ const en = {
       imageAlt: 'Students and professionals networking'
     },
     stats: {
-      students: { title: 'Students', subtitle: 'Profile and resume management' },
-      recruiters: { title: 'Recruiters', subtitle: 'Job posting and applicant review' },
+      students: { title: 'Students', subtitle: 'Create resumes and apply to jobs' },
+      recruiters: { title: 'Recruiters', subtitle: 'Post and manage job offers' },
       admin: { title: 'Admin', subtitle: 'User oversight and moderation' },
       status: { title: 'Status', subtitle: 'Application tracking and notifications' }
     },
     actions: {
       createAccount: 'Create an Account',
+      viewJobs: 'View Jobs',
       openDashboard: 'Open Dashboard'
     },
     floating: {

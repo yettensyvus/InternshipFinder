@@ -378,6 +378,7 @@ const ro = {
     },
     actions: {
       createAccount: 'Creează un cont',
+      viewJobs: 'Vezi joburi',
       openDashboard: 'Deschide panoul de control'
     },
     floating: {

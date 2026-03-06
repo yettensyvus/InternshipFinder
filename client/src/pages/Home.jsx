@@ -176,7 +176,7 @@ export default function Home() {
                 <div className="absolute -top-6 -right-6 w-40 h-40 bg-blue-200 dark:bg-blue-800 rounded-full mix-blend-multiply filter blur-xl opacity-70 -z-10"></div>
                 
                 {/* Floating Card 1 */}
-                <div className="hidden sm:block absolute -bottom-6 -left-6 bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 transform -rotate-6 hover:rotate-0 transition-transform duration-300">
+                <div className="hidden sm:block absolute -bottom-6 -left-6 bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-violet-100 dark:border-violet-800">
                   <div className="flex items-center">
                     <div className="bg-violet-100 dark:bg-violet-900/50 p-2 rounded-lg mr-2 sm:mr-3">
                       <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-violet-600 dark:text-violet-400" />
@@ -189,7 +189,7 @@ export default function Home() {
                 </div>
                 
                 {/* Floating Card 2 */}
-                <div className="hidden sm:block absolute -top-6 -right-6 bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 transform rotate-6 hover:rotate-0 transition-transform duration-300">
+                <div className="hidden sm:block absolute -top-6 -right-6 bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-indigo-100 dark:border-indigo-800">
                   <div className="flex items-center">
                     <div className="bg-blue-100 dark:bg-blue-900/50 p-2 rounded-lg mr-2 sm:mr-3">
                       <Users className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
@@ -205,6 +205,32 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {!auth && (
+        <section className="py-10 px-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur border border-gray-200/60 dark:border-gray-700/60 rounded-3xl shadow-xl overflow-hidden">
+              <div className="p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div>
+                  <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                    {t('home.actions.viewJobs')}
+                  </div>
+                  <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                    {t('studentJobs.subtitle')}
+                  </div>
+                </div>
+
+                <Link
+                  to="/jobs"
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white font-semibold text-sm sm:text-base hover:from-violet-700 hover:via-indigo-700 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                  {t('home.actions.viewJobs')}
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Features Section */}
       <section className="py-16 md:py-24 px-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">

@@ -138,6 +138,8 @@ public class UserServiceImpl implements UserService {
         if (requestedRole == Role.RECRUITER) {
             user.setEnabled(false);
             user.setRecruiterEmailVerified(false);
+        } else if (requestedRole == Role.STUDENT) {
+            user.setEnabled(false);
         } else {
             user.setEnabled(true);
         }
@@ -150,6 +152,10 @@ public class UserServiceImpl implements UserService {
             student.setName(req.getName());
             student.setResumeUrl(req.getResumeUrl());
             studentRepo.save(student);
+
+            String otp = createOrReplaceOtp(user, OtpPurpose.STUDENT_EMAIL_VERIFICATION, null);
+            emailService.sendOtpEmail(user.getEmail(), otp);
+            return "STUDENT_OTP_SENT";
         } else if (user.getRole() == Role.RECRUITER) {
             Recruiter recruiter = new Recruiter();
             recruiter.setUser(user);
@@ -181,16 +187,21 @@ public class UserServiceImpl implements UserService {
         User user = userRepo.findByEmail(normalizedEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        if (user.getRole() != Role.RECRUITER) {
-            throw new RuntimeException("INVALID_ROLE");
+        if (user.getRole() == Role.RECRUITER) {
+            consumeOtpOrThrow(user, OtpPurpose.RECRUITER_EMAIL_VERIFICATION, otp);
+            user.setRecruiterEmailVerified(true);
+            userRepo.save(user);
+            return "Email verified";
         }
 
-        consumeOtpOrThrow(user, OtpPurpose.RECRUITER_EMAIL_VERIFICATION, otp);
+        if (user.getRole() == Role.STUDENT) {
+            consumeOtpOrThrow(user, OtpPurpose.STUDENT_EMAIL_VERIFICATION, otp);
+            user.setEnabled(true);
+            userRepo.save(user);
+            return "Email verified";
+        }
 
-        user.setRecruiterEmailVerified(true);
-        userRepo.save(user);
-
-        return "Email verified";
+        throw new RuntimeException("INVALID_ROLE");
     }
 
     @Override
@@ -204,17 +215,27 @@ public class UserServiceImpl implements UserService {
             return "OTP sent";
         }
 
-        if (user.getRole() != Role.RECRUITER) {
-            throw new RuntimeException("INVALID_ROLE");
+        if (user.getRole() == Role.RECRUITER) {
+            if (user.isRecruiterEmailVerified()) {
+                return "Already verified";
+            }
+
+            String otp = createOrReplaceOtp(user, OtpPurpose.RECRUITER_EMAIL_VERIFICATION, null);
+            emailService.sendRecruiterEmailVerificationOtpEmail(user.getEmail(), otp);
+            return "OTP sent";
         }
 
-        if (user.isRecruiterEmailVerified()) {
-            return "Already verified";
+        if (user.getRole() == Role.STUDENT) {
+            if (user.isEnabled()) {
+                return "Already verified";
+            }
+
+            String otp = createOrReplaceOtp(user, OtpPurpose.STUDENT_EMAIL_VERIFICATION, null);
+            emailService.sendOtpEmail(user.getEmail(), otp);
+            return "OTP sent";
         }
 
-        String otp = createOrReplaceOtp(user, OtpPurpose.RECRUITER_EMAIL_VERIFICATION, null);
-        emailService.sendRecruiterEmailVerificationOtpEmail(user.getEmail(), otp);
-        return "OTP sent";
+        throw new RuntimeException("INVALID_ROLE");
     }
 
     @Override
@@ -305,13 +326,13 @@ public class UserServiceImpl implements UserService {
         User user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+        if (user.getRole() == Role.RECRUITER && !user.isRecruiterEmailVerified()) {
+            throw new RuntimeException("EMAIL_NOT_VERIFIED");
+        }
+        if (user.getRole() == Role.STUDENT && !user.isEnabled()) {
+            throw new RuntimeException("EMAIL_NOT_VERIFIED");
+        }
         if (!user.isEnabled()) {
-            if (user.getRole() == Role.RECRUITER) {
-                if (!user.isRecruiterEmailVerified()) {
-                    throw new RuntimeException("EMAIL_NOT_VERIFIED");
-                }
-                throw new RuntimeException("ACCOUNT_BLOCKED");
-            }
             throw new RuntimeException("ACCOUNT_BLOCKED");
         }
 

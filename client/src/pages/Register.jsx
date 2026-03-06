@@ -72,7 +72,7 @@ export default function Register() {
     showLoadingToast(toastId, data.role === 'RECRUITER' ? t('auth.creatingAccountSendingOtp') : t('auth.creatingAccount'));
     try {
       const res = await axios.post('/auth/register', { ...data, name: username, username, email, password });
-      if (res.data === 'RECRUITER_OTP_SENT') {
+      if (res.data === 'RECRUITER_OTP_SENT' || res.data === 'STUDENT_OTP_SENT') {
         showToast(toastId, 'success', t('auth.registrationSuccessVerifyEmail'), { autoClose: 1800 });
         setTimeout(() => navigate('/verify-email-otp', { state: { email } }), 1200);
         return;

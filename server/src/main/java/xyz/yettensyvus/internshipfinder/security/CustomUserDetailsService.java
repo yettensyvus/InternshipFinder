@@ -7,6 +7,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.stereotype.Service;
+import xyz.yettensyvus.internshipfinder.enums.Role;
 
 import java.util.Collections;
 
@@ -22,6 +23,12 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
         if (!user.isEnabled()) {
+            if (user.getRole() == Role.RECRUITER && !user.isRecruiterEmailVerified()) {
+                throw new DisabledException("EMAIL_NOT_VERIFIED");
+            }
+            if (user.getRole() == Role.STUDENT) {
+                throw new DisabledException("EMAIL_NOT_VERIFIED");
+            }
             throw new DisabledException("ACCOUNT_BLOCKED");
         }
 

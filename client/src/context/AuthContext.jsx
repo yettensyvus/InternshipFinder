@@ -46,6 +46,10 @@ export const AuthProvider = ({ children }) => {
           return Promise.reject(error);
         }
 
+        if (url.includes('/auth/') && !url.includes('/auth/me')) {
+          return Promise.reject(error);
+        }
+
         if (url.includes('/auth/refresh')) {
           // Refresh failed, logout the user
           logout();

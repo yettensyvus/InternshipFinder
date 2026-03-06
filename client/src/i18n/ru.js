@@ -378,6 +378,7 @@ const ru = {
     },
     actions: {
       createAccount: 'Создать аккаунт',
+      viewJobs: 'Посмотреть вакансии',
       openDashboard: 'Открыть панель управления'
     },
     floating: {

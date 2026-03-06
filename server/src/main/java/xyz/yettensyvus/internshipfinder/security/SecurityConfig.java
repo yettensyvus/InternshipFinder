@@ -44,6 +44,7 @@ public class SecurityConfig {
                                 "/api/auth/resend-email-otp",
                                 "/api/auth/reset-password-otp"
                         ).permitAll()
+                        .requestMatchers("/api/jobs/**").permitAll()
                         .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/api/settings/**").authenticated()

@@ -3,14 +3,45 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import axios from '../services/axios';
 import { showToast } from '../services/toast';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../hooks/useAuth';
 
 export default function JobDetails() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { t } = useTranslation();
+  const { auth } = useAuth();
 
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [applying, setApplying] = useState(false);
+
+  const apply = async () => {
+    if (!id) return;
+
+    if (!auth) {
+      navigate('/login');
+      return;
+    }
+
+    if (auth.role !== 'STUDENT') {
+      showToast('job-details-apply', 'error', t('common.accessDenied'));
+      return;
+    }
+
+    if (applying) return;
+
+    try {
+      setApplying(true);
+      await axios.post(`/student/apply/${id}`);
+      showToast('job-details-apply', 'success', t('studentJobs.applied'));
+      navigate('/student/applications');
+    } catch (err) {
+      showToast('job-details-apply', 'error', t('studentJobs.alreadyApplied'));
+      console.error('Apply error:', err);
+    } finally {
+      setApplying(false);
+    }
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -99,6 +130,22 @@ export default function JobDetails() {
                       {job.paid ? t('jobDetails.paid') : t('jobDetails.unpaid')}
                     </div>
                   </div>
+                </div>
+
+                <div className="mt-5 flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={apply}
+                    disabled={applying || !(job.active ?? job.isActive)}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white text-sm font-semibold disabled:opacity-60"
+                  >
+                    {applying ? t('studentJobs.applying') : t('studentJobs.apply')}
+                  </button>
+                  {!auth ? (
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                      {t('common.signIn')}
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
