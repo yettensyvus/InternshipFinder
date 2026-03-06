@@ -57,7 +57,13 @@ export default function Applications() {
     setAppsLoading(true);
     try {
       const res = await axios.get(`/recruiter/applications/${jobId}`);
-      setApplications(Array.isArray(res.data) ? res.data : []);
+      const allApps = Array.isArray(res.data) ? res.data : [];
+      // Filter out applications that are already scheduled for an interview or hired
+      // These will be managed in their respective dedicated pages (Interviews / Hired)
+      const filteredApps = allApps.filter(app => 
+        app.status !== 'SCHEDULED' && app.status !== 'HIRED'
+      );
+      setApplications(filteredApps);
     } catch (err) {
       showToast(toastId, 'error', t('recruiterApplications.failedLoadApps'));
       console.error('Applications fetch error:', err);
@@ -78,10 +84,15 @@ export default function Applications() {
       }
       setUpdatingStatusId(appId);
       await axios.put(`/recruiter/applications/${appId}?status=${status}`);
-      setApplications(prev =>
-        prev.map(a => a.id === appId ? { ...a, status } : a)
-      );
-      setSelectedApp(prev => (prev && prev.id === appId ? { ...prev, status } : prev));
+      if (status === 'SCHEDULED' || status === 'HIRED') {
+        setApplications(prev => prev.filter(a => a.id !== appId));
+        if (selectedApp?.id === appId) setSelectedApp(null);
+      } else {
+        setApplications(prev =>
+          prev.map(a => a.id === appId ? { ...a, status } : a)
+        );
+        setSelectedApp(prev => (prev && prev.id === appId ? { ...prev, status } : prev));
+      }
       showToast(toastId, 'info', t('recruiterApplications.statusUpdated', { status }));
     } catch (err) {
       showToast(toastId, 'error', t('recruiterApplications.failedUpdateStatus'));
