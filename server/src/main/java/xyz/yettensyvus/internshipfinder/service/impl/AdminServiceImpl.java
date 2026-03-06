@@ -31,6 +31,7 @@ public class AdminServiceImpl implements AdminService {
     @Autowired private NotificationRepository notificationRepo;
 
     @Autowired private FileUploadService fileUploadService;
+    @Autowired private RefreshTokenRepository refreshTokenRepo;
 
     @Override
     public List<Student> getAllStudents() {
@@ -58,7 +59,13 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public List<User> getAllUsers() {
-        return userRepo.findAll();
+        List<User> users = userRepo.findAll();
+        for (User user : users) {
+            if (user.getProfilePictureUrl() != null && !user.getProfilePictureUrl().isBlank()) {
+                user.setProfilePictureUrl(fileUploadService.toReadSasUrl(user.getProfilePictureUrl()));
+            }
+        }
+        return users;
     }
 
     @Override
@@ -95,6 +102,7 @@ public class AdminServiceImpl implements AdminService {
         }
 
         notificationRepo.deleteByUser(user);
+        refreshTokenRepo.deleteByUserId(user.getId());
         userRepo.delete(user);
 
         if (!blobsToDelete.isEmpty()) {
@@ -154,15 +162,10 @@ public class AdminServiceImpl implements AdminService {
                 user.getEmail(),
                 user.getRole(),
                 user.isEnabled(),
+                fileUploadService.toReadSasUrl(user.getProfilePictureUrl()),
                 studentDto,
                 recruiterDto
         );
-    }
-
-    @Override
-    @Transactional
-    public AdminUserDetailsDTO updateUserDetails(Long id, AdminUserUpdateRequest req) {
-        return updateUserDetails(id, req, null);
     }
 
     @Override
@@ -353,5 +356,48 @@ public class AdminServiceImpl implements AdminService {
         userRepo.save(user);
 
         return fileUploadService.toReadSasUrl(imageUrl);
+    }
+
+    @Override
+    public String uploadUserProfilePicture(Long userId, org.springframework.web.multipart.MultipartFile file) throws java.io.IOException {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String container;
+        if (user.getRole() == Role.STUDENT) {
+            container = "student-profile-pictures";
+        } else if (user.getRole() == Role.RECRUITER) {
+            container = "recruiter-profile-pictures";
+        } else {
+            container = "admin-profile-pictures";
+        }
+
+        String imageUrl = fileUploadService.uploadFile(file, container);
+        user.setProfilePictureUrl(imageUrl);
+        userRepo.save(user);
+
+        return fileUploadService.toReadSasUrl(imageUrl);
+    }
+
+    @Override
+    @Transactional
+    public String uploadUserResume(Long userId, org.springframework.web.multipart.MultipartFile file) throws java.io.IOException {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getRole() != Role.STUDENT) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Resume upload is only supported for students");
+        }
+
+        Student student = studentRepo.findByUserId(user.getId());
+        if (student == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student profile not found");
+        }
+
+        String resumeUrl = fileUploadService.uploadFile(file, "student-resumes");
+        student.setResumeUrl(resumeUrl);
+        studentRepo.save(student);
+
+        return fileUploadService.toReadSasUrl(resumeUrl);
     }
 }

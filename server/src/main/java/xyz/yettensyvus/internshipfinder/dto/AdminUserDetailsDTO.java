@@ -15,6 +15,8 @@ public class AdminUserDetailsDTO {
     private Role role;
     private boolean enabled;
 
+    private String profilePictureUrl;
+
     private AdminStudentDetailsDTO student;
     private AdminRecruiterDetailsDTO recruiter;
 }

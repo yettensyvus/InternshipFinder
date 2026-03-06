@@ -155,6 +155,7 @@ const ro = {
     subtitle: 'Informații complete despre această postare de job.',
     failedLoad: 'Încărcarea detaliilor jobului a eșuat',
     notFound: 'Job negăsit',
+    signInToApply: 'Autentifică-te ca să aplici',
     postedBy: 'Postat de:',
     open: 'Deschis',
     closed: 'Închis',

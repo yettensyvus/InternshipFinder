@@ -110,4 +110,14 @@ public class AdminController {
     public ResponseEntity<String> uploadProfilePicture(@RequestParam("file") MultipartFile file, Principal principal) throws Exception {
         return ResponseEntity.ok(adminService.uploadAdminProfilePicture(principal.getName(), file));
     }
+
+    @PostMapping("/users/{id}/profile-picture")
+    public ResponseEntity<String> uploadUserProfilePicture(@PathVariable Long id, @RequestParam("file") MultipartFile file) throws Exception {
+        return ResponseEntity.ok(adminService.uploadUserProfilePicture(id, file));
+    }
+
+    @PostMapping("/users/{id}/resume")
+    public ResponseEntity<String> uploadUserResume(@PathVariable Long id, @RequestParam("file") MultipartFile file) throws Exception {
+        return ResponseEntity.ok(adminService.uploadUserResume(id, file));
+    }
 }

@@ -88,142 +88,175 @@ export default function JobDetails() {
   }, [auth?.role, id]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-10">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur border border-gray-200/60 dark:border-gray-700/60 rounded-3xl shadow-xl overflow-hidden">
-          <div className="px-6 py-8 bg-gradient-to-r from-gray-900 via-slate-800 to-gray-900">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <h1 className="text-2xl font-bold text-white">{t('jobDetails.title')}</h1>
-                <p className="text-white/80 text-sm mt-1">{t('jobDetails.subtitle')}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="px-4 py-2 rounded-xl bg-white/15 hover:bg-white/20 text-white text-sm font-semibold border border-white/20 transition"
-              >
-                {t('common.goBack')}
-              </button>
+    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="px-4 pt-12 pb-20">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-8">
+            <div className="rounded-3xl bg-gradient-to-r from-gray-900 via-slate-800 to-gray-900 px-6 py-8 shadow-xl border border-white/10">
+              <h1 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-300 via-indigo-200 to-blue-200 mb-2 pb-1">
+                {t('jobDetails.title')}
+              </h1>
+              <p className="text-white/80 text-sm md:text-base max-w-3xl">{t('jobDetails.subtitle')}</p>
             </div>
           </div>
 
-          <div className="p-6">
-            {loading ? (
-              <div className="text-sm text-gray-600 dark:text-gray-400">{t('common.pleaseWait')}</div>
-            ) : !job ? (
-              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
-                <div className="text-lg font-semibold text-gray-900 dark:text-white">{t('jobDetails.notFound')}</div>
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
-                  <div className="flex items-start gap-6">
-                    {job.recruiterProfilePictureUrl ? (
-                      <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 shadow-lg flex-shrink-0">
-                        <img
-                          src={job.recruiterProfilePictureUrl}
-                          alt={job.recruiterCompanyName || job.company || t('jobDetails.company')}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ) : null}
-
-                    <div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">{job.title || t('common.notAvailable')}</div>
-                      <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                        {(job.recruiterCompanyName || job.company) || t('common.notAvailable')}
-                        {job.location ? ` • ${job.location}` : ''}
-                      </div>
-                      <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                        {t('jobDetails.postedBy')}{' '}
-                        <span className="font-medium text-gray-900 dark:text-white">{job.recruiterCompanyName || t('common.notAvailable')}</span>
-                        {job.recruiterEmail ? <span> ({job.recruiterEmail})</span> : null}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <div className={`text-xs font-semibold px-3 py-1 rounded-full ${(job.active ?? job.isActive) ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'}`}>
-                      {(job.active ?? job.isActive) ? t('jobDetails.open') : t('jobDetails.closed')}
-                    </div>
-                    {job.type ? (
-                      <div className="text-xs font-semibold px-3 py-1 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200">
-                        {job.type}
-                      </div>
-                    ) : null}
-                    <div className={`text-xs font-semibold px-3 py-1 rounded-full ${job.paid ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'}`}>
-                      {job.paid ? t('jobDetails.paid') : t('jobDetails.unpaid')}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-5 flex items-center gap-3">
-                  {!hasApplied ? (
-                    <button
-                      type="button"
-                      onClick={apply}
-                      disabled={applying || !(job.active ?? job.isActive)}
-                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white text-sm font-semibold disabled:opacity-60"
-                    >
-                      {applying ? t('studentJobs.applying') : t('studentJobs.apply')}
-                    </button>
-                  ) : (
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      {t('studentJobs.alreadyApplied')}
-                      {' '}
-                      <Link to="/student/applications" className="text-violet-700 dark:text-violet-300 hover:underline font-semibold">
-                        {t('jobDetails.viewApplications', { defaultValue: 'View applications' })}
-                      </Link>
-                    </div>
-                  )}
-                  {!auth ? (
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      {t('common.signIn')}
-                    </div>
-                  ) : null}
-                </div>
-
-                <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
-                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">{t('jobDetails.posted')}</div>
-                    <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
-                      {job.createdAt ? new Date(job.createdAt).toLocaleString() : t('common.notAvailable')}
-                    </div>
-                  </div>
-                  <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
-                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">{t('jobDetails.deadline')}</div>
-                    <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{job.deadline || t('common.notAvailable')}</div>
-                  </div>
-                  <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
-                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">{t('jobDetails.company')}</div>
-                    <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{job.recruiterCompanyName || job.company || t('common.notAvailable')}</div>
-                  </div>
-                </div>
-
-                <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
-                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">{t('jobDetails.duration')}</div>
-                    <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{job.duration || t('common.notAvailable')}</div>
-                  </div>
-                  <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
-                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">{t('jobDetails.compensation')}</div>
-                    <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{job.compensation || t('common.notAvailable')}</div>
-                  </div>
-                  <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
-                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">{t('jobDetails.payment')}</div>
-                    <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{job.paid ? t('jobDetails.paid') : t('jobDetails.unpaid')}</div>
-                  </div>
-                </div>
-
-                <div className="mt-6">
-                  <div className="text-sm font-semibold text-gray-900 dark:text-white">{t('jobDetails.description')}</div>
-                  <div className="mt-2 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
-                    {job.description || t('common.notAvailable')}
-                  </div>
+          {loading ? (
+            <div className="text-sm text-gray-600 dark:text-gray-400">{t('common.pleaseWait')}</div>
+          ) : !job ? (
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur border border-gray-200/60 dark:border-gray-700/60 rounded-3xl shadow-xl overflow-hidden">
+              <div className="p-6">
+                <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
+                  <div className="text-lg font-semibold text-gray-900 dark:text-white">{t('jobDetails.notFound')}</div>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur border border-gray-200/60 dark:border-gray-700/60 rounded-3xl shadow-xl overflow-hidden">
+                <div className="p-6">
+                  <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
+                    <div className="flex flex-col min-h-[520px]">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
+                      <div className="flex items-start gap-6">
+                        {job.recruiterProfilePictureUrl ? (
+                          <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 shadow-lg flex-shrink-0">
+                            <img
+                              src={job.recruiterProfilePictureUrl}
+                              alt={job.recruiterCompanyName || job.company || t('jobDetails.company')}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ) : null}
+
+                        <div>
+                          <div className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+                            {job.title || t('common.notAvailable')}
+                          </div>
+                          <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                            {(job.recruiterCompanyName || job.company) || t('common.notAvailable')}
+                            {job.location ? ` • ${job.location}` : ''}
+                          </div>
+                          <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                            {t('jobDetails.postedBy')}{' '}
+                            <span className="font-medium text-gray-900 dark:text-white">{job.recruiterCompanyName || t('common.notAvailable')}</span>
+                            {job.recruiterEmail ? <span> ({job.recruiterEmail})</span> : null}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div
+                          className={`text-xs font-semibold px-3 py-1 rounded-full ${(job.active ?? job.isActive)
+                            ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200'
+                            : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'}`}
+                        >
+                          {(job.active ?? job.isActive) ? t('jobDetails.open') : t('jobDetails.closed')}
+                        </div>
+                        {job.type ? (
+                          <div className="text-xs font-semibold px-3 py-1 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200">
+                            {job.type}
+                          </div>
+                        ) : null}
+                        <div
+                          className={`text-xs font-semibold px-3 py-1 rounded-full ${job.paid
+                            ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300'
+                            : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'}`}
+                        >
+                          {job.paid ? t('jobDetails.paid') : t('jobDetails.unpaid')}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-6">
+                      <div className="text-sm font-semibold text-gray-900 dark:text-white">{t('jobDetails.description')}</div>
+                      <div className="mt-2 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
+                        {job.description || t('common.notAvailable')}
+                      </div>
+                    </div>
+
+                      <div className="mt-auto pt-6 border-t border-gray-200/70 dark:border-gray-700/70">
+                        <div className="flex flex-col items-center justify-center gap-3">
+                          {!auth ? (
+                            <Link
+                              to="/login"
+                              className="group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white text-sm font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                            >
+                              {t('jobDetails.signInToApply')}
+                              <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                              </svg>
+                            </Link>
+                          ) : auth.role === 'STUDENT' && !hasApplied ? (
+                            <button
+                              type="button"
+                              onClick={apply}
+                              disabled={applying || !(job.active ?? job.isActive)}
+                              className="group inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white text-sm font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:hover:translate-y-0"
+                            >
+                              {applying ? t('studentJobs.applying') : t('studentJobs.apply')}
+                              <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                              </svg>
+                            </button>
+                          ) : null}
+
+                          {auth && auth.role === 'STUDENT' && hasApplied ? (
+                            <div className="text-xs text-gray-600 dark:text-gray-400 text-center">
+                              {t('studentJobs.alreadyApplied')}{' '}
+                              <Link to="/student/applications" className="text-violet-700 dark:text-violet-300 hover:underline font-semibold">
+                                {t('jobDetails.viewApplications', { defaultValue: 'View applications' })}
+                              </Link>
+                            </div>
+                          ) : null}
+
+                          {auth && auth.role !== 'STUDENT' ? (
+                            <div className="text-xs text-gray-600 dark:text-gray-400 text-center">{t('common.accessDenied')}</div>
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur border border-gray-200/60 dark:border-gray-700/60 rounded-3xl shadow-xl overflow-hidden">
+                <div className="p-6">
+                  <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
+                    <div className="text-lg font-semibold text-gray-900 dark:text-white">{t('jobDetails.title')}</div>
+
+                    <div className="mt-4 grid grid-cols-1 gap-3">
+                      <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
+                        <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">{t('jobDetails.posted')}</div>
+                        <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
+                          {job.createdAt ? new Date(job.createdAt).toLocaleString() : t('common.notAvailable')}
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
+                        <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">{t('jobDetails.deadline')}</div>
+                        <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{job.deadline || t('common.notAvailable')}</div>
+                      </div>
+                      <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
+                        <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">{t('jobDetails.company')}</div>
+                        <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{job.recruiterCompanyName || job.company || t('common.notAvailable')}</div>
+                      </div>
+                      <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
+                        <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">{t('jobDetails.duration')}</div>
+                        <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{job.duration || t('common.notAvailable')}</div>
+                      </div>
+                      <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
+                        <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">{t('jobDetails.compensation')}</div>
+                        <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{job.compensation || t('common.notAvailable')}</div>
+                      </div>
+                      <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
+                        <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">{t('jobDetails.payment')}</div>
+                        <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{job.paid ? t('jobDetails.paid') : t('jobDetails.unpaid')}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

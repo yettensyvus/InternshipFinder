@@ -1,21 +1,63 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import axios from '../../services/axios';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { showToast } from '../../services/toast';
 import { useAuth } from '../../hooks/useAuth';
+import { 
+  MagnifyingGlassIcon, 
+  UserIcon, 
+  DocumentTextIcon, 
+  ArrowTopRightOnSquareIcon,
+  ArrowPathIcon,
+  NoSymbolIcon,
+  CheckCircleIcon,
+  TrashIcon,
+  ChevronDownIcon
+} from '@heroicons/react/24/outline';
 
 export default function ManageUsers() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { auth } = useAuth();
+  const [saving, setSaving] = useState(false);
   const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [userDetails, setUserDetails] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [detailsLoading, setDetailsLoading] = useState(false);
   const [error, setError] = useState('');
   const [query, setQuery] = useState('');
   const [deleteModalUser, setDeleteModalUser] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [updatingId, setUpdatingId] = useState(null);
+  const [picUploading, setPicUploading] = useState(false);
+  const [resumeUploading, setResumeUploading] = useState(false);
+  const picInputRef = useRef(null);
+  const resumeInputRef = useRef(null);
+  const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
+  const roleDropdownRef = useRef(null);
+  const [form, setForm] = useState({
+    username: '',
+    email: '',
+    role: 'STUDENT',
+    enabled: true,
+    student: {
+      name: '',
+      phone: '',
+      college: '',
+      branch: '',
+      yearOfPassing: '',
+      resumeUrl: ''
+    },
+    recruiter: {
+      companyName: '',
+      companyWebsite: ''
+    }
+  });
+
+  const [page, setPage] = useState(1);
+  const pageSize = 6;
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -39,12 +81,47 @@ export default function ManageUsers() {
     }
   };
 
+  const fetchUserDetails = async (userId) => {
+    setDetailsLoading(true);
+    try {
+      const res = await axios.get(`/admin/users/${userId}`);
+      const data = res.data;
+      setUserDetails(data);
+      setForm({
+        username: data.username || '',
+        email: data.email || '',
+        role: data.role || 'STUDENT',
+        enabled: data.enabled ?? true,
+        student: {
+          name: data.student?.name || '',
+          phone: data.student?.phone || '',
+          college: data.student?.college || '',
+          branch: data.student?.branch || '',
+          yearOfPassing: data.student?.yearOfPassing || '',
+          resumeUrl: data.student?.resumeUrl || ''
+        },
+        recruiter: {
+          companyName: data.recruiter?.companyName || '',
+          companyWebsite: data.recruiter?.companyWebsite || ''
+        }
+      });
+    } catch (err) {
+      console.error('Failed to load user details:', err);
+      showToast('admin-user-details', 'error', t('adminUserDetails.failedLoadUser'));
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
+
   const toggleUserStatus = async (id, enabled) => {
     const toastId = `admin-user-status-${id || 'unknown'}`;
     try {
       setUpdatingId(id);
       await axios.put(`/admin/users/${id}/status?enabled=${!enabled}`);
-      await fetchUsers();
+      setUsers(prev => prev.map(u => u.id === id ? { ...u, enabled: !enabled } : u));
+      if (selectedUser?.id === id) {
+        setSelectedUser(prev => (prev ? ({ ...prev, enabled: !enabled }) : prev));
+      }
       showToast(toastId, 'info', t(!enabled ? 'adminDashboard.approve' : 'adminDashboard.block'));
     } catch (err) {
       console.error('Failed to update user status:', err);
@@ -60,6 +137,10 @@ export default function ManageUsers() {
       setDeletingId(id);
       await axios.delete(`/admin/users/${id}`);
       setUsers(prev => prev.filter(user => user.id !== id));
+      if (selectedUser?.id === id) {
+        setSelectedUser(null);
+        setUserDetails(null);
+      }
       showToast(toastId, 'success', t('adminDashboard.userDeleted'));
     } catch (err) {
       console.error('Failed to delete user:', err);
@@ -69,6 +150,105 @@ export default function ManageUsers() {
       setDeleteModalUser(null);
     }
   };
+
+  const handlePicUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedUser) return;
+    if (file.size > 2 * 1024 * 1024) {
+      showToast('admin-pic-upload', 'error', t('common.fileTooLarge', { size: '2MB' }));
+      return;
+    }
+    const formData = new FormData();
+    formData.append('file', file);
+    setPicUploading(true);
+    try {
+      const res = await axios.post(`/admin/users/${selectedUser.id}/profile-picture`, formData);
+      const newUrl = res.data;
+      setUserDetails(prev => ({ ...prev, profilePictureUrl: newUrl }));
+      setUsers(prev => prev.map(u => u.id === selectedUser.id ? { ...u, profilePictureUrl: newUrl } : u));
+      setSelectedUser(prev => ({ ...prev, profilePictureUrl: newUrl }));
+      showToast('admin-pic-upload', 'success', t('common.photoUploaded'));
+    } catch (err) {
+      showToast('admin-pic-upload', 'error', t('common.uploadFailed'));
+    } finally {
+      setPicUploading(false);
+      if (picInputRef.current) picInputRef.current.value = '';
+    }
+  };
+
+  const handleResumeUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedUser) return;
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('admin-resume-upload', 'error', t('common.fileTooLarge', { size: '10MB' }));
+      return;
+    }
+    const formData = new FormData();
+    formData.append('file', file);
+    setResumeUploading(true);
+    try {
+      const res = await axios.post(`/admin/users/${selectedUser.id}/resume`, formData);
+      const newUrl = res.data;
+      setUserDetails(prev => ({
+        ...prev,
+        student: prev.student ? { ...prev.student, resumeUrl: newUrl } : prev.student
+      }));
+      showToast('admin-resume-upload', 'success', t('common.uploadSuccess'));
+    } catch (err) {
+      showToast('admin-resume-upload', 'error', t('common.uploadFailed'));
+    } finally {
+      setResumeUploading(false);
+      if (resumeInputRef.current) resumeInputRef.current.value = '';
+    }
+  };
+
+  const saveDetails = async () => {
+    if (!selectedUser) return;
+    const toastId = `admin-user-save-${selectedUser.id}`;
+    setSaving(true);
+    try {
+      const res = await axios.put(`/admin/users/${selectedUser.id}`, form);
+      setUserDetails(res.data);
+      // Update the user in the main list too
+      setUsers(prev => prev.map(u => u.id === selectedUser.id ? { ...u, username: form.username, email: form.email, role: form.role, enabled: form.enabled } : u));
+      showToast(toastId, 'success', t('adminUserDetails.saveSuccess', { defaultValue: 'User updated successfully' }));
+    } catch (err) {
+      console.error('Failed to save user details:', err);
+      showToast(toastId, 'error', t('adminUserDetails.failedUpdateUser', { defaultValue: 'Failed to update user' }));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const setField = (name, value) => {
+    setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const setStudentField = (name, value) => {
+    setForm(prev => ({
+      ...prev,
+      student: { ...prev.student, [name]: value }
+    }));
+  };
+
+  const setRecruiterField = (name, value) => {
+    setForm(prev => ({
+      ...prev,
+      recruiter: { ...prev.recruiter, [name]: value }
+    }));
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (roleDropdownRef.current && !roleDropdownRef.current.contains(event.target)) {
+        setIsRoleDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     fetchUsers();
@@ -84,30 +264,63 @@ export default function ManageUsers() {
     })
     : users;
 
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
+  const pagedUsers = filteredUsers.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => {
+    setPage(1);
+  }, [query]);
+
   const myEmail = (auth?.email || '').trim().toLowerCase();
   const isSelf = (u) => {
     const email = (u?.email || '').trim().toLowerCase();
     return !!myEmail && !!email && email === myEmail;
   };
 
+  const getInitials = (value) => {
+    const v = String(value || '').trim();
+    if (!v) return '?';
+    const parts = v.split(' ').filter(Boolean);
+    return (parts[0]?.[0] || '') + (parts.length > 1 ? parts[parts.length - 1]?.[0] || '' : '');
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-10">
-      <div className="max-w-6xl mx-auto">
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur border border-gray-200/60 dark:border-gray-700/60 rounded-3xl shadow-xl overflow-hidden">
-          <div className="px-6 py-8 bg-gradient-to-r from-red-600 via-rose-600 to-pink-600">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <h1 className="text-2xl font-bold text-white">{t('adminDashboard.manageUsers')}</h1>
-                <p className="text-white/80 text-sm mt-1">{t('adminDashboard.clickRowHint')}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => navigate('/admin/dashboard')}
-                className="px-4 py-2 rounded-xl bg-white/15 hover:bg-white/20 text-white text-sm font-semibold border border-white/20 transition"
-              >
-                {t('common.dashboard')}
-              </button>
+    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 pt-12 pb-20">
+      <div className="w-full px-2 md:px-6">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 dark:from-red-400 dark:via-rose-400 dark:to-pink-400 pb-2">
+              {t('adminDashboard.manageUsers')}
+            </h1>
+            <p className="mt-4 text-gray-600 dark:text-gray-300 max-w-2xl text-lg">
+              {t('adminDashboard.clickRowHint')}
+            </p>
+          </div>
+
+          <div className="w-full md:w-[420px]">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+              {t('recruiterStudents.search')}
+            </label>
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={`${t('adminDashboard.username')} / ${t('adminDashboard.email')} / ${t('adminDashboard.role')}`}
+                className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/40 text-gray-900 dark:text-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
             </div>
+          </div>
+        </div>
+
+        <div className="bg-white/70 dark:bg-gray-800/60 border border-gray-200/60 dark:border-gray-700/60 rounded-3xl shadow-xl overflow-hidden">
+          <div className="px-6 py-5 border-b border-gray-200/60 dark:border-gray-700/60 flex items-center justify-between">
+            <div className="text-sm text-gray-600 dark:text-gray-300 font-bold uppercase tracking-wider">
+              {t('adminDashboard.manageUsers')} ({filteredUsers.length})
+            </div>
+            <button onClick={fetchUsers} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              <ArrowPathIcon className={`h-5 w-5 text-gray-500 ${loading ? 'animate-spin' : ''}`} />
+            </button>
           </div>
 
           <div className="p-6">
@@ -117,103 +330,329 @@ export default function ManageUsers() {
               </div>
             ) : null}
 
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
-              <div className="w-full md:max-w-md">
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={`${t('adminDashboard.username')} / ${t('adminDashboard.email')} / ${t('adminDashboard.role')}`}
-                  className="w-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-2xl px-4 py-3 text-gray-900 dark:text-white"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={fetchUsers}
-                className="px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-semibold hover:bg-gray-50 dark:hover:bg-gray-800"
-              >
-                {t('common.refresh')}
-              </button>
-            </div>
-
-            {loading ? (
-              <div className="text-sm text-gray-600 dark:text-gray-400">{t('adminDashboard.loadingUsers')}</div>
+            {loading && users.length === 0 ? (
+              <div className="text-gray-600 dark:text-gray-300 p-10 text-center">{t('adminDashboard.loadingUsers')}</div>
             ) : (
-              <div className="overflow-x-auto rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-                <table className="min-w-full">
-                  <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-left">
-                    <tr>
-                      <th className="px-4 py-3 text-xs uppercase tracking-wide">#</th>
-                      <th className="px-4 py-3 text-xs uppercase tracking-wide">{t('adminDashboard.username')}</th>
-                      <th className="px-4 py-3 text-xs uppercase tracking-wide">{t('adminDashboard.email')}</th>
-                      <th className="px-4 py-3 text-xs uppercase tracking-wide">{t('adminDashboard.role')}</th>
-                      <th className="px-4 py-3 text-xs uppercase tracking-wide">{t('adminDashboard.status')}</th>
-                      <th className="px-4 py-3 text-xs uppercase tracking-wide">{t('adminDashboard.actions')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-sm text-gray-700 dark:text-gray-200">
-                    {filteredUsers.length > 0 ? (
-                      filteredUsers.map((u, idx) => (
-                        <tr
-                          key={u.id}
-                          className="border-t border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/60"
-                          onClick={() => navigate(`/admin/users/${u.id}`)}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Column 1: User List */}
+                <div className="lg:col-span-3">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                        {t('recruiterStudents.page', { page, total: totalPages })}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setPage((p) => Math.max(1, p - 1))}
+                          disabled={page <= 1}
+                          className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 text-xs font-semibold text-gray-900 dark:text-gray-100 disabled:opacity-60"
                         >
-                          <td className="px-4 py-3">{idx + 1}</td>
-                          <td className="px-4 py-3 font-semibold text-gray-900 dark:text-white">{u.username}</td>
-                          <td className="px-4 py-3">{u.email}</td>
-                          <td className="px-4 py-3">{u.role}</td>
-                          <td className="px-4 py-3">
-                            <span
-                              className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                                u.enabled
-                                  ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-200'
-                                  : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-200'
-                              }`}
-                            >
-                              {u.enabled ? t('adminDashboard.active') : t('adminDashboard.blocked')}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            {isSelf(u) ? null : (
-                              <div className="flex items-center gap-2">
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setDeleteModalUser(u);
-                                  }}
-                                  disabled={deletingId === u.id || updatingId === u.id}
-                                  className="px-3 py-2 rounded-xl text-sm font-semibold text-white bg-gray-900 hover:bg-black disabled:opacity-60"
-                                >
-                                  {t('common.delete')}
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleUserStatus(u.id, u.enabled);
-                                  }}
-                                  disabled={deletingId === u.id || updatingId === u.id}
-                                  className={`px-3 py-2 rounded-xl text-sm font-semibold text-white disabled:opacity-60 ${
-                                    u.enabled ? 'bg-red-600 hover:bg-red-700' : 'bg-indigo-600 hover:bg-indigo-700'
-                                  }`}
-                                >
-                                  {updatingId === u.id ? t('common.pleaseWait') : (u.enabled ? t('adminDashboard.block') : t('adminDashboard.approve'))}
-                                </button>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      ))
+                          {t('recruiterStudents.prev')}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                          disabled={page >= totalPages}
+                          className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 text-xs font-semibold text-gray-900 dark:text-gray-100 disabled:opacity-60"
+                        >
+                          {t('recruiterStudents.next')}
+                        </button>
+                      </div>
+                    </div>
+
+                    {pagedUsers.length === 0 ? (
+                      <div className="text-sm text-gray-500 py-10 text-center">{t('adminDashboard.noUsersFound')}</div>
                     ) : (
-                      <tr>
-                        <td className="p-6 text-center text-gray-500 dark:text-gray-400" colSpan="6">
-                          {t('adminDashboard.noUsersFound')}
-                        </td>
-                      </tr>
+                      pagedUsers.map((u) => {
+                        const isActive = selectedUser?.id === u.id;
+                        return (
+                          <button
+                            key={u.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedUser(u);
+                              fetchUserDetails(u.id);
+                            }}
+                            className={`w-full text-left bg-white dark:bg-gray-900/40 border rounded-2xl p-4 shadow-sm transition-all ${isActive ? 'border-red-300 dark:border-red-700 ring-2 ring-red-200/70 dark:ring-red-900/40' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/60'}`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-700 dark:text-red-400 font-bold flex-shrink-0 overflow-hidden">
+                                {u.profilePictureUrl ? (
+                                  <img src={u.profilePictureUrl} className="h-full w-full object-cover" alt="" />
+                                ) : getInitials(u.username)}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="font-bold text-sm text-gray-900 dark:text-white truncate">
+                                  {u.username}
+                                </div>
+                                <div className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider mt-0.5">
+                                  {u.role}
+                                </div>
+                              </div>
+                              {!u.enabled && <NoSymbolIcon className="h-4 w-4 text-rose-500 flex-shrink-0" />}
+                            </div>
+                          </button>
+                        );
+                      })
                     )}
-                  </tbody>
-                </table>
+                  </div>
+                </div>
+
+                {/* Column 2: User Actions & Basic Details */}
+                <div className="lg:col-span-4">
+                  <div className="bg-white dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm h-full flex flex-col">
+                    {!selectedUser ? (
+                      <div className="flex flex-col items-center justify-center h-full text-center py-10 text-gray-600 dark:text-gray-400">
+                        <div className="h-16 w-16 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-4">
+                          <UserIcon className="h-8 w-8 text-gray-400" />
+                        </div>
+                        {t('adminDashboard.clickRowHint')}
+                      </div>
+                    ) : detailsLoading ? (
+                      <div className="flex flex-col items-center justify-center h-full text-center py-10 text-gray-600 dark:text-gray-400">
+                        <div className="w-10 h-10 border-4 border-rose-600 border-t-transparent rounded-full animate-spin"></div>
+                        <div className="mt-3 text-sm font-semibold">{t('common.pleaseWait')}</div>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0 flex-1">
+                              <div className="text-2xl font-extrabold text-gray-900 dark:text-white truncate">
+                                {selectedUser.username}
+                              </div>
+                              <div className="text-sm text-gray-500 font-medium mt-1 truncate">
+                                {selectedUser.email}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-4">
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.username')}</label>
+                              <input
+                                value={form.username}
+                                onChange={(e) => setField('username', e.target.value)}
+                                className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.email')}</label>
+                              <input
+                                value={form.email}
+                                onChange={(e) => setField('email', e.target.value)}
+                                className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.roleLabel')}</label>
+                              <div className="relative" ref={roleDropdownRef}>
+                                <button
+                                  type="button"
+                                  onClick={() => !isSelf(selectedUser) && setIsRoleDropdownOpen(!isRoleDropdownOpen)}
+                                  disabled={isSelf(selectedUser)}
+                                  className="w-full flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all disabled:opacity-50"
+                                >
+                                  <span className="font-semibold">{form.role}</span>
+                                  <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isRoleDropdownOpen ? 'rotate-180' : ''}`} />
+                                </button>
+
+                                {isRoleDropdownOpen && (
+                                  <div className="absolute left-0 mt-2 w-full bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 overflow-hidden">
+                                    {['STUDENT', 'RECRUITER', 'ADMIN'].map((r) => (
+                                      <button
+                                        key={r}
+                                        type="button"
+                                        onClick={() => {
+                                          setField('role', r);
+                                          setIsRoleDropdownOpen(false);
+                                        }}
+                                        className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors duration-200 ${form.role === r ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                                      >
+                                        <span className="font-bold">{r}</span>
+                                        {form.role === r && <CheckCircleIcon className="h-4 w-4 text-red-500" />}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Role Specific Fields */}
+                            {form.role === 'STUDENT' && (
+                              <>
+                                <div className="space-y-1.5">
+                                  <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.name')}</label>
+                                  <input
+                                    value={form.student.name}
+                                    onChange={(e) => setStudentField('name', e.target.value)}
+                                    className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                                  />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.phone')}</label>
+                                    <input
+                                      value={form.student.phone}
+                                      onChange={(e) => setStudentField('phone', e.target.value)}
+                                      className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                                    />
+                                  </div>
+                                  <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.yearOfPassing')}</label>
+                                    <input
+                                      value={form.student.yearOfPassing}
+                                      onChange={(e) => setStudentField('yearOfPassing', e.target.value)}
+                                      className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.college')}</label>
+                                    <input
+                                      value={form.student.college}
+                                      onChange={(e) => setStudentField('college', e.target.value)}
+                                      className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                                    />
+                                  </div>
+                                  <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.branch')}</label>
+                                    <input
+                                      value={form.student.branch}
+                                      onChange={(e) => setStudentField('branch', e.target.value)}
+                                      className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                                    />
+                                  </div>
+                                </div>
+                              </>
+                            )}
+
+                            {form.role === 'RECRUITER' && (
+                              <>
+                                <div className="space-y-1.5">
+                                  <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.companyName')}</label>
+                                  <input
+                                    value={form.recruiter.companyName}
+                                    onChange={(e) => setRecruiterField('companyName', e.target.value)}
+                                    className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                                  />
+                                </div>
+                                <div className="space-y-1.5">
+                                  <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.companyWebsite')}</label>
+                                  <input
+                                    value={form.recruiter.companyWebsite}
+                                    onChange={(e) => setRecruiterField('companyWebsite', e.target.value)}
+                                    className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                                  />
+                                </div>
+                              </>
+                            )}
+                          </div>
+
+                        <div className="pt-6 border-t border-gray-100 dark:border-gray-800 space-y-3">
+                          <button
+                            type="button"
+                            onClick={saveDetails}
+                            disabled={saving}
+                            className="w-full py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                          >
+                            {saving ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <CheckCircleIcon className="h-4 w-4" />}
+                            {t('adminUserDetails.saveChanges')}
+                          </button>
+                          {!isSelf(selectedUser) && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => toggleUserStatus(selectedUser.id, selectedUser.enabled)}
+                                disabled={updatingId === selectedUser.id}
+                                className={`w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${selectedUser.enabled ? 'bg-rose-50 text-rose-700 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'}`}
+                              >
+                                {updatingId === selectedUser.id ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : (selectedUser.enabled ? <NoSymbolIcon className="h-4 w-4" /> : <CheckCircleIcon className="h-4 w-4" />)}
+                                {selectedUser.enabled ? t('adminDashboard.block') : t('adminDashboard.approve')}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setDeleteModalUser(selectedUser)}
+                                disabled={deletingId === selectedUser.id}
+                                className="w-full py-3 rounded-xl text-sm font-bold bg-gray-50 text-gray-700 hover:bg-gray-100 flex items-center justify-center gap-2 transition-all"
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                                {t('common.delete')}
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Column 3: Visual Identity & Links */}
+                <div className="lg:col-span-5 h-full">
+                  {!selectedUser ? (
+                    <div className="h-full rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-gray-400 p-10 text-center">
+                      <UserIcon className="h-12 w-12 mb-4 opacity-20" />
+                      <p className="text-sm">{t('adminDashboard.clickRowHint')}</p>
+                    </div>
+                  ) : detailsLoading ? (
+                    <div className="h-full rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-gray-400 p-10 text-center">
+                      <div className="w-10 h-10 border-4 border-rose-600 border-t-transparent rounded-full animate-spin"></div>
+                      <p className="mt-4 text-sm">{t('common.pleaseWait')}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <div className="bg-white dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
+                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">{t('adminUserDetails.profilePhoto')}</h3>
+                        <div className="flex flex-col items-center">
+                          <button
+                            type="button"
+                            onClick={() => picInputRef.current?.click()}
+                            disabled={picUploading}
+                            className="group relative h-48 w-48 rounded-[2rem] overflow-hidden border-4 border-white dark:border-gray-800 shadow-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center"
+                          >
+                            {selectedUser.profilePictureUrl ? (
+                              <img src={selectedUser.profilePictureUrl} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" alt="" />
+                            ) : (
+                              <span className="text-5xl font-bold text-gray-300 dark:text-gray-600">{getInitials(selectedUser.username)}</span>
+                            )}
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <span className="text-white text-xs font-bold uppercase tracking-widest">{picUploading ? t('common.pleaseWait') : t('common.uploadPhoto')}</span>
+                            </div>
+                          </button>
+                          <input type="file" ref={picInputRef} className="hidden" accept="image/*" onChange={handlePicUpload} />
+                        </div>
+                      </div>
+
+                      {selectedUser.role === 'STUDENT' && (
+                        <div className="bg-white dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
+                          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">{t('adminUserDetails.resume')}</h3>
+                          <div className="flex flex-col gap-3">
+                            <a
+                              href={userDetails?.student?.resumeUrl || '#'}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={`flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm border transition-all ${userDetails?.student?.resumeUrl ? 'bg-white dark:bg-gray-800 border-gray-200 text-gray-900 dark:text-white hover:bg-gray-50' : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'}`}
+                              onClick={(e) => !userDetails?.student?.resumeUrl && e.preventDefault()}
+                            >
+                              <DocumentTextIcon className="h-5 w-5" />
+                              {t('adminUserDetails.openResume')}
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => resumeInputRef.current?.click()}
+                              disabled={resumeUploading}
+                              className="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all disabled:opacity-60"
+                            >
+                              {resumeUploading ? t('common.pleaseWait') : t('adminUserDetails.uploadResume')}
+                            </button>
+                            <input type="file" ref={resumeInputRef} className="hidden" accept="application/pdf" onChange={handleResumeUpload} />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -222,11 +661,11 @@ export default function ManageUsers() {
 
       {deleteModalUser ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-md rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-2xl overflow-hidden">
+          <div className="w-full max-w-md rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="px-6 py-5 bg-gradient-to-r from-red-600 via-rose-600 to-pink-600">
               <div className="text-lg font-bold text-white">{t('common.delete')}</div>
               <div className="text-sm text-white/80 mt-1">{t('adminUserDetails.deleteConfirm')}</div>

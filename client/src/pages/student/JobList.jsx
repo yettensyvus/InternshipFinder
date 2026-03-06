@@ -12,6 +12,7 @@ export default function JobList() {
   const [appliedJobIds, setAppliedJobIds] = useState(() => new Set());
   const [loading, setLoading] = useState(true);
   const [applyingJobId, setApplyingJobId] = useState(null);
+  const [page, setPage] = useState(1);
   const [filters, setFilters] = useState({
     query: '',
     type: '',
@@ -105,6 +106,18 @@ export default function JobList() {
   ];
   const activeType = typeOptions.find(o => o.value === filters.type) || typeOptions[0];
 
+  const pageSize = 6;
+  const totalPages = Math.max(1, Math.ceil(visibleJobs.length / pageSize));
+  const pagedJobs = visibleJobs.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => {
+    setPage(1);
+  }, [filters.query, filters.type, filters.paid]);
+
+  useEffect(() => {
+    setPage((p) => Math.min(Math.max(1, p), totalPages));
+  }, [totalPages]);
+
   const apply = async (jobId) => {
     const toastId = `student-apply-${jobId || 'unknown'}`;
     try {
@@ -134,165 +147,201 @@ export default function JobList() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-10">
-      <div className="max-w-6xl mx-auto">
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur border border-gray-200/60 dark:border-gray-700/60 rounded-3xl shadow-xl overflow-hidden">
-          <div className="px-6 py-8 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600">
-            <h1 className="text-2xl font-bold text-white">{t('studentJobs.title')}</h1>
-            <p className="text-white/80 text-sm mt-1">{t('studentJobs.subtitle')}</p>
+    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 pt-12 pb-20">
+      <div className="w-full px-2 md:px-6">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 dark:from-purple-400 dark:via-indigo-400 dark:to-blue-400 pb-2">
+              {t('studentJobs.title')}
+            </h1>
+            <p className="mt-4 text-gray-600 dark:text-gray-300 max-w-2xl text-lg">
+              {t('studentJobs.subtitle')}
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white/70 dark:bg-gray-800/60 border border-gray-200/60 dark:border-gray-700/60 rounded-3xl shadow-xl overflow-hidden">
+          <div className="px-6 py-5 border-b border-gray-200/60 dark:border-gray-700/60">
+            <h2 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+              {t('studentJobs.filters')}
+            </h2>
           </div>
 
           <div className="p-6">
-            <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 mb-6">
-              <div className="text-lg font-semibold text-gray-900 dark:text-white">{t('studentJobs.filters')}</div>
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('studentJobs.search')}</label>
-                  <input
-                    value={filters.query}
-                    onChange={(e) => setFilters((prev) => ({ ...prev, query: e.target.value }))}
-                    placeholder={t('studentJobs.searchPlaceholder')}
-                    className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
-                  />
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('studentJobs.search')}</label>
+                <input
+                  value={filters.query}
+                  onChange={(e) => setFilters((prev) => ({ ...prev, query: e.target.value }))}
+                  placeholder={t('studentJobs.searchPlaceholder')}
+                  className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/40 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 outline-none transition-all shadow-sm"
+                />
+              </div>
 
-                <div className="relative" ref={paidDropdownRef}>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('studentJobs.paidLabel')}</label>
-                  <button
-                    type="button"
-                    onClick={() => setIsPaidDropdownOpen(prev => !prev)}
-                    className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800"
-                  >
-                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">{activePaid.label}</span>
-                    <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isPaidDropdownOpen ? 'rotate-180' : ''}`} />
-                  </button>
+              <div className="relative" ref={paidDropdownRef}>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('studentJobs.paidLabel')}</label>
+                <button
+                  type="button"
+                  onClick={() => setIsPaidDropdownOpen(prev => !prev)}
+                  className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm"
+                >
+                  <span className="text-sm font-semibold">{activePaid.label}</span>
+                  <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isPaidDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
 
-                  {isPaidDropdownOpen ? (
-                    <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50">
-                      {paidOptions.map((opt) => (
-                        <button
-                          key={opt.value || 'all'}
-                          type="button"
-                          onClick={() => {
-                            setFilters((prev) => ({ ...prev, paid: opt.value }));
-                            setIsPaidDropdownOpen(false);
-                          }}
-                          className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${filters.paid === opt.value ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-                        >
-                          <span className="font-medium">{opt.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
+                {isPaidDropdownOpen && (
+                  <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 overflow-hidden">
+                    {paidOptions.map((opt) => (
+                      <button
+                        key={opt.value || 'all'}
+                        type="button"
+                        onClick={() => {
+                          setFilters((prev) => ({ ...prev, paid: opt.value }));
+                          setIsPaidDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${filters.paid === opt.value ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                      >
+                        <span className="font-medium">{opt.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-                <div className="relative" ref={typeDropdownRef}>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('studentJobs.type')}</label>
-                  <button
-                    type="button"
-                    onClick={() => setIsTypeDropdownOpen(prev => !prev)}
-                    className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800"
-                  >
-                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">{activeType.label}</span>
-                    <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isTypeDropdownOpen ? 'rotate-180' : ''}`} />
-                  </button>
+              <div className="relative" ref={typeDropdownRef}>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('studentJobs.type')}</label>
+                <button
+                  type="button"
+                  onClick={() => setIsTypeDropdownOpen(prev => !prev)}
+                  className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm"
+                >
+                  <span className="text-sm font-semibold">{activeType.label}</span>
+                  <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isTypeDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
 
-                  {isTypeDropdownOpen ? (
-                    <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50">
-                      {typeOptions.map((opt) => (
-                        <button
-                          key={opt.value || 'all'}
-                          type="button"
-                          onClick={() => {
-                            setFilters((prev) => ({ ...prev, type: opt.value }));
-                            setIsTypeDropdownOpen(false);
-                          }}
-                          className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${filters.type === opt.value ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-                        >
-                          <span className="font-medium">{opt.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 opacity-0">{t('studentJobs.clearFilters')}</label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFilters({ query: '', type: '', paid: '' });
-                      setIsTypeDropdownOpen(false);
-                      setIsPaidDropdownOpen(false);
-                    }}
-                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-semibold hover:bg-gray-50 dark:hover:bg-gray-800"
-                  >
-                    {t('studentJobs.clearFilters')}
-                  </button>
-                </div>
+                {isTypeDropdownOpen && (
+                  <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 overflow-hidden">
+                    {typeOptions.map((opt) => (
+                      <button
+                        key={opt.value || 'all'}
+                        type="button"
+                        onClick={() => {
+                          setFilters((prev) => ({ ...prev, type: opt.value }));
+                          setIsTypeDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${filters.type === opt.value ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                      >
+                        <span className="font-medium">{opt.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
             {loading ? (
-              <div className="text-sm text-gray-600 dark:text-gray-400">{t('studentJobs.loading')}</div>
+              <div className="text-gray-600 dark:text-gray-300">{t('studentJobs.loading')}</div>
             ) : visibleJobs.length === 0 ? (
-              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
-                <div className="text-lg font-semibold text-gray-900 dark:text-white">
+              <div className="text-gray-600 dark:text-gray-400 py-10 text-center">
+                <div className="text-lg font-bold text-gray-900 dark:text-white">
                   {jobs.length === 0 ? t('studentJobs.none') : t('studentJobs.noResults')}
                 </div>
-                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                <p className="mt-1 text-sm">
                   {jobs.length === 0 ? t('studentJobs.noneHint') : t('studentJobs.noResultsHint')}
-                </div>
+                </p>
+                {(filters.query || filters.type || filters.paid) && (
+                  <button
+                    onClick={() => setFilters({ query: '', type: '', paid: '' })}
+                    className="mt-4 text-sm font-bold text-violet-600 hover:underline"
+                  >
+                    {t('studentJobs.clearFilters')}
+                  </button>
+                )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {visibleJobs.map(job => (
-                  <button
-                    key={job.id}
-                    type="button"
-                    onClick={() => navigate(`/jobs/${job.id}`)}
-                    className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 shadow-sm text-left hover:shadow-md transition"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <div className="text-lg font-semibold text-gray-900 dark:text-white">{job.title}</div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">{job.company || t('common.notAvailable')}</div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">{job.location || t('common.notAvailable')}</div>
-                      </div>
-                      <div className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200">
-                        {t('studentJobs.open')}
-                      </div>
-                    </div>
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    {t('recruiterStudents.page', { page, total: totalPages })}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page <= 1}
+                      className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 text-xs font-semibold text-gray-900 dark:text-gray-100 disabled:opacity-60"
+                    >
+                      {t('recruiterStudents.prev')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={page >= totalPages}
+                      className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 text-xs font-semibold text-gray-900 dark:text-gray-100 disabled:opacity-60"
+                    >
+                      {t('recruiterStudents.next')}
+                    </button>
+                  </div>
+                </div>
 
-                    <div className="mt-3 flex items-center gap-2">
-                      <div className={`text-xs font-semibold px-3 py-1 rounded-full ${job.paid ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'}`}>
-                        {job.paid ? t('studentJobs.paid') : t('studentJobs.unpaid')}
-                      </div>
-                      {job.duration ? (
-                        <div className="text-xs font-semibold px-3 py-1 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200">
-                          {job.duration}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {pagedJobs.map((job) => (
+                    <button
+                      key={job.id}
+                      type="button"
+                      onClick={() => navigate(`/jobs/${job.id}`)}
+                      className="group text-left h-full rounded-3xl border border-gray-200/70 dark:border-gray-700/70 bg-white/80 dark:bg-gray-900/60 backdrop-blur p-6 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all flex flex-col"
+                    >
+                      <div className="flex items-start justify-between gap-4 w-full">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-violet-700 dark:group-hover:text-violet-300 transition-colors line-clamp-1">
+                            {job.title || t('common.notAvailable')}
+                          </div>
+                          <div className="mt-1 text-sm text-gray-600 dark:text-gray-400 truncate">{job.company || t('common.notAvailable')}</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400 truncate">{job.location || t('common.notAvailable')}</div>
                         </div>
-                      ) : null}
-                    </div>
 
-                    <div className="mt-4 flex items-center justify-between gap-4">
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {job.deadline ? `${t('studentJobs.deadline')}: ${job.deadline}` : `${t('studentJobs.deadline')}: ${t('common.notAvailable')}`}
+                        <div className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200 flex-shrink-0">
+                          {t('studentJobs.open')}
+                        </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          apply(job.id);
-                        }}
-                        disabled={applyingJobId === job.id}
-                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white text-sm font-semibold disabled:opacity-60"
-                      >
-                        {applyingJobId === job.id ? t('studentJobs.applying') : t('studentJobs.apply')}
-                      </button>
-                    </div>
-                  </button>
-                ))}
+
+                      <div className="mt-4 flex flex-wrap items-center gap-2">
+                        <div className={`text-xs font-semibold px-3 py-1 rounded-full ${job.paid ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'}`}>
+                          {job.paid ? t('studentJobs.paid') : t('studentJobs.unpaid')}
+                        </div>
+                        {job.type && (
+                          <div className="text-xs font-semibold px-3 py-1 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200">
+                            {job.type}
+                          </div>
+                        )}
+                        {job.duration && (
+                          <div className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">
+                            {job.duration}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="mt-auto pt-5 flex items-center justify-between gap-4 w-full">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                          {job.deadline ? `${t('studentJobs.deadline')}: ${job.deadline}` : `${t('studentJobs.deadline')}: ${t('common.notAvailable')}`}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            apply(job.id);
+                          }}
+                          disabled={applyingJobId === job.id}
+                          className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white text-[10px] font-bold shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex-shrink-0"
+                        >
+                          {applyingJobId === job.id ? t('studentJobs.applying') : t('studentJobs.apply')}
+                        </button>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>

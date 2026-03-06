@@ -155,6 +155,7 @@ const en = {
     subtitle: 'Full information about this job posting.',
     failedLoad: 'Failed to load job details',
     notFound: 'Job not found',
+    signInToApply: 'Sign In for Apply',
     postedBy: 'Posted by:',
     open: 'Open',
     closed: 'Closed',

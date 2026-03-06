@@ -111,22 +111,16 @@ export default function Home() {
               
               {!auth && (
                 <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
-                  <Link 
-                    to="/register" 
+                  <Link
+                    to="/jobs"
                     className="group px-6 py-3 sm:px-8 sm:py-3 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white font-semibold text-sm sm:text-base hover:from-violet-700 hover:via-indigo-700 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 transform"
                   >
                     <span className="flex items-center justify-center gap-2">
-                      {t('home.actions.createAccount')}
+                      {t('home.actions.viewJobs')}
                       <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                       </svg>
                     </span>
-                  </Link>
-                  <Link 
-                    to="/login" 
-                    className="inline-flex items-center justify-center text-center px-6 py-3 sm:px-8 sm:py-3 rounded-xl bg-white/80 dark:bg-gray-900/40 border-2 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-100 font-semibold text-sm sm:text-base hover:bg-white dark:hover:bg-gray-900/60 hover:border-violet-300 dark:hover:border-violet-600 transition-all duration-300 shadow-sm"
-                  >
-                    {t('common.signIn')}
                   </Link>
                 </div>
               )}
@@ -205,32 +199,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {!auth && (
-        <section className="py-10 px-4">
-          <div className="max-w-7xl mx-auto">
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur border border-gray-200/60 dark:border-gray-700/60 rounded-3xl shadow-xl overflow-hidden">
-              <div className="p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                <div>
-                  <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                    {t('home.actions.viewJobs')}
-                  </div>
-                  <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                    {t('studentJobs.subtitle')}
-                  </div>
-                </div>
-
-                <Link
-                  to="/jobs"
-                  className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white font-semibold text-sm sm:text-base hover:from-violet-700 hover:via-indigo-700 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl"
-                >
-                  {t('home.actions.viewJobs')}
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Features Section */}
       <section className="py-16 md:py-24 px-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">

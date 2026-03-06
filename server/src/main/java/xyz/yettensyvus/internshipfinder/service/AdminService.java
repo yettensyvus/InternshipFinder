@@ -28,8 +28,6 @@ public interface AdminService {
 
     AdminUserDetailsDTO getUserDetails(Long id);
 
-    AdminUserDetailsDTO updateUserDetails(Long id, AdminUserUpdateRequest req);
-
     AdminUserDetailsDTO updateUserDetails(Long id, AdminUserUpdateRequest req, String requesterEmail);
 
     List<Job> getAllJobs();
@@ -43,4 +41,8 @@ public interface AdminService {
     String updateAdminProfile(String email, AdminProfileDTO dto);
 
     String uploadAdminProfilePicture(String email, org.springframework.web.multipart.MultipartFile file) throws java.io.IOException;
+
+    String uploadUserProfilePicture(Long userId, org.springframework.web.multipart.MultipartFile file) throws java.io.IOException;
+
+    String uploadUserResume(Long userId, org.springframework.web.multipart.MultipartFile file) throws java.io.IOException;
 }
