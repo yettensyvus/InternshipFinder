@@ -33,6 +33,60 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    let refreshPromise = null;
+
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error?.config;
+        const status = error?.response?.status;
+        const url = originalRequest?.url || '';
+
+        if (!originalRequest || (status !== 401 && status !== 403) || originalRequest._retry) {
+          return Promise.reject(error);
+        }
+
+        if (url.includes('/auth/refresh')) {
+          // Refresh failed, logout the user
+          logout();
+          return Promise.reject(error);
+        }
+
+        originalRequest._retry = true;
+
+        try {
+          if (!refreshPromise) {
+            refreshPromise = axios.post('/auth/refresh').finally(() => {
+              refreshPromise = null;
+            });
+          }
+          await refreshPromise;
+
+          try {
+            await axios.get('/auth/me');
+          } catch {
+            // ignore
+          }
+
+          return axios(originalRequest);
+        } catch (refreshErr) {
+          // Refresh failed, logout the user
+          logout();
+          return Promise.reject(refreshErr);
+        }
+      }
+    );
+
+    axiosInterceptorRef.current = interceptor;
+
+    return () => {
+      if (axiosInterceptorRef.current !== null) {
+        axios.interceptors.response.eject(axiosInterceptorRef.current);
+      }
+    };
+  }, [logout]);
+
+  useEffect(() => {
     const initAuth = async () => {
       try {
         const res = await axios.get('/auth/me');

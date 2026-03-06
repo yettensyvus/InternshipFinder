@@ -174,11 +174,13 @@ public class AuthController {
             String email = authResponse.getEmail();
             String accessJwt = jwtTokenProvider.generateAccessToken(email);
 
-            String refreshRaw = generateRefreshToken();
-            String refreshHash = hashToken(refreshRaw);
-
             var user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("USER_NOT_FOUND"));
+
+            refreshTokenRepository.revokeActiveByUserId(user.getId(), Instant.now());
+
+            String refreshRaw = generateRefreshToken();
+            String refreshHash = hashToken(refreshRaw);
 
             RefreshToken refreshToken = new RefreshToken();
             refreshToken.setUser(user);
@@ -219,6 +221,8 @@ public class AuthController {
         }
 
         if (refreshRaw == null || refreshRaw.isBlank()) {
+            response.addHeader("Set-Cookie", clearAccessCookie(httpRequest).toString());
+            response.addHeader("Set-Cookie", clearRefreshCookie(httpRequest).toString());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("NO_REFRESH_TOKEN");
         }
 
@@ -226,37 +230,27 @@ public class AuthController {
         RefreshToken stored = refreshTokenRepository.findByTokenHash(refreshHash)
                 .orElse(null);
         if (stored == null) {
+            response.addHeader("Set-Cookie", clearAccessCookie(httpRequest).toString());
+            response.addHeader("Set-Cookie", clearRefreshCookie(httpRequest).toString());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("INVALID_REFRESH_TOKEN");
         }
 
         Instant now = Instant.now();
         if (stored.getRevokedAt() != null) {
+            response.addHeader("Set-Cookie", clearAccessCookie(httpRequest).toString());
+            response.addHeader("Set-Cookie", clearRefreshCookie(httpRequest).toString());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("REFRESH_TOKEN_REVOKED");
         }
         if (stored.getExpiresAt() == null || !stored.getExpiresAt().isAfter(now)) {
+            response.addHeader("Set-Cookie", clearAccessCookie(httpRequest).toString());
+            response.addHeader("Set-Cookie", clearRefreshCookie(httpRequest).toString());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("REFRESH_TOKEN_EXPIRED");
         }
-
-        // rotation
-        String newRefreshRaw = generateRefreshToken();
-        String newRefreshHash = hashToken(newRefreshRaw);
-
-        RefreshToken replacement = new RefreshToken();
-        replacement.setUser(stored.getUser());
-        replacement.setTokenHash(newRefreshHash);
-        replacement.setCreatedAt(now);
-        replacement.setExpiresAt(now.plusMillis(refreshExpirationMs));
-        refreshTokenRepository.save(replacement);
-
-        stored.setRevokedAt(now);
-        stored.setReplacedByTokenHash(newRefreshHash);
-        refreshTokenRepository.save(stored);
 
         String email = stored.getUser().getEmail();
         String accessJwt = jwtTokenProvider.generateAccessToken(email);
 
         response.addHeader("Set-Cookie", buildAccessCookie(accessJwt, httpRequest).toString());
-        response.addHeader("Set-Cookie", buildRefreshCookie(newRefreshRaw, httpRequest).toString());
 
         return ResponseEntity.ok("REFRESHED");
     }
