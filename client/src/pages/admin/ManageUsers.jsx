@@ -31,6 +31,7 @@ export default function ManageUsers() {
   const [deleteModalUser, setDeleteModalUser] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [updatingId, setUpdatingId] = useState(null);
+  const [forcingLogoutId, setForcingLogoutId] = useState(null);
   const [picUploading, setPicUploading] = useState(false);
   const [resumeUploading, setResumeUploading] = useState(false);
   const picInputRef = useRef(null);
@@ -128,6 +129,20 @@ export default function ManageUsers() {
       showToast(toastId, 'error', t('adminDashboard.failedUpdateStatus'));
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  const forceLogout = async (id) => {
+    const toastId = `admin-user-force-logout-${id || 'unknown'}`;
+    try {
+      setForcingLogoutId(id);
+      await axios.post(`/admin/users/${id}/force-logout`);
+      showToast(toastId, 'success', t('adminDashboard.forceLogoutSuccess', { defaultValue: 'User logged out from all devices' }));
+    } catch (err) {
+      console.error('Failed to force logout user:', err);
+      showToast(toastId, 'error', t('adminDashboard.failedForceLogout', { defaultValue: 'Failed to force logout user' }));
+    } finally {
+      setForcingLogoutId(null);
     }
   };
 
@@ -399,196 +414,7 @@ export default function ManageUsers() {
                   </div>
                 </div>
 
-                {/* Column 2: User Actions & Basic Details */}
-                <div className="lg:col-span-4">
-                  <div className="bg-white dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm h-full flex flex-col">
-                    {!selectedUser ? (
-                      <div className="flex flex-col items-center justify-center h-full text-center py-10 text-gray-600 dark:text-gray-400">
-                        <div className="h-16 w-16 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-4">
-                          <UserIcon className="h-8 w-8 text-gray-400" />
-                        </div>
-                        {t('adminDashboard.clickRowHint')}
-                      </div>
-                    ) : detailsLoading ? (
-                      <div className="flex flex-col items-center justify-center h-full text-center py-10 text-gray-600 dark:text-gray-400">
-                        <div className="w-10 h-10 border-4 border-rose-600 border-t-transparent rounded-full animate-spin"></div>
-                        <div className="mt-3 text-sm font-semibold">{t('common.pleaseWait')}</div>
-                      </div>
-                    ) : (
-                      <div className="space-y-6">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="min-w-0 flex-1">
-                              <div className="text-2xl font-extrabold text-gray-900 dark:text-white truncate">
-                                {selectedUser.username}
-                              </div>
-                              <div className="text-sm text-gray-500 font-medium mt-1 truncate">
-                                {selectedUser.email}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 gap-4">
-                            <div className="space-y-1.5">
-                              <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.username')}</label>
-                              <input
-                                value={form.username}
-                                onChange={(e) => setField('username', e.target.value)}
-                                className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
-                              />
-                            </div>
-                            <div className="space-y-1.5">
-                              <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.email')}</label>
-                              <input
-                                value={form.email}
-                                onChange={(e) => setField('email', e.target.value)}
-                                className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
-                              />
-                            </div>
-                            <div className="space-y-1.5">
-                              <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.roleLabel')}</label>
-                              <div className="relative" ref={roleDropdownRef}>
-                                <button
-                                  type="button"
-                                  onClick={() => !isSelf(selectedUser) && setIsRoleDropdownOpen(!isRoleDropdownOpen)}
-                                  disabled={isSelf(selectedUser)}
-                                  className="w-full flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all disabled:opacity-50"
-                                >
-                                  <span className="font-semibold">{form.role}</span>
-                                  <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isRoleDropdownOpen ? 'rotate-180' : ''}`} />
-                                </button>
-
-                                {isRoleDropdownOpen && (
-                                  <div className="absolute left-0 mt-2 w-full bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 overflow-hidden">
-                                    {['STUDENT', 'RECRUITER', 'ADMIN'].map((r) => (
-                                      <button
-                                        key={r}
-                                        type="button"
-                                        onClick={() => {
-                                          setField('role', r);
-                                          setIsRoleDropdownOpen(false);
-                                        }}
-                                        className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors duration-200 ${form.role === r ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-                                      >
-                                        <span className="font-bold">{r}</span>
-                                        {form.role === r && <CheckCircleIcon className="h-4 w-4 text-red-500" />}
-                                      </button>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Role Specific Fields */}
-                            {form.role === 'STUDENT' && (
-                              <>
-                                <div className="space-y-1.5">
-                                  <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.name')}</label>
-                                  <input
-                                    value={form.student.name}
-                                    onChange={(e) => setStudentField('name', e.target.value)}
-                                    className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
-                                  />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.phone')}</label>
-                                    <input
-                                      value={form.student.phone}
-                                      onChange={(e) => setStudentField('phone', e.target.value)}
-                                      className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
-                                    />
-                                  </div>
-                                  <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.yearOfPassing')}</label>
-                                    <input
-                                      value={form.student.yearOfPassing}
-                                      onChange={(e) => setStudentField('yearOfPassing', e.target.value)}
-                                      className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
-                                    />
-                                  </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.college')}</label>
-                                    <input
-                                      value={form.student.college}
-                                      onChange={(e) => setStudentField('college', e.target.value)}
-                                      className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
-                                    />
-                                  </div>
-                                  <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.branch')}</label>
-                                    <input
-                                      value={form.student.branch}
-                                      onChange={(e) => setStudentField('branch', e.target.value)}
-                                      className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
-                                    />
-                                  </div>
-                                </div>
-                              </>
-                            )}
-
-                            {form.role === 'RECRUITER' && (
-                              <>
-                                <div className="space-y-1.5">
-                                  <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.companyName')}</label>
-                                  <input
-                                    value={form.recruiter.companyName}
-                                    onChange={(e) => setRecruiterField('companyName', e.target.value)}
-                                    className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
-                                  />
-                                </div>
-                                <div className="space-y-1.5">
-                                  <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.companyWebsite')}</label>
-                                  <input
-                                    value={form.recruiter.companyWebsite}
-                                    onChange={(e) => setRecruiterField('companyWebsite', e.target.value)}
-                                    className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
-                                  />
-                                </div>
-                              </>
-                            )}
-                          </div>
-
-                        <div className="pt-6 border-t border-gray-100 dark:border-gray-800 space-y-3">
-                          <button
-                            type="button"
-                            onClick={saveDetails}
-                            disabled={saving}
-                            className="w-full py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-60 flex items-center justify-center gap-2"
-                          >
-                            {saving ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <CheckCircleIcon className="h-4 w-4" />}
-                            {t('adminUserDetails.saveChanges')}
-                          </button>
-                          {!isSelf(selectedUser) && (
-                            <>
-                              <button
-                                type="button"
-                                onClick={() => toggleUserStatus(selectedUser.id, selectedUser.enabled)}
-                                disabled={updatingId === selectedUser.id}
-                                className={`w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${selectedUser.enabled ? 'bg-rose-50 text-rose-700 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'}`}
-                              >
-                                {updatingId === selectedUser.id ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : (selectedUser.enabled ? <NoSymbolIcon className="h-4 w-4" /> : <CheckCircleIcon className="h-4 w-4" />)}
-                                {selectedUser.enabled ? t('adminDashboard.block') : t('adminDashboard.approve')}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setDeleteModalUser(selectedUser)}
-                                disabled={deletingId === selectedUser.id}
-                                className="w-full py-3 rounded-xl text-sm font-bold bg-gray-50 text-gray-700 hover:bg-gray-100 flex items-center justify-center gap-2 transition-all"
-                              >
-                                <TrashIcon className="h-4 w-4" />
-                                {t('common.delete')}
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Column 3: Visual Identity & Links */}
+                {/* Column 2: Visual Identity & Links */}
                 <div className="lg:col-span-5 h-full">
                   {!selectedUser ? (
                     <div className="h-full rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-gray-400 p-10 text-center">
@@ -616,43 +442,263 @@ export default function ManageUsers() {
                             ) : (
                               <span className="text-5xl font-bold text-gray-300 dark:text-gray-600">{getInitials(selectedUser.username)}</span>
                             )}
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                              <span className="text-white text-xs font-bold uppercase tracking-widest">{picUploading ? t('common.pleaseWait') : t('common.uploadPhoto')}</span>
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white p-4 text-center">
+                              <ArrowPathIcon className={`h-8 w-8 mb-2 ${picUploading ? 'animate-spin' : ''}`} />
+                              <span className="text-[10px] font-bold uppercase tracking-tighter leading-tight">
+                                {picUploading ? t('common.pleaseWait') : t('common.uploadPhoto')}
+                              </span>
                             </div>
                           </button>
-                          <input type="file" ref={picInputRef} className="hidden" accept="image/*" onChange={handlePicUpload} />
+                          <input ref={picInputRef} type="file" accept="image/*" onChange={handlePicUpload} className="hidden" />
+                          <p className="mt-4 text-[10px] text-gray-400 font-medium uppercase tracking-widest text-center italic">{t('adminUserDetails.photoFormatHint', { defaultValue: 'JPG, PNG OR WEBP. MAX 2MB.' })}</p>
                         </div>
                       </div>
 
                       {selectedUser.role === 'STUDENT' && (
                         <div className="bg-white dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
                           <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">{t('adminUserDetails.resume')}</h3>
-                          <div className="flex flex-col gap-3">
-                            <a
-                              href={userDetails?.student?.resumeUrl || '#'}
-                              target="_blank"
-                              rel="noreferrer"
-                              className={`flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm border transition-all ${userDetails?.student?.resumeUrl ? 'bg-white dark:bg-gray-800 border-gray-200 text-gray-900 dark:text-white hover:bg-gray-50' : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'}`}
-                              onClick={(e) => !userDetails?.student?.resumeUrl && e.preventDefault()}
-                            >
-                              <DocumentTextIcon className="h-5 w-5" />
-                              {t('adminUserDetails.openResume')}
-                            </a>
+                          <div className="space-y-4">
+                            {userDetails?.student?.resumeUrl ? (
+                              <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                                <div className="flex items-center gap-3">
+                                  <div className="h-10 w-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600">
+                                    <DocumentTextIcon className="h-5 w-5" />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <div className="text-sm font-bold text-gray-900 dark:text-white truncate">Resume.pdf</div>
+                                    <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wider mt-0.5">{t('adminUserDetails.resumeReady')}</div>
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => window.open(userDetails.student.resumeUrl, '_blank')}
+                                  className="p-2 rounded-lg hover:bg-white dark:hover:bg-gray-700 text-gray-400 hover:text-red-500 transition-all shadow-sm"
+                                >
+                                  <ArrowTopRightOnSquareIcon className="h-5 w-5" />
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="p-8 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 text-center">
+                                <DocumentTextIcon className="h-8 w-8 text-gray-300 dark:text-gray-700 mx-auto mb-2" />
+                                <p className="text-xs text-gray-500 font-medium">{t('adminUserDetails.noResume')}</p>
+                              </div>
+                            )}
+
                             <button
                               type="button"
                               onClick={() => resumeInputRef.current?.click()}
                               disabled={resumeUploading}
-                              className="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all disabled:opacity-60"
+                              className="w-full py-3 px-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-2"
                             >
-                              {resumeUploading ? t('common.pleaseWait') : t('adminUserDetails.uploadResume')}
+                              <ArrowPathIcon className={`h-4 w-4 ${resumeUploading ? 'animate-spin' : ''}`} />
+                              {resumeUploading ? t('common.pleaseWait') : t('adminUserDetails.uploadNewResume')}
                             </button>
-                            <input type="file" ref={resumeInputRef} className="hidden" accept="application/pdf" onChange={handleResumeUpload} />
+                            <input ref={resumeInputRef} type="file" accept=".pdf,.doc,.docx" onChange={handleResumeUpload} className="hidden" />
                           </div>
                         </div>
                       )}
                     </div>
                   )}
                 </div>
+
+                {/* Column 3: User Actions & Basic Details */}
+                <div className="lg:col-span-4">
+                  <div className="bg-white dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm h-full flex flex-col">
+                    {!selectedUser ? (
+                      <div className="flex flex-col items-center justify-center h-full text-center py-10 text-gray-600 dark:text-gray-400">
+                        <div className="h-16 w-16 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-4">
+                          <UserIcon className="h-8 w-8 text-gray-400" />
+                        </div>
+                        {t('adminDashboard.clickRowHint')}
+                      </div>
+                    ) : detailsLoading ? (
+                      <div className="flex flex-col items-center justify-center h-full text-center py-10 text-gray-600 dark:text-gray-400">
+                        <div className="w-10 h-10 border-4 border-rose-600 border-t-transparent rounded-full animate-spin"></div>
+                        <div className="mt-3 text-sm font-semibold">{t('common.pleaseWait')}</div>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0 flex-1">
+                            <div className="text-2xl font-extrabold text-gray-900 dark:text-white truncate">
+                              {selectedUser.username}
+                            </div>
+                            <div className="text-sm text-gray-500 font-medium mt-1 truncate">
+                              {selectedUser.email}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.username')}</label>
+                            <input
+                              value={form.username}
+                              onChange={(e) => setField('username', e.target.value)}
+                              className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.email')}</label>
+                            <input
+                              value={form.email}
+                              onChange={(e) => setField('email', e.target.value)}
+                              className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.roleLabel')}</label>
+                            <div className="relative" ref={roleDropdownRef}>
+                              <button
+                                type="button"
+                                onClick={() => !isSelf(selectedUser) && setIsRoleDropdownOpen(!isRoleDropdownOpen)}
+                                disabled={isSelf(selectedUser)}
+                                className="w-full flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all disabled:opacity-50"
+                              >
+                                <span className="font-semibold">{form.role}</span>
+                                <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isRoleDropdownOpen ? 'rotate-180' : ''}`} />
+                              </button>
+
+                              {isRoleDropdownOpen && (
+                                <div className="absolute left-0 mt-2 w-full bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 overflow-hidden">
+                                  {['STUDENT', 'RECRUITER', 'ADMIN'].map((r) => (
+                                    <button
+                                      key={r}
+                                      type="button"
+                                      onClick={() => {
+                                        setField('role', r);
+                                        setIsRoleDropdownOpen(false);
+                                      }}
+                                      className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors duration-200 ${form.role === r ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                                    >
+                                      <span className="font-bold">{r}</span>
+                                      {form.role === r && <CheckCircleIcon className="h-4 w-4 text-red-500" />}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Role Specific Fields */}
+                          {form.role === 'STUDENT' && (
+                            <>
+                              <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.name')}</label>
+                                <input
+                                  value={form.student.name}
+                                  onChange={(e) => setStudentField('name', e.target.value)}
+                                  className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                                />
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                  <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.phone')}</label>
+                                  <input
+                                    value={form.student.phone}
+                                    onChange={(e) => setStudentField('phone', e.target.value)}
+                                    className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                                  />
+                                </div>
+                                <div className="space-y-1.5">
+                                  <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.yearOfPassing')}</label>
+                                  <input
+                                    value={form.student.yearOfPassing}
+                                    onChange={(e) => setStudentField('yearOfPassing', e.target.value)}
+                                    className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                                  />
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                  <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.college')}</label>
+                                  <input
+                                    value={form.student.college}
+                                    onChange={(e) => setStudentField('college', e.target.value)}
+                                    className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                                  />
+                                </div>
+                                <div className="space-y-1.5">
+                                  <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.branch')}</label>
+                                  <input
+                                    value={form.student.branch}
+                                    onChange={(e) => setStudentField('branch', e.target.value)}
+                                    className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                                  />
+                                </div>
+                              </div>
+                            </>
+                          )}
+
+                          {form.role === 'RECRUITER' && (
+                            <>
+                              <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.companyName')}</label>
+                                <input
+                                  value={form.recruiter.companyName}
+                                  onChange={(e) => setRecruiterField('companyName', e.target.value)}
+                                  className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.companyWebsite')}</label>
+                                <input
+                                  value={form.recruiter.companyWebsite}
+                                  onChange={(e) => setRecruiterField('companyWebsite', e.target.value)}
+                                  className="w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                                />
+                              </div>
+                            </>
+                          )}
+                        </div>
+
+                        <div className="pt-6 border-t border-gray-100 dark:border-gray-800 space-y-3">
+                          <button
+                            type="button"
+                            onClick={saveDetails}
+                            disabled={saving}
+                            className="w-full py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                          >
+                            {saving ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <CheckCircleIcon className="h-4 w-4" />}
+                            {t('adminUserDetails.saveChanges')}
+                          </button>
+                          {!isSelf(selectedUser) && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => toggleUserStatus(selectedUser.id, selectedUser.enabled)}
+                                disabled={updatingId === selectedUser.id}
+                                className={`w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${selectedUser.enabled ? 'bg-rose-50 text-rose-700 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'}`}
+                              >
+                                {updatingId === selectedUser.id ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : (selectedUser.enabled ? <NoSymbolIcon className="h-4 w-4" /> : <CheckCircleIcon className="h-4 w-4" />)}
+                                {selectedUser.enabled ? t('adminDashboard.block') : t('adminDashboard.approve')}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => forceLogout(selectedUser.id)}
+                                disabled={forcingLogoutId === selectedUser.id}
+                                className="w-full py-3 rounded-xl text-sm font-bold bg-amber-50 text-amber-700 hover:bg-amber-100 flex items-center justify-center gap-2 transition-all"
+                              >
+                                {forcingLogoutId === selectedUser.id ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <ArrowTopRightOnSquareIcon className="h-4 w-4" />}
+                                {t('adminDashboard.forceLogout', { defaultValue: 'Force Logout' })}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setDeleteModalUser(selectedUser)}
+                                disabled={deletingId === selectedUser.id}
+                                className="w-full py-3 rounded-xl text-sm font-bold bg-gray-50 text-gray-700 hover:bg-gray-100 flex items-center justify-center gap-2 transition-all"
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                                {t('common.delete')}
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
               </div>
             )}
           </div>

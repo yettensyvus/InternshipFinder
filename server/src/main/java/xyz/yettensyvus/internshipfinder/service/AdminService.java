@@ -45,4 +45,6 @@ public interface AdminService {
     String uploadUserProfilePicture(Long userId, org.springframework.web.multipart.MultipartFile file) throws java.io.IOException;
 
     String uploadUserResume(Long userId, org.springframework.web.multipart.MultipartFile file) throws java.io.IOException;
+
+    void forceLogout(Long userId);
 }

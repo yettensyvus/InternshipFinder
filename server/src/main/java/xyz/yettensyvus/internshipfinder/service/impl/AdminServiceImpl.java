@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import xyz.yettensyvus.internshipfinder.dto.AdminProfileDTO;
 import xyz.yettensyvus.internshipfinder.dto.AdminRecruiterDetailsDTO;
@@ -18,6 +19,7 @@ import xyz.yettensyvus.internshipfinder.repository.*;
 import xyz.yettensyvus.internshipfinder.service.AdminService;
 import xyz.yettensyvus.internshipfinder.service.FileUploadService;
 
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -378,8 +380,6 @@ public class AdminServiceImpl implements AdminService {
 
         return fileUploadService.toReadSasUrl(imageUrl);
     }
-
-    @Override
     @Transactional
     public String uploadUserResume(Long userId, org.springframework.web.multipart.MultipartFile file) throws java.io.IOException {
         User user = userRepo.findById(userId)
@@ -399,5 +399,12 @@ public class AdminServiceImpl implements AdminService {
         studentRepo.save(student);
 
         return fileUploadService.toReadSasUrl(resumeUrl);
+    }
+
+    @Override
+    @Transactional
+    public void forceLogout(Long userId) {
+        userRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        refreshTokenRepo.deleteByUserId(userId);
     }
 }

@@ -37,6 +37,7 @@ import Hired from './pages/recruiter/Hired';
 
 import AdminDashboard from './pages/admin/Dashboard';
 import ManageUsers from './pages/admin/ManageUsers';
+import SystemLogs from './pages/admin/SystemLogs';
 import AdminProfile from './pages/admin/Profile';
 
 import ProfileRedirect from './pages/ProfileRedirect';
@@ -244,6 +245,14 @@ export default function App() {
           element={
             <ProtectedRoute role="ADMIN">
               <AdminProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/logs"
+          element={
+            <ProtectedRoute role="ADMIN">
+              <SystemLogs />
             </ProtectedRoute>
           }
         />
