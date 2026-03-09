@@ -89,7 +89,7 @@ export default function JobDetails() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="px-4 pt-12 pb-20">
+      <div className="px-4 pt-12 pb-28 sm:pb-20">
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
             <div className="rounded-3xl bg-gradient-to-r from-gray-900 via-slate-800 to-gray-900 px-6 py-8 shadow-xl border border-white/10">
@@ -115,57 +115,57 @@ export default function JobDetails() {
               <div className="lg:col-span-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur border border-gray-200/60 dark:border-gray-700/60 rounded-3xl shadow-xl overflow-hidden">
                 <div className="p-6">
                   <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6">
-                    <div className="flex flex-col min-h-[520px]">
-                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
-                      <div className="flex items-start gap-6">
-                        {job.recruiterProfilePictureUrl ? (
-                          <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 shadow-lg flex-shrink-0">
-                            <img
-                              src={job.recruiterProfilePictureUrl}
-                              alt={job.recruiterCompanyName || job.company || t('jobDetails.company')}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ) : null}
+                    <div className="flex flex-col min-h-[auto] sm:min-h-[520px]">
+                      <div className="flex flex-col gap-6">
+                        <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-6">
+                          {job.recruiterProfilePictureUrl ? (
+                            <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-3xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 shadow-lg flex-shrink-0">
+                              <img
+                                src={job.recruiterProfilePictureUrl}
+                                alt={job.recruiterCompanyName || job.company || t('jobDetails.company')}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : null}
 
-                        <div>
-                          <div className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-                            {job.title || t('common.notAvailable')}
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white break-words">
+                              {job.title || t('common.notAvailable')}
+                            </div>
+                            <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                              {(job.recruiterCompanyName || job.company) || t('common.notAvailable')}
+                              {job.location ? ` • ${job.location}` : ''}
+                            </div>
+                            <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                              {t('jobDetails.postedBy')}{' '}
+                              <span className="font-medium text-gray-900 dark:text-white">{job.recruiterCompanyName || t('common.notAvailable')}</span>
+                              {job.recruiterEmail ? <span className="block sm:inline"> ({job.recruiterEmail})</span> : null}
+                            </div>
                           </div>
-                          <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                            {(job.recruiterCompanyName || job.company) || t('common.notAvailable')}
-                            {job.location ? ` • ${job.location}` : ''}
+                        </div>
+
+                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                          <div
+                            className={`text-[10px] sm:text-xs font-semibold px-3 py-1 rounded-full ${(job.active ?? job.isActive)
+                              ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200'
+                              : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'}`}
+                          >
+                            {(job.active ?? job.isActive) ? t('jobDetails.open') : t('jobDetails.closed')}
                           </div>
-                          <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                            {t('jobDetails.postedBy')}{' '}
-                            <span className="font-medium text-gray-900 dark:text-white">{job.recruiterCompanyName || t('common.notAvailable')}</span>
-                            {job.recruiterEmail ? <span> ({job.recruiterEmail})</span> : null}
+                          {job.type ? (
+                            <div className="text-[10px] sm:text-xs font-semibold px-3 py-1 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200">
+                              {job.type}
+                            </div>
+                          ) : null}
+                          <div
+                            className={`text-[10px] sm:text-xs font-semibold px-3 py-1 rounded-full ${job.paid
+                              ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300'
+                              : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'}`}
+                          >
+                            {job.paid ? t('jobDetails.paid') : t('jobDetails.unpaid')}
                           </div>
                         </div>
                       </div>
-
-                      <div className="flex flex-wrap items-center gap-2">
-                        <div
-                          className={`text-xs font-semibold px-3 py-1 rounded-full ${(job.active ?? job.isActive)
-                            ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200'
-                            : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'}`}
-                        >
-                          {(job.active ?? job.isActive) ? t('jobDetails.open') : t('jobDetails.closed')}
-                        </div>
-                        {job.type ? (
-                          <div className="text-xs font-semibold px-3 py-1 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200">
-                            {job.type}
-                          </div>
-                        ) : null}
-                        <div
-                          className={`text-xs font-semibold px-3 py-1 rounded-full ${job.paid
-                            ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300'
-                            : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'}`}
-                        >
-                          {job.paid ? t('jobDetails.paid') : t('jobDetails.unpaid')}
-                        </div>
-                      </div>
-                    </div>
 
                     <div className="mt-6">
                       <div className="text-sm font-semibold text-gray-900 dark:text-white">{t('jobDetails.description')}</div>
@@ -175,7 +175,7 @@ export default function JobDetails() {
                     </div>
 
                       <div className="mt-auto pt-6 border-t border-gray-200/70 dark:border-gray-700/70">
-                        <div className="flex flex-col items-center justify-center gap-3">
+                        <div className="hidden sm:flex flex-col items-center justify-center gap-3">
                           {!auth ? (
                             <Link
                               to="/login"
@@ -204,7 +204,7 @@ export default function JobDetails() {
                             <div className="text-xs text-gray-600 dark:text-gray-400 text-center">
                               {t('studentJobs.alreadyApplied')}{' '}
                               <Link to="/student/applications" className="text-violet-700 dark:text-violet-300 hover:underline font-semibold">
-                                {t('jobDetails.viewApplications', { defaultValue: 'View applications' })}
+                                {t('jobDetails.viewApplications')}
                               </Link>
                             </div>
                           ) : null}
@@ -257,6 +257,41 @@ export default function JobDetails() {
               </div>
             </div>
           )}
+        </div>
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 z-50 sm:hidden">
+        <div className="border-t border-gray-200/70 dark:border-gray-700/70 bg-white/85 dark:bg-gray-900/85 backdrop-blur">
+          <div className="px-4 py-3">
+            {!auth ? (
+              <Link
+                to="/login"
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white text-sm font-semibold shadow-lg"
+              >
+                {t('jobDetails.signInToApply')}
+              </Link>
+            ) : auth.role === 'STUDENT' && !hasApplied ? (
+              <button
+                type="button"
+                onClick={apply}
+                disabled={applying || !(job?.active ?? job?.isActive)}
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white text-sm font-semibold shadow-lg disabled:opacity-60"
+              >
+                {applying ? t('studentJobs.applying') : t('studentJobs.apply')}
+              </button>
+            ) : auth && auth.role === 'STUDENT' && hasApplied ? (
+              <Link
+                to="/student/applications"
+                className="w-full inline-flex items-center justify-center px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm font-semibold"
+              >
+                {t('jobDetails.viewApplications')}
+              </Link>
+            ) : (
+              <div className="w-full text-center text-xs text-gray-600 dark:text-gray-400">
+                {t('common.accessDenied')}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

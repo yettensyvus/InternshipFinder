@@ -30,7 +30,7 @@ export default function FloatingBackButton() {
     <button
       type="button"
       onClick={goBack}
-      className="fixed bottom-6 left-6 z-40 inline-flex items-center gap-2 rounded-2xl px-4 py-3 shadow-xl border border-gray-200/60 dark:border-gray-700/60 bg-white/80 dark:bg-gray-900/80 backdrop-blur hover:bg-white dark:hover:bg-gray-900 text-gray-900 dark:text-white transition"
+      className="fixed bottom-6 left-6 z-40 hidden sm:inline-flex items-center gap-2 rounded-2xl px-4 py-3 shadow-xl border border-gray-200/60 dark:border-gray-700/60 bg-white/80 dark:bg-gray-900/80 backdrop-blur hover:bg-white dark:hover:bg-gray-900 text-gray-900 dark:text-white transition"
       aria-label={t('common.goBack')}
       title={t('common.goBack')}
     >

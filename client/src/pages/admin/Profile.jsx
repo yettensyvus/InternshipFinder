@@ -111,14 +111,14 @@ export default function AdminProfile() {
           <div className="mb-8">
             <div className="rounded-3xl bg-gradient-to-r from-gray-900 via-slate-800 to-gray-900 px-6 py-8 shadow-xl border border-white/10">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-                <div>
+                <div className="text-center sm:text-left">
                   <h1 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-300 via-rose-200 to-pink-200 mb-2 pb-1">
                     {t('adminProfile.title')}
                   </h1>
-                  <p className="text-white/80 text-sm md:text-base max-w-3xl">{form.email || t('common.notAvailable')}</p>
+                  <p className="text-white/80 text-sm md:text-base max-w-3xl truncate">{form.email || t('common.notAvailable')}</p>
                 </div>
 
-                <div>
+                <div className="flex justify-center sm:justify-end">
                   <button
                     type="button"
                     onClick={() => {
@@ -154,10 +154,10 @@ export default function AdminProfile() {
 
           <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur border border-gray-200/60 dark:border-gray-700/60 rounded-3xl shadow-xl overflow-hidden">
             <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
                 <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5">
                   <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{t('adminProfile.role')}</p>
-                  <p className="mt-2 text-lg font-bold text-gray-900 dark:text-white">{form.role || t('common.roles.admin')}</p>
+                  <p className="mt-2 text-lg font-bold text-gray-900 dark:text-white truncate">{form.role || t('common.roles.admin')}</p>
                   <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{t('adminProfile.roleHint')}</p>
                 </div>
                 <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5">
@@ -165,7 +165,7 @@ export default function AdminProfile() {
                   <p className="mt-2 text-lg font-bold text-gray-900 dark:text-white">{t('adminProfile.active')}</p>
                   <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{t('adminProfile.accountHint')}</p>
                 </div>
-                <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5">
+                <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 sm:col-span-2 lg:col-span-1">
                   <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{t('adminProfile.email')}</p>
                   <p className="mt-2 text-lg font-bold text-gray-900 dark:text-white truncate">{form.email || t('common.notAvailable')}</p>
                   <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{t('adminProfile.emailHint')}</p>
@@ -209,7 +209,7 @@ export default function AdminProfile() {
                       { label: t('adminProfile.openDashboard'), path: '/admin/dashboard', icon: ChartBarIcon },
                       { label: t('adminProfile.manageUsers'), path: '/admin/users', icon: UserIcon },
                       { label: t('adminProfile.viewNotifications'), path: '/notifications', icon: ShieldCheckIcon },
-                      { label: t('adminDashboard.systemLogs', { defaultValue: 'System Logs' }), path: '/admin/logs', icon: CommandLineIcon }
+                      { label: t('adminDashboard.systemLogs'), path: '/admin/logs', icon: CommandLineIcon }
                     ].map(({ label, path, icon: Icon }) => (
                       <button
                         key={path}
@@ -228,14 +228,14 @@ export default function AdminProfile() {
                   </div>
                 </div>
 
-                <div className="lg:col-span-12 flex items-center justify-between gap-4 mt-4">
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="lg:col-span-12 flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 text-center sm:text-left">
                     {loading ? t('common.pleaseWait') : t('adminProfile.auditHint')}
                   </div>
                   <button
                     type="submit"
                     disabled={saving || loading}
-                    className="px-8 py-3 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 text-white font-semibold shadow-lg hover:shadow-xl disabled:opacity-60 transition-all hover:scale-[1.02]"
+                    className="w-full sm:w-auto px-8 py-3 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 text-white font-semibold shadow-lg hover:shadow-xl disabled:opacity-60 transition-all hover:scale-[1.02]"
                   >
                     {saving ? t('adminProfile.saving') : t('adminProfile.saveChanges')}
                   </button>

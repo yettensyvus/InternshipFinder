@@ -176,7 +176,7 @@ export default function ResumeUpload() {
                       <div className="flex-1 min-w-0">
                         <div className="text-[10px] uppercase tracking-widest font-bold text-gray-400 dark:text-gray-500">{t('recruiterApplications.resume')}</div>
                         <div className="mt-0.5 text-sm font-bold text-gray-900 dark:text-white truncate">
-                          {t('common.readyToUpload', { defaultValue: 'Resume is live' })}
+                          {t('resumeUpload.resumeLive')}
                         </div>
                       </div>
                     </div>

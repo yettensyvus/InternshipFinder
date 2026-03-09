@@ -229,7 +229,7 @@ export default function Settings() {
                 </div>
               )}
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center sm:justify-start">
                 <button
                   type="button"
                   onClick={requestEmailOtp}
@@ -300,7 +300,7 @@ export default function Settings() {
                 </>
               )}
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center sm:justify-start">
                 <button
                   type="button"
                   onClick={requestPasswordOtp}

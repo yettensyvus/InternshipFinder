@@ -49,7 +49,7 @@ export default function AdminDashboard() {
     });
 
     return (
-      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="block">
+      <svg width="100%" height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="block">
         <polyline
           fill="none"
           strokeWidth="3"
@@ -115,16 +115,16 @@ export default function AdminDashboard() {
       <div className="max-w-6xl mx-auto">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
-          <div>
+          <div className="text-center md:text-left">
             <h1 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 dark:from-red-400 dark:via-rose-400 dark:to-pink-400 pb-1">
               {t('adminDashboard.title')}
             </h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-300 max-w-xl text-base font-medium">
+            <p className="mt-2 text-gray-600 dark:text-gray-300 max-w-xl text-base font-medium mx-auto md:mx-0">
               {t('adminDashboard.subtitle')}
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:block text-right mr-1">
+          <div className="flex items-center justify-end gap-3">
+            <div className="text-right mr-1">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('adminDashboard.system.lastRefresh')}</p>
               <p className="text-xs font-bold text-gray-900 dark:text-white">{lastUpdatedAt ? lastUpdatedAt.toLocaleTimeString() : '—'}</p>
             </div>
@@ -139,13 +139,13 @@ export default function AdminDashboard() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
           {[
             { label: t('adminDashboard.totalUsers'), value: totalUsers, series: usersSeries, color: 'from-indigo-500 to-blue-500', icon: UsersIcon },
             { label: t('adminDashboard.jobsPosted'), value: totalJobs, series: jobsSeries, color: 'from-emerald-500 to-teal-500', icon: BriefcaseIcon },
             { label: t('adminDashboard.applications'), value: totalApplications, series: applicationsSeries, color: 'from-rose-500 to-pink-500', icon: ClipboardDocumentCheckIcon }
           ].map((stat, i) => (
-            <div key={i} className="group bg-white dark:bg-gray-800/50 border border-gray-200/60 dark:border-gray-700/60 rounded-[2rem] p-6 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+            <div key={i} className={`group bg-white dark:bg-gray-800/50 border border-gray-200/60 dark:border-gray-700/60 rounded-[2rem] p-6 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden ${i === 2 ? 'sm:col-span-2 lg:col-span-1' : ''}`}>
               <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${stat.color} opacity-[0.03] rounded-bl-full`}></div>
               <div className="flex items-start justify-between relative z-10">
                 <div>
@@ -193,8 +193,8 @@ export default function AdminDashboard() {
                   <div className="h-12 w-12 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-5 border border-gray-200 dark:border-gray-700 group-hover:border-gray-300 dark:group-hover:border-gray-600 transition-colors">
                     <CommandLineIcon className="h-6 w-6 text-gray-600 dark:text-gray-300" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1.5">{t('adminDashboard.systemLogs', { defaultValue: 'System Logs' })}</h3>
-                  <p className="text-gray-500 dark:text-gray-400 text-xs leading-relaxed">{t('adminDashboard.logsSubtitle', { defaultValue: 'Monitor system activities and audit trails.' })}</p>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1.5">{t('adminDashboard.systemLogs')}</h3>
+                  <p className="text-gray-500 dark:text-gray-400 text-xs leading-relaxed">{t('adminDashboard.logsSubtitle')}</p>
                 </div>
               </button>
             </div>

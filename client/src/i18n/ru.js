@@ -28,6 +28,14 @@ const ru = {
     save: 'Сохранить',
     cancel: 'Отмена',
     refresh: 'Обновить',
+    searchLogsPlaceholder: 'Поиск по журналам...',
+    allLevels: 'Все уровни',
+    timestamp: 'Время',
+    level: 'Уровень',
+    action: 'Действие',
+    details: 'Детали',
+    ip: 'IP',
+    systemUser: 'Система',
     readyToUpload: 'Готово к загрузке',
     pleaseWait: 'Пожалуйста, подождите…',
     accessDenied: 'Доступ запрещен',
@@ -37,6 +45,9 @@ const ru = {
       student: 'Студент',
       recruiter: 'Рекрутер',
       admin: 'Админ'
+    },
+    status: {
+      pending: 'В ожидании'
     }
   },
   auth: {
@@ -155,7 +166,8 @@ const ru = {
     subtitle: 'Полная информация об этой вакансии.',
     failedLoad: 'Не удалось загрузить детали вакансии',
     notFound: 'Вакансия не найдена',
-    signInToApply: 'Войти, чтобы подать заявку',
+    signInToApply: 'Войдите, чтобы подать заявку',
+    viewApplications: 'Посмотреть заявки',
     postedBy: 'Опубликовано:',
     open: 'Открыта',
     closed: 'Закрыта',
@@ -550,7 +562,14 @@ const ru = {
     failedDeleteUser: 'Не удалось удалить пользователя',
     failedToLoadUsers: 'Не удалось загрузить пользователей',
     failedLoadStats: 'Не удалось загрузить статистику',
-    failedUpdateStatus: 'Не удалось обновить статус пользователя'
+    failedUpdateStatus: 'Не удалось обновить статус пользователя',
+    forceLogout: 'Принудительный выход',
+    forceLogoutSuccess: 'Пользователь вышел со всех устройств',
+    failedForceLogout: 'Не удалось принудительно выйти из аккаунта',
+    systemLogs: 'Системные журналы',
+    logsSubtitle: 'Мониторинг активности системы и журналов аудита.',
+    failedLoadLogs: 'Не удалось загрузить системные журналы',
+    noLogs: 'Журналы не найдены'
   },
   adminProfile: {
     title: 'Профиль администратора',
@@ -612,6 +631,7 @@ const ru = {
     openResume: 'Открыть резюме',
     unblock: 'Разблокировать',
     deleteConfirm: 'Удалить этого пользователя? Это действие нельзя отменить.',
+    saveSuccess: 'Пользователь успешно обновлен',
     userNotFound: 'Пользователь не найден',
     failedLoadUser: 'Не удалось загрузить пользователя',
     usernameRequired: 'Имя пользователя обязательно',
@@ -622,7 +642,12 @@ const ru = {
     userUnblocked: 'Пользователь разблокирован',
     failedUpdateStatus: 'Не удалось обновить статус пользователя',
     userDeleted: 'Пользователь удален',
-    failedDeleteUser: 'Не удалось удалить пользователя'
+    failedDeleteUser: 'Не удалось удалить пользователя',
+    photoFormatHint: 'JPG, PNG или WEBP. МАКС 2МБ.',
+    resumeFileName: 'Resume.pdf',
+    resumeReady: 'Готово к загрузке',
+    uploadNewResume: 'Загрузить новое резюме',
+    noResume: 'Нет резюме'
   },
   studentProfile: {
     title: 'Профиль студента',
@@ -676,7 +701,8 @@ const ru = {
     fileTooLarge: 'Файл слишком большой (макс. 5 МБ)',
     mustBePdf: 'Резюме должно быть в формате PDF',
     uploaded: 'Резюме загружено!',
-    uploadFailed: 'Не удалось загрузить'
+    uploadFailed: 'Не удалось загрузить',
+    resumeLive: 'Резюме доступно'
   },
   studentJobs: {
     title: 'Просмотр вакансий и стажировок',
@@ -815,6 +841,7 @@ const ru = {
     applicants: 'Кандидаты',
     clickStudentHint: 'Нажмите на студента, чтобы увидеть полную информацию.',
     selectStudentHint: 'Выберите студента для просмотра информации.',
+    email: 'Email',
     phone: 'Телефон',
     college: 'Колледж',
     branch: 'Направление',
@@ -833,6 +860,7 @@ const ru = {
     failedLoadApps: 'Не удалось загрузить заявки',
     invalidStatus: 'Неверный статус',
     statusUpdated: 'Статус обновлен: {{status}}',
+    updateStatus: 'Обновить статус',
     type: 'Тип',
     failedUpdateStatus: 'Не удалось обновить статус'
   },

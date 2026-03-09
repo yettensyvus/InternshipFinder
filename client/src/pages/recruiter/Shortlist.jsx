@@ -30,7 +30,7 @@ export default function Shortlist() {
         const res = await axios.get('/recruiter/applications/shortlisted');
         setApplications(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
-        showToast('recruiter-shortlist-load', 'error', t('recruiterShortlist.failedLoad', { defaultValue: 'Failed to load shortlist' }));
+        showToast('recruiter-shortlist-load', 'error', t('recruiterShortlist.failedLoad'));
         console.error('Shortlist fetch error:', err);
       } finally {
         setLoading(false);
@@ -66,7 +66,7 @@ export default function Shortlist() {
     minDate.setHours(0, 0, 0, 0);
 
     if (selectedDate < minDate) {
-      showToast('schedule-interview', 'error', t('recruiterShortlist.invalidDate', { defaultValue: 'Interviews must be scheduled at least 1 day in advance' }));
+      showToast('schedule-interview', 'error', t('recruiterShortlist.invalidDate'));
       return;
     }
 

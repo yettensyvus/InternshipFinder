@@ -28,6 +28,14 @@ const en = {
     save: 'Save',
     cancel: 'Cancel',
     refresh: 'Refresh',
+    searchLogsPlaceholder: 'Search logs...',
+    allLevels: 'All Levels',
+    timestamp: 'Timestamp',
+    level: 'Level',
+    action: 'Action',
+    details: 'Details',
+    ip: 'IP',
+    systemUser: 'System',
     readyToUpload: 'Ready to upload',
     pleaseWait: 'Please wait…',
     accessDenied: 'Access Denied',
@@ -37,6 +45,9 @@ const en = {
       student: 'Student',
       recruiter: 'Recruiter',
       admin: 'Admin'
+    },
+    status: {
+      pending: 'Pending'
     }
   },
   auth: {
@@ -156,6 +167,7 @@ const en = {
     failedLoad: 'Failed to load job details',
     notFound: 'Job not found',
     signInToApply: 'Sign In for Apply',
+    viewApplications: 'View applications',
     postedBy: 'Posted by:',
     open: 'Open',
     closed: 'Closed',
@@ -552,7 +564,14 @@ const en = {
     failedDeleteUser: 'Failed to delete user',
     failedToLoadUsers: 'Failed to load users',
     failedLoadStats: 'Failed to load stats',
-    failedUpdateStatus: 'Failed to update user status'
+    failedUpdateStatus: 'Failed to update user status',
+    forceLogout: 'Force Logout',
+    forceLogoutSuccess: 'User logged out from all devices',
+    failedForceLogout: 'Failed to force logout user',
+    systemLogs: 'System Logs',
+    logsSubtitle: 'Monitor system activities and audit trails.',
+    failedLoadLogs: 'Failed to load system logs',
+    noLogs: 'No logs found'
   },
   adminProfile: {
     title: 'Admin Profile',
@@ -614,6 +633,7 @@ const en = {
     openResume: 'Open resume',
     unblock: 'Unblock',
     deleteConfirm: 'Delete this user? This cannot be undone.',
+    saveSuccess: 'User updated successfully',
     userNotFound: 'User not found',
     failedLoadUser: 'Failed to load user',
     usernameRequired: 'Username is required',
@@ -624,7 +644,12 @@ const en = {
     userUnblocked: 'User unblocked',
     failedUpdateStatus: 'Failed to update user status',
     userDeleted: 'User deleted',
-    failedDeleteUser: 'Failed to delete user'
+    failedDeleteUser: 'Failed to delete user',
+    photoFormatHint: 'JPG, PNG OR WEBP. MAX 2MB.',
+    resumeFileName: 'Resume.pdf',
+    resumeReady: 'Ready to upload',
+    uploadNewResume: 'Upload new resume',
+    noResume: 'No resume'
   },
   studentProfile: {
     title: 'Student Profile',
@@ -678,7 +703,8 @@ const en = {
     fileTooLarge: 'File is too large (max 5MB)',
     mustBePdf: 'Resume must be a PDF',
     uploaded: 'Resume uploaded!',
-    uploadFailed: 'Upload failed'
+    uploadFailed: 'Upload failed',
+    resumeLive: 'Resume is live'
   },
   studentJobs: {
     title: 'View Jobs & Internships',
@@ -818,6 +844,7 @@ const en = {
     applicants: 'Applicants',
     clickStudentHint: 'Click a student to see full details.',
     selectStudentHint: 'Select a student to view details.',
+    email: 'Email',
     phone: 'Phone',
     college: 'College',
     branch: 'Branch',
@@ -836,6 +863,7 @@ const en = {
     failedLoadApps: 'Failed to load applications',
     invalidStatus: 'Invalid status',
     statusUpdated: 'Status updated: {{status}}',
+    updateStatus: 'Update Status',
     type: 'Type',
     failedUpdateStatus: 'Failed to update status'
   },

@@ -79,11 +79,11 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-md w-full bg-white dark:bg-gray-800 p-8 rounded-xl shadow-xl">
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{t('common.appName')}</h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">{t('auth.loginSubtitle')}</p>
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gray-50 dark:bg-gray-900 transition-colors duration-500">
+      <div className="max-w-md w-full bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-extrabold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent dark:from-violet-400 dark:to-indigo-400">{t('common.appName')}</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm font-medium">{t('auth.loginSubtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-5">
@@ -95,7 +95,7 @@ export default function Login() {
               id="email"
               type="email"
               {...register('email')}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500/20 outline-none transition-all"
               placeholder={t('auth.emailPlaceholder')}
               required
               disabled={loading}
@@ -113,7 +113,7 @@ export default function Login() {
               id="password"
               type="password"
               {...register('password')}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500/20 outline-none transition-all"
               placeholder={t('auth.passwordPlaceholder')}
               required
               disabled={loading}
@@ -130,7 +130,7 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white py-2 rounded-lg font-semibold hover:from-violet-700 hover:via-indigo-700 hover:to-blue-700 transition-all duration-300"
+            className="w-full bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white py-3 rounded-xl font-bold shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-60"
             disabled={loading}
           >
             {loading ? t('auth.signingIn') : t('common.signIn')}

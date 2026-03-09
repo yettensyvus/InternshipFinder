@@ -214,7 +214,7 @@ export default function Notifications() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-10">
+    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-6 sm:py-10">
       <div className="max-w-5xl mx-auto">
         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur border border-gray-200/60 dark:border-gray-700/60 rounded-3xl shadow-xl overflow-hidden">
           <div className="px-6 py-8 bg-gradient-to-r from-gray-900 via-slate-800 to-gray-900">
@@ -229,14 +229,14 @@ export default function Notifications() {
                 <button
                   type="button"
                   onClick={handleMarkAllRead}
-                  className="px-4 py-2 rounded-xl bg-white/15 hover:bg-white/20 text-white text-sm font-semibold border border-white/20 transition"
+                  className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-white/15 hover:bg-white/20 text-white text-xs sm:text-sm font-semibold border border-white/20 transition"
                 >
                   {t('notificationsPage.markAllRead')}
                 </button>
                 <button
                   type="button"
                   onClick={handleClearAll}
-                  className="px-4 py-2 rounded-xl bg-white/15 hover:bg-white/20 text-white text-sm font-semibold border border-white/20 transition"
+                  className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-white/15 hover:bg-white/20 text-white text-xs sm:text-sm font-semibold border border-white/20 transition"
                 >
                   {t('notificationsPage.clear')}
                 </button>
@@ -338,48 +338,47 @@ export default function Notifications() {
                 </div>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {visibleItems.map((n) => (
                   <button
                     key={n.id}
                     type="button"
                     onClick={() => markRead(n.id).catch(() => showToast(`notifications-mark-read-${n.id}`, 'error', t('notificationsPage.failedMarkRead')))}
-                    className={`w-full text-left rounded-2xl border p-5 transition shadow-sm ${
+                    className={`w-full text-left rounded-2xl border p-3 sm:p-5 transition shadow-sm ${
                       n.read
                         ? 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900'
                         : 'border-indigo-200 dark:border-indigo-800 bg-indigo-50/60 dark:bg-indigo-900/20'
                     }`}
                   >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <div className="text-base font-semibold text-gray-900 dark:text-white">
-                          {n.type === 'JOB_RECOMMENDED'
-                            ? t(`notificationsPage.types.${n.type}`, { defaultValue: n.title || n.type })
-                            : n.title}
-                        </div>
-                        {n.message ? (
-                          <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                            {n.type === 'JOB_RECOMMENDED'
-                              ? t('notificationsPage.recommendedMessage', { job: n.message })
-                              : n.message}
-                          </div>
-                        ) : null}
-                        {n.type ? (
-                          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                            {t('notificationsPage.typePrefix')}{' '}
-                            {t(`notificationsPage.types.${n.type}`, { defaultValue: n.type })}
-                          </div>
-                        ) : null}
-                        {n.jobId || n.applicationId ? (
-                          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                            {n.jobId ? <span className="mr-3">Job ID: {n.jobId}</span> : null}
-                            {n.applicationId ? <span>Application ID: {n.applicationId}</span> : null}
-                          </div>
-                        ) : null}
+                    <div className="flex flex-col gap-1">
+                      <div className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">
+                        {n.type === 'JOB_RECOMMENDED'
+                          ? t(`notificationsPage.types.${n.type}`, { defaultValue: n.title || n.type })
+                          : n.title}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         {n.createdAt ? new Date(n.createdAt).toLocaleString() : ''}
                       </div>
+
+                      {n.message ? (
+                        <div className="mt-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                          {n.type === 'JOB_RECOMMENDED'
+                            ? t('notificationsPage.recommendedMessage', { job: n.message })
+                            : n.message}
+                        </div>
+                      ) : null}
+                      {n.type ? (
+                        <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                          {t('notificationsPage.typePrefix')}{' '}
+                          {t(`notificationsPage.types.${n.type}`, { defaultValue: n.title || n.type })}
+                        </div>
+                      ) : null}
+                      {n.jobId || n.applicationId ? (
+                        <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                          {n.jobId ? <span className="mr-3">Job ID: {n.jobId}</span> : null}
+                          {n.applicationId ? <span>Application ID: {n.applicationId}</span> : null}
+                        </div>
+                      ) : null}
                     </div>
                     {!n.read ? (
                       <div className="mt-3 text-xs font-semibold text-indigo-700 dark:text-indigo-300">{t('notificationsPage.unreadBadge')}</div>

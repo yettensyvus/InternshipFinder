@@ -879,7 +879,7 @@ export default function CvBuilder() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-20">
+    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 pt-20 pb-32 sm:py-20">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-10">
           <div>
@@ -1333,7 +1333,7 @@ export default function CvBuilder() {
                   <div className="text-xs text-gray-500 dark:text-gray-400">{t('cvBuilder.preview.paperSize')}</div>
                 </div>
 
-                <div className="flex items-center gap-2 flex-wrap justify-end">
+                <div className="hidden sm:flex items-center gap-2 flex-wrap justify-end">
                   <button
                     type="button"
                     onClick={saveCv}
@@ -1534,6 +1534,21 @@ export default function CvBuilder() {
               <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
                 {t('cvBuilder.tip')}
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 z-50 sm:hidden">
+        <div className="border-t border-gray-200/70 dark:border-gray-700/70 bg-white/85 dark:bg-gray-900/85 backdrop-blur">
+          <div className="px-4 py-3">
+            <div className="grid grid-cols-2 gap-3">
+              <button type="button" onClick={saveCv} className={smallGhostBtn}>
+                {t('cvBuilder.actions.saveCv')}
+              </button>
+              <button type="button" onClick={exportPdf} className={smallPrimaryBtn}>
+                {t('cvBuilder.actions.exportPdf')}
+              </button>
             </div>
           </div>
         </div>

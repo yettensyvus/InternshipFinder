@@ -176,7 +176,7 @@ export default function JobManage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 pt-12 pb-20">
+    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 pt-12 pb-28 sm:pb-20">
       <div className="w-full px-2 md:px-6">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
           <div>
@@ -330,7 +330,7 @@ export default function JobManage() {
                     <button
                       type="submit"
                       disabled={saving}
-                      className="px-8 py-3 rounded-xl bg-violet-600 text-white font-bold shadow-lg hover:bg-violet-700 transition disabled:opacity-50"
+                      className="hidden sm:inline-flex px-8 py-3 rounded-xl bg-violet-600 text-white font-bold shadow-lg hover:bg-violet-700 transition disabled:opacity-50"
                     >
                       {saving ? t('recruiterJobManage.saving') : t('recruiterJobManage.saveChanges')}
                     </button>
@@ -373,6 +373,23 @@ export default function JobManage() {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 z-50 sm:hidden">
+        <div className="border-t border-gray-200/70 dark:border-gray-700/70 bg-white/85 dark:bg-gray-900/85 backdrop-blur">
+          <div className="px-4 py-3">
+            <button
+              type="button"
+              disabled={saving || loading}
+              onClick={() => {
+                handleSubmit(save, onInvalid)();
+              }}
+              className="w-full inline-flex items-center justify-center px-4 py-3 rounded-2xl bg-violet-600 text-white text-sm font-bold shadow-lg disabled:opacity-50"
+            >
+              {saving ? t('recruiterJobManage.saving') : t('recruiterJobManage.saveChanges')}
+            </button>
           </div>
         </div>
       </div>

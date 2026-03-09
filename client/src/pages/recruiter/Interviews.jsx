@@ -29,7 +29,7 @@ export default function Interviews() {
         const res = await axios.get('/recruiter/applications/interviews');
         setApplications(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
-        showToast('recruiter-interviews-load', 'error', t('recruiterInterviews.failedLoad', { defaultValue: 'Failed to load interviews' }));
+        showToast('recruiter-interviews-load', 'error', t('recruiterInterviews.failedLoad'));
         console.error('Interviews fetch error:', err);
       } finally {
         setLoading(false);

@@ -27,7 +27,7 @@ export default function Hired() {
         const res = await axios.get('/recruiter/applications/hired');
         setApplications(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
-        showToast('recruiter-hired-load', 'error', t('recruiterHired.failedLoad', { defaultValue: 'Failed to load hired candidates' }));
+        showToast('recruiter-hired-load', 'error', t('recruiterHired.failedLoad'));
         console.error('Hired fetch error:', err);
       } finally {
         setLoading(false);

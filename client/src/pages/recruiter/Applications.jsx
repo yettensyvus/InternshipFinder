@@ -346,7 +346,7 @@ export default function Applications() {
 
                         <div className="grid grid-cols-1 gap-3">
                           <div className="text-sm p-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
-                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Email</div>
+                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{t('recruiterApplications.email')}</div>
                             <div className="text-gray-800 dark:text-gray-100 font-medium break-all">{selectedApp.student?.email}</div>
                           </div>
                           <div className="text-sm p-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
@@ -362,7 +362,7 @@ export default function Applications() {
                         <div className="pt-6 border-t border-gray-100 dark:border-gray-800">
                           <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30">
                             <h3 className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                              {t('recruiterApplications.updateStatus', { defaultValue: 'Update Status' })}
+                              {t('recruiterApplications.updateStatus')}
                             </h3>
                             <div className="grid grid-cols-2 gap-3">
                               <button

@@ -92,7 +92,7 @@ export default function RecruiterProfile() {
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     setPicUploading(true);
     const toastId = 'recruiter-profile-picture';
     try {
@@ -125,15 +125,15 @@ export default function RecruiterProfile() {
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
             <div className="rounded-3xl bg-gradient-to-r from-gray-900 via-slate-800 to-gray-900 px-6 py-8 shadow-xl border border-white/10">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-                <div>
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div className="text-center sm:text-left">
                   <h1 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-violet-200 to-indigo-200 mb-2 pb-1">
                     {t('recruiterProfile.title')}
                   </h1>
                   <p className="text-white/80 text-sm md:text-base max-w-3xl">{form.email || t('common.notAvailable')}</p>
                 </div>
 
-                <div>
+                <div className="flex justify-center sm:justify-end">
                   <button
                     type="button"
                     onClick={() => {
@@ -244,14 +244,14 @@ export default function RecruiterProfile() {
                   </div>
                 </div>
 
-                <div className="lg:col-span-12 flex items-center justify-between gap-4 mt-4">
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="lg:col-span-12 flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 text-center sm:text-left">
                     {loading ? t('recruiterProfile.loading') : t('recruiterProfile.keepUpdated')}
                   </div>
                   <button
                     type="submit"
                     disabled={saving || loading}
-                    className="px-8 py-3 rounded-2xl bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 text-white font-semibold shadow-lg hover:shadow-xl disabled:opacity-60 transition-all hover:scale-[1.02]"
+                    className="w-full sm:w-auto px-8 py-3 rounded-2xl bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 text-white font-semibold shadow-lg hover:shadow-xl disabled:opacity-60 transition-all hover:scale-[1.02]"
                   >
                     {saving ? t('recruiterProfile.saving') : t('recruiterProfile.saveChanges')}
                   </button>

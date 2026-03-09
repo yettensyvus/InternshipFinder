@@ -109,14 +109,14 @@ export default function Jobs() {
             <div className="p-6">
               <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-6 mb-6">
                 <div className="text-lg font-semibold text-gray-900 dark:text-white">{t('studentJobs.filters')}</div>
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="md:col-span-2">
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="sm:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('studentJobs.search')}</label>
                     <input
                       value={filters.query}
                       onChange={(e) => setFilters((prev) => ({ ...prev, query: e.target.value }))}
                       placeholder={t('studentJobs.searchPlaceholder')}
-                      className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-gray-900 dark:text-white"
+                      className="w-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500/20 outline-none transition-all"
                     />
                   </div>
 
@@ -125,14 +125,14 @@ export default function Jobs() {
                     <button
                       type="button"
                       onClick={() => setIsPaidDropdownOpen(prev => !prev)}
-                      className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800"
+                      className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-semibold text-gray-700 dark:text-gray-200"
                     >
-                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">{activePaid.label}</span>
+                      <span>{activePaid.label}</span>
                       <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isPaidDropdownOpen ? 'rotate-180' : ''}`} />
                     </button>
 
                     {isPaidDropdownOpen ? (
-                      <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50">
+                      <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                         {paidOptions.map((opt) => (
                           <button
                             key={opt.value || 'all'}
@@ -155,14 +155,14 @@ export default function Jobs() {
                     <button
                       type="button"
                       onClick={() => setIsTypeDropdownOpen(prev => !prev)}
-                      className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800"
+                      className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-semibold text-gray-700 dark:text-gray-200"
                     >
-                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">{activeType.label}</span>
+                      <span>{activeType.label}</span>
                       <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isTypeDropdownOpen ? 'rotate-180' : ''}`} />
                     </button>
 
                     {isTypeDropdownOpen ? (
-                      <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50">
+                      <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                         {typeOptions.map((opt) => (
                           <button
                             key={opt.value || 'all'}
@@ -180,8 +180,7 @@ export default function Jobs() {
                     ) : null}
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 opacity-0">{t('studentJobs.clearFilters')}</label>
+                  <div className="sm:col-span-2 lg:col-span-4 mt-2">
                     <button
                       type="button"
                       onClick={() => {
@@ -189,7 +188,7 @@ export default function Jobs() {
                         setIsTypeDropdownOpen(false);
                         setIsPaidDropdownOpen(false);
                       }}
-                      className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-semibold hover:bg-gray-50 dark:hover:bg-gray-800"
+                      className="w-full sm:w-auto px-6 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-sm"
                     >
                       {t('studentJobs.clearFilters')}
                     </button>

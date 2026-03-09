@@ -28,6 +28,14 @@ const ro = {
     save: 'Salvează',
     cancel: 'Anulează',
     refresh: 'Reîmprospătează',
+    searchLogsPlaceholder: 'Caută în jurnale...',
+    allLevels: 'Toate nivelurile',
+    timestamp: 'Marcaj timp',
+    level: 'Nivel',
+    action: 'Acțiune',
+    details: 'Detalii',
+    ip: 'IP',
+    systemUser: 'Sistem',
     readyToUpload: 'Gata de încărcat',
     pleaseWait: 'Vă rugăm așteptați…',
     accessDenied: 'Acces refuzat',
@@ -37,6 +45,9 @@ const ro = {
       student: 'Student',
       recruiter: 'Recrutor',
       admin: 'Admin'
+    },
+    status: {
+      pending: 'În așteptare'
     }
   },
   auth: {
@@ -151,11 +162,12 @@ const ro = {
     goBack: 'Înapoi'
   },
   jobDetails: {
-    title: 'Detalii job',
-    subtitle: 'Informații complete despre această postare de job.',
+    title: 'Detalii Job',
+    subtitle: 'Informații complete despre această postare.',
     failedLoad: 'Încărcarea detaliilor jobului a eșuat',
     notFound: 'Job negăsit',
-    signInToApply: 'Autentifică-te ca să aplici',
+    signInToApply: 'Autentifică-te pentru a aplica',
+    viewApplications: 'Vezi aplicațiile',
     postedBy: 'Postat de:',
     open: 'Deschis',
     closed: 'Închis',
@@ -550,7 +562,14 @@ const ro = {
     failedDeleteUser: 'Ștergerea utilizatorului a eșuat',
     failedToLoadUsers: 'Încărcarea utilizatorilor a eșuat',
     failedLoadStats: 'Încărcarea statisticilor a eșuat',
-    failedUpdateStatus: 'Actualizarea stării utilizatorului a eșuat'
+    failedUpdateStatus: 'Actualizarea stării utilizatorului a eșuat',
+    forceLogout: 'Deconectare forțată',
+    forceLogoutSuccess: 'Utilizator deconectat de pe toate dispozitivele',
+    failedForceLogout: 'Deconectarea forțată a eșuat',
+    systemLogs: 'Jurnale de sistem',
+    logsSubtitle: 'Monitorizează activitățile sistemului și jurnalele de audit.',
+    failedLoadLogs: 'Încărcarea jurnalelor de sistem a eșuat',
+    noLogs: 'Nu au fost găsite jurnale'
   },
   adminProfile: {
     title: 'Profil Admin',
@@ -612,6 +631,7 @@ const ro = {
     openResume: 'Deschide CV',
     unblock: 'Deblochează',
     deleteConfirm: 'Ștergi acest utilizator? Acțiunea nu poate fi anulată.',
+    saveSuccess: 'Utilizator actualizat cu succes',
     userNotFound: 'Utilizator negăsit',
     failedLoadUser: 'Încărcarea utilizatorului a eșuat',
     usernameRequired: 'Numele de utilizator este obligatoriu',
@@ -622,7 +642,12 @@ const ro = {
     userUnblocked: 'Utilizator deblocat',
     failedUpdateStatus: 'Actualizarea stării utilizatorului a eșuat',
     userDeleted: 'Utilizator șters',
-    failedDeleteUser: 'Ștergerea utilizatorului a eșuat'
+    failedDeleteUser: 'Ștergerea utilizatorului a eșuat',
+    photoFormatHint: 'JPG, PNG sau WEBP. MAX 2MB.',
+    resumeFileName: 'CV.pdf',
+    resumeReady: 'Gata de încărcat',
+    uploadNewResume: 'Încarcă un CV nou',
+    noResume: 'Niciun CV'
   },
   studentProfile: {
     title: 'Profil Student',
@@ -676,7 +701,8 @@ const ro = {
     fileTooLarge: 'Fișierul este prea mare (max 5MB)',
     mustBePdf: 'CV-ul trebuie să fie PDF',
     uploaded: 'CV încărcat!',
-    uploadFailed: 'Încărcarea a eșuat'
+    uploadFailed: 'Încărcarea a eșuat',
+    resumeLive: 'CV-ul este disponibil'
   },
   studentJobs: {
     title: 'Vezi Joburi & Stagii',
@@ -816,6 +842,7 @@ const ro = {
     applicants: 'Candidați',
     clickStudentHint: 'Apasă pe un student pentru a vedea detalii complete.',
     selectStudentHint: 'Selectează un student pentru a vedea detalii.',
+    email: 'Email',
     phone: 'Telefon',
     college: 'Colegiu',
     branch: 'Specializare',
@@ -834,6 +861,7 @@ const ro = {
     failedLoadApps: 'Încărcarea aplicațiilor a eșuat',
     invalidStatus: 'Status invalid',
     statusUpdated: 'Status actualizat: {{status}}',
+    updateStatus: 'Actualizează statusul',
     type: 'Tip',
     failedUpdateStatus: 'Actualizarea stării a eșuat'
   },

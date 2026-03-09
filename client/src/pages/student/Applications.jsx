@@ -30,7 +30,7 @@ export default function Applications() {
     const s = String(status || '').toUpperCase();
     if (s === 'PENDING') {
       return {
-        label: t('common.status.pending', { defaultValue: 'Pending' }),
+        label: t('common.status.pending'),
         pill: 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400 border-amber-100 dark:border-amber-800/30'
       };
     }

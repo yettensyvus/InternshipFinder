@@ -323,8 +323,8 @@ export default function JobList() {
                         )}
                       </div>
 
-                      <div className="mt-auto pt-5 flex items-center justify-between gap-4 w-full">
-                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                      <div className="mt-auto pt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 w-full">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate order-2 sm:order-1">
                           {job.deadline ? `${t('studentJobs.deadline')}: ${job.deadline}` : `${t('studentJobs.deadline')}: ${t('common.notAvailable')}`}
                         </div>
                         <button
@@ -334,7 +334,7 @@ export default function JobList() {
                             apply(job.id);
                           }}
                           disabled={applyingJobId === job.id}
-                          className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white text-[10px] font-bold shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex-shrink-0"
+                          className="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 text-white text-xs font-bold shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex-shrink-0 order-1 sm:order-2"
                         >
                           {applyingJobId === job.id ? t('studentJobs.applying') : t('studentJobs.apply')}
                         </button>

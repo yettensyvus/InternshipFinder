@@ -72,7 +72,7 @@ export default function Home() {
                 </span>
               </div>
               
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-6 leading-tight">
                 <span className="bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 dark:from-violet-400 dark:via-indigo-400 dark:to-blue-400 bg-clip-text text-transparent">
                   {t('home.hero.discover')}
                 </span>{' '}
@@ -90,20 +90,20 @@ export default function Home() {
               </p>
               
               {/* Statistics - Adjusted for smaller width */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="text-center">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                <div className="text-center lg:text-left">
                   <div className="text-2xl md:text-3xl font-bold text-violet-600 dark:text-violet-400 mb-1">{t('home.stats.students.title')}</div>
                   <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">{t('home.stats.students.subtitle')}</div>
                 </div>
-                <div className="text-center">
+                <div className="text-center lg:text-left">
                   <div className="text-2xl md:text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-1">{t('home.stats.recruiters.title')}</div>
                   <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">{t('home.stats.recruiters.subtitle')}</div>
                 </div>
-                <div className="text-center">
+                <div className="text-center lg:text-left">
                   <div className="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">{t('home.stats.admin.title')}</div>
                   <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">{t('home.stats.admin.subtitle')}</div>
                 </div>
-                <div className="text-center">
+                <div className="text-center lg:text-left">
                   <div className="text-2xl md:text-3xl font-bold text-sky-600 dark:text-sky-400 mb-1">{t('home.stats.status.title')}</div>
                   <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">{t('home.stats.status.subtitle')}</div>
                 </div>

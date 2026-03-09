@@ -137,10 +137,10 @@ export default function ManageUsers() {
     try {
       setForcingLogoutId(id);
       await axios.post(`/admin/users/${id}/force-logout`);
-      showToast(toastId, 'success', t('adminDashboard.forceLogoutSuccess', { defaultValue: 'User logged out from all devices' }));
+      showToast(toastId, 'success', t('adminDashboard.forceLogoutSuccess'));
     } catch (err) {
       console.error('Failed to force logout user:', err);
-      showToast(toastId, 'error', t('adminDashboard.failedForceLogout', { defaultValue: 'Failed to force logout user' }));
+      showToast(toastId, 'error', t('adminDashboard.failedForceLogout'));
     } finally {
       setForcingLogoutId(null);
     }
@@ -226,10 +226,10 @@ export default function ManageUsers() {
       setUserDetails(res.data);
       // Update the user in the main list too
       setUsers(prev => prev.map(u => u.id === selectedUser.id ? { ...u, username: form.username, email: form.email, role: form.role, enabled: form.enabled } : u));
-      showToast(toastId, 'success', t('adminUserDetails.saveSuccess', { defaultValue: 'User updated successfully' }));
+      showToast(toastId, 'success', t('adminUserDetails.saveSuccess'));
     } catch (err) {
       console.error('Failed to save user details:', err);
-      showToast(toastId, 'error', t('adminUserDetails.failedUpdateUser', { defaultValue: 'Failed to update user' }));
+      showToast(toastId, 'error', t('adminUserDetails.failedUpdateUser'));
     } finally {
       setSaving(false);
     }
@@ -302,20 +302,20 @@ export default function ManageUsers() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 pt-12 pb-20">
       <div className="w-full px-2 md:px-6">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 dark:from-red-400 dark:via-rose-400 dark:to-pink-400 pb-2">
-              {t('adminDashboard.manageUsers')}
-            </h1>
-            <p className="mt-4 text-gray-600 dark:text-gray-300 max-w-2xl text-lg">
-              {t('adminDashboard.clickRowHint')}
-            </p>
-          </div>
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
+            <div className="text-center md:text-left">
+              <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 dark:from-red-400 dark:via-rose-400 dark:to-pink-400 pb-2">
+                {t('adminDashboard.manageUsers')}
+              </h1>
+              <p className="mt-4 text-gray-600 dark:text-gray-300 max-w-2xl text-lg mx-auto md:mx-0">
+                {t('adminDashboard.clickRowHint')}
+              </p>
+            </div>
 
-          <div className="w-full md:w-[420px]">
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-              {t('recruiterStudents.search')}
-            </label>
+            <div className="w-full md:w-[420px]">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2 text-center md:text-left">
+                {t('recruiterStudents.search')}
+              </label>
             <div className="relative">
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
@@ -350,9 +350,9 @@ export default function ManageUsers() {
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 {/* Column 1: User List */}
-                <div className="lg:col-span-3">
+                <div className="lg:col-span-3 lg:border-r lg:border-gray-100 lg:dark:border-gray-800 lg:pr-6">
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between gap-3 mb-2">
+                    <div className="flex items-center justify-between gap-3 mb-2 px-1">
                       <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                         {t('recruiterStudents.page', { page, total: totalPages })}
                       </div>
@@ -415,7 +415,7 @@ export default function ManageUsers() {
                 </div>
 
                 {/* Column 2: Visual Identity & Links */}
-                <div className="lg:col-span-5 h-full">
+                <div className="lg:col-span-5 h-full order-last lg:order-none">
                   {!selectedUser ? (
                     <div className="h-full rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-gray-400 p-10 text-center">
                       <UserIcon className="h-12 w-12 mb-4 opacity-20" />
@@ -450,7 +450,7 @@ export default function ManageUsers() {
                             </div>
                           </button>
                           <input ref={picInputRef} type="file" accept="image/*" onChange={handlePicUpload} className="hidden" />
-                          <p className="mt-4 text-[10px] text-gray-400 font-medium uppercase tracking-widest text-center italic">{t('adminUserDetails.photoFormatHint', { defaultValue: 'JPG, PNG OR WEBP. MAX 2MB.' })}</p>
+                          <p className="mt-4 text-[10px] text-gray-400 font-medium uppercase tracking-widest text-center italic">{t('adminUserDetails.photoFormatHint')}</p>
                         </div>
                       </div>
 
@@ -465,7 +465,7 @@ export default function ManageUsers() {
                                     <DocumentTextIcon className="h-5 w-5" />
                                   </div>
                                   <div className="min-w-0">
-                                    <div className="text-sm font-bold text-gray-900 dark:text-white truncate">Resume.pdf</div>
+                                    <div className="text-sm font-bold text-gray-900 dark:text-white truncate">{t('adminUserDetails.resumeFileName')}</div>
                                     <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wider mt-0.5">{t('adminUserDetails.resumeReady')}</div>
                                   </div>
                                 </div>
@@ -680,7 +680,7 @@ export default function ManageUsers() {
                                 className="w-full py-3 rounded-xl text-sm font-bold bg-amber-50 text-amber-700 hover:bg-amber-100 flex items-center justify-center gap-2 transition-all"
                               >
                                 {forcingLogoutId === selectedUser.id ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <ArrowTopRightOnSquareIcon className="h-4 w-4" />}
-                                {t('adminDashboard.forceLogout', { defaultValue: 'Force Logout' })}
+                                {t('adminDashboard.forceLogout')}
                               </button>
                               <button
                                 type="button"
