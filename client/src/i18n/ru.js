@@ -829,7 +829,8 @@ const ru = {
     noneHint: 'Опубликуйте вакансию, чтобы начать получать заявки.',
     posted: 'Опубликовано',
     deadline: 'Срок',
-    failedLoad: 'Не удалось загрузить вакансии'
+    failedLoad: 'Не удалось загрузить вакансии',
+    count: '{{count}} работ'
   },
   recruiterApplications: {
     title: 'Просмотр заявок',

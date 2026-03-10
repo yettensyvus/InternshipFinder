@@ -9,6 +9,7 @@ export default function Applications() {
   const { t } = useTranslation();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const load = async () => {
@@ -25,6 +26,14 @@ export default function Applications() {
 
     load();
   }, []);
+
+  const pageSize = 6;
+  const totalPages = Math.max(1, Math.ceil(applications.length / pageSize));
+  const pagedApplications = applications.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => {
+    setPage((p) => Math.min(Math.max(1, p), totalPages));
+  }, [totalPages]);
 
   const statusMeta = (status) => {
     const s = String(status || '').toUpperCase();
@@ -94,55 +103,81 @@ export default function Applications() {
                 <p className="mt-1 text-sm">{t('studentApplications.noneHint')}</p>
               </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {applications.map(app => {
-                    const meta = statusMeta(app.status);
-                    return (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      {t('recruiterStudents.page', { page, total: totalPages })}
+                    </div>
+                    <div className="flex items-center gap-2">
                       <button
-                        key={app.id}
                         type="button"
-                        onClick={() => {
-                          const jobId = app?.job?.id;
-                          if (jobId) navigate(`/jobs/${jobId}`);
-                        }}
-                        className="group text-left h-full rounded-3xl border border-gray-200/70 dark:border-gray-700/70 bg-white/80 dark:bg-gray-900/60 backdrop-blur p-6 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all flex flex-col"
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page <= 1}
+                        className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 text-xs font-semibold text-gray-900 dark:text-gray-100 disabled:opacity-60"
                       >
-                        <div className="flex items-start justify-between gap-4 w-full">
-                          <div className="min-w-0 flex-1">
-                            <div className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors line-clamp-1">
-                              {app.job?.title || t('common.notAvailable')}
-                            </div>
-                            <div className="mt-1 text-sm text-gray-600 dark:text-gray-400 truncate">{app.job?.company || t('common.notAvailable')}</div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400 truncate">{app.job?.location || t('common.notAvailable')}</div>
-                          </div>
-
-                          <div className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border flex-shrink-0 ${meta.pill}`}>
-                            {meta.label}
-                          </div>
-                        </div>
-
-                        <div className="mt-4 flex flex-wrap items-center gap-2">
-                          <div className={`text-xs font-semibold px-3 py-1 rounded-full ${app.job?.paid ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'}`}>
-                            {app.job?.paid ? t('studentJobs.paid') : t('studentJobs.unpaid')}
-                          </div>
-                          {app.job?.type && (
-                            <div className="text-xs font-semibold px-3 py-1 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200">
-                              {app.job?.type}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="mt-auto pt-5 flex items-center justify-between gap-4 w-full text-xs text-gray-500 dark:text-gray-400">
-                          <div className="truncate">
-                            {t('studentApplications.jobId')}: #{app.job?.id || 'N/A'}
-                          </div>
-                          <div className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 text-white text-[10px] font-bold shadow-md hover:shadow-lg transition-all flex-shrink-0">
-                            {t('recruiterApplications.shortlist')}
-                          </div>
-                        </div>
+                        {t('recruiterStudents.prev')}
                       </button>
-                    );
-                  })}
+                      <button
+                        type="button"
+                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={page >= totalPages}
+                        className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 text-xs font-semibold text-gray-900 dark:text-gray-100 disabled:opacity-60"
+                      >
+                        {t('recruiterStudents.next')}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {pagedApplications.map(app => {
+                      const meta = statusMeta(app.status);
+                      return (
+                        <button
+                          key={app.id}
+                          type="button"
+                          onClick={() => {
+                            const jobId = app?.job?.id;
+                            if (jobId) navigate(`/jobs/${jobId}`);
+                          }}
+                          className="group text-left h-full rounded-3xl border border-gray-200/70 dark:border-gray-700/70 bg-white/80 dark:bg-gray-900/60 backdrop-blur p-6 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all flex flex-col"
+                        >
+                          <div className="flex items-start justify-between gap-4 w-full">
+                            <div className="min-w-0 flex-1">
+                              <div className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors line-clamp-1">
+                                {app.job?.title || t('common.notAvailable')}
+                              </div>
+                              <div className="mt-1 text-sm text-gray-600 dark:text-gray-400 truncate">{app.job?.company || t('common.notAvailable')}</div>
+                              <div className="text-sm text-gray-600 dark:text-gray-400 truncate">{app.job?.location || t('common.notAvailable')}</div>
+                            </div>
+
+                            <div className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border flex-shrink-0 ${meta.pill}`}>
+                              {meta.label}
+                            </div>
+                          </div>
+
+                          <div className="mt-4 flex flex-wrap items-center gap-2">
+                            <div className={`text-xs font-semibold px-3 py-1 rounded-full ${app.job?.paid ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'}`}>
+                              {app.job?.paid ? t('studentJobs.paid') : t('studentJobs.unpaid')}
+                            </div>
+                            {app.job?.type && (
+                              <div className="text-xs font-semibold px-3 py-1 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200">
+                                {app.job?.type}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="mt-auto pt-5 flex items-center justify-between gap-4 w-full text-xs text-gray-500 dark:text-gray-400">
+                            <div className="truncate">
+                              {t('studentApplications.jobId')}: #{app.job?.id || 'N/A'}
+                            </div>
+                            <div className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 text-white text-[10px] font-bold shadow-md hover:shadow-lg transition-all flex-shrink-0">
+                              {t('recruiterApplications.shortlist')}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
             )}
           </div>

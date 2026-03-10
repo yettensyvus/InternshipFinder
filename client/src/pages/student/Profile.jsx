@@ -6,7 +6,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { DocumentTextIcon } from '@heroicons/react/24/outline';
+import { ArrowTopRightOnSquareIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 
 export default function Profile() {
   const { t } = useTranslation();
@@ -156,11 +156,22 @@ export default function Profile() {
     return (
       <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 overflow-hidden h-full flex flex-col">
         <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center">
-              <DocumentTextIcon className="h-4 w-4 text-white" />
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="h-8 w-8 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center">
+                <DocumentTextIcon className="h-4 w-4 text-white" />
+              </div>
+              <div className="text-sm font-semibold text-white truncate">{t('recruiterApplications.resume')}</div>
             </div>
-            <div className="text-sm font-semibold text-white truncate">{t('recruiterApplications.resume')}</div>
+            <a
+              href={resumeUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="p-1.5 rounded-lg bg-white/15 hover:bg-white/20 text-white transition-colors flex-shrink-0"
+              title={t('recruiterStudents.openResume')}
+            >
+              <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+            </a>
           </div>
         </div>
         <div className="flex-1 min-h-[520px] bg-gray-100 dark:bg-gray-800">

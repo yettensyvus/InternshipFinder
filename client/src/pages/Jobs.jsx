@@ -11,6 +11,7 @@ export default function Jobs() {
 
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
   const [filters, setFilters] = useState({
     query: '',
     type: '',
@@ -91,6 +92,18 @@ export default function Jobs() {
     { value: 'INTERNSHIP', label: t('studentJobs.typeInternship') }
   ];
   const activeType = typeOptions.find(o => o.value === filters.type) || typeOptions[0];
+
+  const pageSize = 6;
+  const totalPages = Math.max(1, Math.ceil(visibleJobs.length / pageSize));
+  const pagedJobs = visibleJobs.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => {
+    setPage(1);
+  }, [filters.query, filters.type, filters.paid]);
+
+  useEffect(() => {
+    setPage((p) => Math.min(Math.max(1, p), totalPages));
+  }, [totalPages]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -208,49 +221,75 @@ export default function Jobs() {
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {visibleJobs.map((job) => (
-                    <button
-                      key={job.id}
-                      type="button"
-                      onClick={() => navigate(`/jobs/${job.id}`)}
-                      className="group text-left h-full rounded-3xl border border-gray-200/70 dark:border-gray-700/70 bg-white/80 dark:bg-gray-900/60 backdrop-blur p-6 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <div className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-violet-700 dark:group-hover:text-violet-300 transition-colors">
-                            {job.title || t('common.notAvailable')}
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      {t('recruiterStudents.page', { page, total: totalPages })}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page <= 1}
+                        className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 text-xs font-semibold text-gray-900 dark:text-gray-100 disabled:opacity-60"
+                      >
+                        {t('recruiterStudents.prev')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={page >= totalPages}
+                        className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 text-xs font-semibold text-gray-900 dark:text-gray-100 disabled:opacity-60"
+                      >
+                        {t('recruiterStudents.next')}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {pagedJobs.map((job) => (
+                      <button
+                        key={job.id}
+                        type="button"
+                        onClick={() => navigate(`/jobs/${job.id}`)}
+                        className="group text-left h-full rounded-3xl border border-gray-200/70 dark:border-gray-700/70 bg-white/80 dark:bg-gray-900/60 backdrop-blur p-6 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <div className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-violet-700 dark:group-hover:text-violet-300 transition-colors">
+                              {job.title || t('common.notAvailable')}
+                            </div>
+                            <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">{job.company || t('common.notAvailable')}</div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">{job.location || t('common.notAvailable')}</div>
                           </div>
-                          <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">{job.company || t('common.notAvailable')}</div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">{job.location || t('common.notAvailable')}</div>
+
+                          <div className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200">
+                            {t('studentJobs.open')}
+                          </div>
                         </div>
 
-                        <div className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200">
-                          {t('studentJobs.open')}
-                        </div>
-                      </div>
-
-                      <div className="mt-4 flex flex-wrap items-center gap-2">
-                        <div className={`text-xs font-semibold px-3 py-1 rounded-full ${job.paid ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'}`}>
-                          {job.paid ? t('studentJobs.paid') : t('studentJobs.unpaid')}
-                        </div>
-                        {job.type ? (
-                          <div className="text-xs font-semibold px-3 py-1 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200">
-                            {job.type}
+                        <div className="mt-4 flex flex-wrap items-center gap-2">
+                          <div className={`text-xs font-semibold px-3 py-1 rounded-full ${job.paid ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'}`}>
+                            {job.paid ? t('studentJobs.paid') : t('studentJobs.unpaid')}
                           </div>
-                        ) : null}
-                        {job.duration ? (
-                          <div className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">
-                            {job.duration}
-                          </div>
-                        ) : null}
-                      </div>
+                          {job.type ? (
+                            <div className="text-xs font-semibold px-3 py-1 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200">
+                              {job.type}
+                            </div>
+                          ) : null}
+                          {job.duration ? (
+                            <div className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">
+                              {job.duration}
+                            </div>
+                          ) : null}
+                        </div>
 
-                      <div className="mt-5 text-xs text-gray-500 dark:text-gray-400">
-                        {job.deadline ? `${t('studentJobs.deadline')}: ${job.deadline}` : `${t('studentJobs.deadline')}: ${t('common.notAvailable')}`}
-                      </div>
-                    </button>
-                  ))}
+                        <div className="mt-5 text-xs text-gray-500 dark:text-gray-400">
+                          {job.deadline ? `${t('studentJobs.deadline')}: ${job.deadline}` : `${t('studentJobs.deadline')}: ${t('common.notAvailable')}`}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

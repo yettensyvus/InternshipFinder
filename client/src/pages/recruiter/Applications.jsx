@@ -175,10 +175,10 @@ export default function Applications() {
               href={resumeUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/15 hover:bg-white/20 text-white text-sm font-semibold border border-white/20 transition"
+              className="p-1.5 rounded-lg bg-white/15 hover:bg-white/20 text-white transition-colors"
+              title={t('recruiterStudents.openResume')}
             >
               <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-              {t('recruiterApplications.openResumeTab')}
             </a>
           </div>
         </div>

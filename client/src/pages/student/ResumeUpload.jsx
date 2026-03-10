@@ -87,7 +87,7 @@ export default function ResumeUpload() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 pt-12 pb-20">
+    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 pt-12 pb-36 md:pb-20">
       <div className="w-full px-2 md:px-6">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
           <div>
@@ -153,7 +153,7 @@ export default function ResumeUpload() {
                   <button
                     type="submit"
                     disabled={uploading || !file}
-                    className="w-full h-14 rounded-2xl bg-violet-600 text-white font-bold shadow-lg hover:bg-violet-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="hidden md:block w-full h-14 rounded-2xl bg-violet-600 text-white font-bold shadow-lg hover:bg-violet-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {uploading ? (
                       <div className="flex items-center justify-center gap-2">
@@ -198,10 +198,10 @@ export default function ResumeUpload() {
                         href={resumeUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="px-4 py-2 rounded-xl bg-white/15 hover:bg-white/20 text-white text-xs font-bold border border-white/20 transition-all flex items-center gap-2"
+                        className="p-1.5 rounded-lg bg-white/15 hover:bg-white/20 text-white transition-colors"
+                        title={t('recruiterStudents.openResume')}
                       >
                         <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-                        {t('recruiterApplications.openResumeTab')}
                       </a>
                     )}
                   </div>
@@ -227,6 +227,22 @@ export default function ResumeUpload() {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-gray-200/60 dark:border-gray-700/60 bg-white/95 dark:bg-gray-900/95 backdrop-blur px-4 py-3">
+        <button
+          type="button"
+          onClick={handleSubmit(onSubmit)}
+          disabled={uploading || !file}
+          className="w-full h-14 rounded-2xl bg-violet-600 text-white font-bold shadow-lg hover:bg-violet-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {uploading ? (
+            <div className="flex items-center justify-center gap-2">
+              <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span>{t('resumeUpload.uploading')}</span>
+            </div>
+          ) : t('resumeUpload.upload')}
+        </button>
       </div>
     </div>
   );

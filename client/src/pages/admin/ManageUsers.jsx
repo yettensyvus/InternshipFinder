@@ -58,7 +58,7 @@ export default function ManageUsers() {
   });
 
   const [page, setPage] = useState(1);
-  const pageSize = 6;
+  const pageSize = 9;
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -414,8 +414,8 @@ export default function ManageUsers() {
                   </div>
                 </div>
 
-                {/* Column 2: Visual Identity & Links */}
-                <div className="lg:col-span-5 h-full order-last lg:order-none">
+                {/* Column 2: Profile + Resume (large screens) */}
+                <div className="lg:col-span-5">
                   {!selectedUser ? (
                     <div className="h-full rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-gray-400 p-10 text-center">
                       <UserIcon className="h-12 w-12 mb-4 opacity-20" />
@@ -454,54 +454,118 @@ export default function ManageUsers() {
                         </div>
                       </div>
 
-                      {selectedUser.role === 'STUDENT' && (
-                        <div className="bg-white dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
-                          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">{t('adminUserDetails.resume')}</h3>
-                          <div className="space-y-4">
-                            {userDetails?.student?.resumeUrl ? (
-                              <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                                <div className="flex items-center gap-3">
-                                  <div className="h-10 w-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600">
-                                    <DocumentTextIcon className="h-5 w-5" />
+                      <div className="hidden lg:block">
+                        {selectedUser.role === 'STUDENT' ? (
+                          <div className="bg-white dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
+                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">{t('adminUserDetails.resume')}</h3>
+                            <div className="space-y-4">
+                              {userDetails?.student?.resumeUrl ? (
+                                <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                                  <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600">
+                                      <DocumentTextIcon className="h-5 w-5" />
+                                    </div>
+                                    <div className="min-w-0">
+                                      <div className="text-sm font-bold text-gray-900 dark:text-white truncate">{t('adminUserDetails.resumeFileName')}</div>
+                                      <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wider mt-0.5">{t('adminUserDetails.resumeReady')}</div>
+                                    </div>
                                   </div>
-                                  <div className="min-w-0">
-                                    <div className="text-sm font-bold text-gray-900 dark:text-white truncate">{t('adminUserDetails.resumeFileName')}</div>
-                                    <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wider mt-0.5">{t('adminUserDetails.resumeReady')}</div>
-                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => window.open(userDetails.student.resumeUrl, '_blank')}
+                                    className="p-2 rounded-lg hover:bg-white dark:hover:bg-gray-700 text-gray-400 hover:text-red-500 transition-all shadow-sm"
+                                  >
+                                    <ArrowTopRightOnSquareIcon className="h-5 w-5" />
+                                  </button>
                                 </div>
-                                <button
-                                  type="button"
-                                  onClick={() => window.open(userDetails.student.resumeUrl, '_blank')}
-                                  className="p-2 rounded-lg hover:bg-white dark:hover:bg-gray-700 text-gray-400 hover:text-red-500 transition-all shadow-sm"
-                                >
-                                  <ArrowTopRightOnSquareIcon className="h-5 w-5" />
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="p-8 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 text-center">
-                                <DocumentTextIcon className="h-8 w-8 text-gray-300 dark:text-gray-700 mx-auto mb-2" />
-                                <p className="text-xs text-gray-500 font-medium">{t('adminUserDetails.noResume')}</p>
-                              </div>
-                            )}
+                              ) : (
+                                <div className="p-8 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 text-center">
+                                  <DocumentTextIcon className="h-8 w-8 text-gray-300 dark:text-gray-700 mx-auto mb-2" />
+                                  <p className="text-xs text-gray-500 font-medium">{t('adminUserDetails.noResume')}</p>
+                                </div>
+                              )}
 
-                            <button
-                              type="button"
-                              onClick={() => resumeInputRef.current?.click()}
-                              disabled={resumeUploading}
-                              className="w-full py-3 px-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-2"
-                            >
-                              <ArrowPathIcon className={`h-4 w-4 ${resumeUploading ? 'animate-spin' : ''}`} />
-                              {resumeUploading ? t('common.pleaseWait') : t('adminUserDetails.uploadNewResume')}
-                            </button>
-                            <input ref={resumeInputRef} type="file" accept=".pdf,.doc,.docx" onChange={handleResumeUpload} className="hidden" />
+                              <button
+                                type="button"
+                                onClick={() => resumeInputRef.current?.click()}
+                                disabled={resumeUploading}
+                                className="w-full py-3 px-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-2"
+                              >
+                                <ArrowPathIcon className={`h-4 w-4 ${resumeUploading ? 'animate-spin' : ''}`} />
+                                {resumeUploading ? t('common.pleaseWait') : t('adminUserDetails.uploadNewResume')}
+                              </button>
+                              <input ref={resumeInputRef} type="file" accept=".pdf,.doc,.docx" onChange={handleResumeUpload} className="hidden" />
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        ) : null}
+                      </div>
                     </div>
                   )}
                 </div>
 
-                {/* Column 3: User Actions & Basic Details */}
+                {/* Column 3: Resume (Student Only) */}
+                <div className="lg:hidden">
+                  {!selectedUser ? (
+                    <div className="h-full rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-gray-400 p-10 text-center">
+                      <DocumentTextIcon className="h-12 w-12 mb-4 opacity-20" />
+                      <p className="text-sm">{t('adminDashboard.clickRowHint')}</p>
+                    </div>
+                  ) : detailsLoading ? (
+                    <div className="h-full rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-gray-400 p-10 text-center">
+                      <div className="w-10 h-10 border-4 border-rose-600 border-t-transparent rounded-full animate-spin"></div>
+                      <p className="mt-4 text-sm">{t('common.pleaseWait')}</p>
+                    </div>
+                  ) : selectedUser.role === 'STUDENT' ? (
+                    <div className="bg-white dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
+                      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">{t('adminUserDetails.resume')}</h3>
+                      <div className="space-y-4">
+                        {userDetails?.student?.resumeUrl ? (
+                          <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600">
+                                <DocumentTextIcon className="h-5 w-5" />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-sm font-bold text-gray-900 dark:text-white truncate">{t('adminUserDetails.resumeFileName')}</div>
+                                <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wider mt-0.5">{t('adminUserDetails.resumeReady')}</div>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => window.open(userDetails.student.resumeUrl, '_blank')}
+                              className="p-2 rounded-lg hover:bg-white dark:hover:bg-gray-700 text-gray-400 hover:text-red-500 transition-all shadow-sm"
+                            >
+                              <ArrowTopRightOnSquareIcon className="h-5 w-5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="p-8 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 text-center">
+                            <DocumentTextIcon className="h-8 w-8 text-gray-300 dark:text-gray-700 mx-auto mb-2" />
+                            <p className="text-xs text-gray-500 font-medium">{t('adminUserDetails.noResume')}</p>
+                          </div>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => resumeInputRef.current?.click()}
+                          disabled={resumeUploading}
+                          className="w-full py-3 px-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-2"
+                        >
+                          <ArrowPathIcon className={`h-4 w-4 ${resumeUploading ? 'animate-spin' : ''}`} />
+                          {resumeUploading ? t('common.pleaseWait') : t('adminUserDetails.uploadNewResume')}
+                        </button>
+                        <input ref={resumeInputRef} type="file" accept=".pdf,.doc,.docx" onChange={handleResumeUpload} className="hidden" />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="h-full rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-gray-400 p-10 text-center">
+                      <DocumentTextIcon className="h-12 w-12 mb-4 opacity-20" />
+                      <p className="text-sm">{t('adminUserDetails.noResume')}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Column 4: Profile Data + Actions (buttons last) */}
                 <div className="lg:col-span-4">
                   <div className="bg-white dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm h-full flex flex-col">
                     {!selectedUser ? (
@@ -517,7 +581,7 @@ export default function ManageUsers() {
                         <div className="mt-3 text-sm font-semibold">{t('common.pleaseWait')}</div>
                       </div>
                     ) : (
-                      <div className="space-y-6">
+                      <div className="space-y-6 flex flex-col h-full">
                         <div className="flex items-start justify-between gap-4">
                           <div className="min-w-0 flex-1">
                             <div className="text-2xl font-extrabold text-gray-900 dark:text-white truncate">
@@ -652,7 +716,7 @@ export default function ManageUsers() {
                           )}
                         </div>
 
-                        <div className="pt-6 border-t border-gray-100 dark:border-gray-800 space-y-3">
+                        <div className="mt-auto pt-6 border-t border-gray-100 dark:border-gray-800 space-y-3">
                           <button
                             type="button"
                             onClick={saveDetails}

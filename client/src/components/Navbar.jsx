@@ -387,18 +387,31 @@ export default function Navbar() {
         {isMobileMenuOpen && (
           <div className="absolute right-4 top-[calc(100%+0.5rem)] w-72 max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50">
             <div className="px-2 py-2">
-              <button
-                type="button"
-                onClick={toggleDarkMode}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 text-gray-700 dark:text-gray-200"
-              >
-                {darkMode ? (
-                  <SunIcon className="h-5 w-5 text-yellow-400" />
-                ) : (
-                  <MoonIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                )}
-                <span className="text-sm font-medium">{darkMode ? t('common.switchToLightMode') : t('common.switchToDarkMode')}</span>
-              </button>
+              <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+                <div className="flex items-center gap-3 min-w-0">
+                  {darkMode ? (
+                    <MoonIcon className="h-5 w-5 text-indigo-500" />
+                  ) : (
+                    <SunIcon className="h-5 w-5 text-yellow-500" />
+                  )}
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">
+                    {darkMode ? t('common.switchToLightMode') : t('common.switchToDarkMode')}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={toggleDarkMode}
+                  role="switch"
+                  aria-checked={darkMode}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full border transition-colors ${darkMode ? 'bg-indigo-600 border-indigo-600' : 'bg-gray-200 border-gray-200 dark:bg-gray-700 dark:border-gray-700'}`}
+                  aria-label={darkMode ? t('common.switchToLightMode') : t('common.switchToDarkMode')}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${darkMode ? 'translate-x-5' : 'translate-x-0.5'}`}
+                  />
+                </button>
+              </div>
             </div>
 
             <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
