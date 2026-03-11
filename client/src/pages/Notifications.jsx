@@ -170,6 +170,7 @@ export default function Notifications() {
       { value: '', label: t('notificationsPage.all'), right: t('notificationsPage.type') },
       { value: 'APPLICATION_SUBMITTED', label: t('notificationsPage.types.APPLICATION_SUBMITTED'), right: 'APPLICATION_SUBMITTED' },
       { value: 'APPLICATION_STATUS_CHANGED', label: t('notificationsPage.types.APPLICATION_STATUS_CHANGED'), right: 'APPLICATION_STATUS_CHANGED' },
+      { value: 'JOB_UPDATED', label: t('notificationsPage.types.JOB_UPDATED'), right: 'JOB_UPDATED' },
       { value: 'JOB_RECOMMENDED', label: t('notificationsPage.types.JOB_RECOMMENDED'), right: 'JOB_RECOMMENDED' },
       { value: 'USER_REGISTERED', label: t('notificationsPage.types.USER_REGISTERED'), right: 'USER_REGISTERED' },
       { value: 'JOB_POSTED', label: t('notificationsPage.types.JOB_POSTED'), right: 'JOB_POSTED' },

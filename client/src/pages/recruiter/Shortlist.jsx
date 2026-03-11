@@ -287,14 +287,14 @@ export default function Shortlist() {
                                         d.setDate(d.getDate() + 1);
                                         return d;
                                       })()}
-                                      inputClassName="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-xs focus:ring-2 focus:ring-emerald-500 outline-none"
+                                      inputClassName="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-400 text-xs focus:ring-2 focus:ring-emerald-500 outline-none"
                                     />
                                     <input
                                       type="text"
                                       placeholder={t('recruiterShortlist.locationPlaceholder')}
                                       value={interviewLocation}
                                       onChange={(e) => setInterviewLocation(e.target.value)}
-                                      className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-xs focus:ring-2 focus:ring-emerald-500 outline-none"
+                                      className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-400 text-xs focus:ring-2 focus:ring-emerald-500 outline-none"
                                     />
                                   </div>
                                   <button

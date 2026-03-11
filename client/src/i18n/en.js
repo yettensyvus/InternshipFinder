@@ -202,6 +202,7 @@ const en = {
     types: {
       APPLICATION_SUBMITTED: 'Application submitted',
       APPLICATION_STATUS_CHANGED: 'Application status changed',
+      JOB_UPDATED: 'Job updated',
       JOB_RECOMMENDED: 'Job recommended',
       USER_REGISTERED: 'User registered',
       JOB_POSTED: 'Job posted',

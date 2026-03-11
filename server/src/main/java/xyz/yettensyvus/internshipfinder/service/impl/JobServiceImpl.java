@@ -5,15 +5,19 @@ import org.springframework.stereotype.Service;
 import xyz.yettensyvus.internshipfinder.dto.JobDetailsResponse;
 import xyz.yettensyvus.internshipfinder.dto.RecruiterJobUpdateRequest;
 import xyz.yettensyvus.internshipfinder.enums.NotificationType;
+import xyz.yettensyvus.internshipfinder.model.Application;
 import xyz.yettensyvus.internshipfinder.model.Job;
 import xyz.yettensyvus.internshipfinder.model.Recruiter;
+import xyz.yettensyvus.internshipfinder.repository.ApplicationRepository;
 import xyz.yettensyvus.internshipfinder.repository.JobRepository;
 import xyz.yettensyvus.internshipfinder.repository.RecruiterRepository;
 import xyz.yettensyvus.internshipfinder.service.FileUploadService;
 import xyz.yettensyvus.internshipfinder.service.JobService;
 import xyz.yettensyvus.internshipfinder.service.NotificationService;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +28,9 @@ public class JobServiceImpl implements JobService {
 
     @Autowired
     private RecruiterRepository recruiterRepo;
+
+    @Autowired
+    private ApplicationRepository applicationRepository;
 
     @Autowired
     private NotificationService notificationService;
@@ -151,6 +158,31 @@ public class JobServiceImpl implements JobService {
         if (req.getActive() != null) job.setActive(req.getActive());
 
         Job saved = jobRepo.save(job);
+
+        List<Application> applications = applicationRepository.findByJob(saved);
+        Set<String> notifiedEmails = new HashSet<>();
+        for (Application app : applications) {
+            if (app == null || app.getStudent() == null || app.getStudent().getUser() == null) {
+                continue;
+            }
+            String studentEmail = app.getStudent().getUser().getEmail();
+            if (studentEmail == null || studentEmail.isBlank() || notifiedEmails.contains(studentEmail.toLowerCase())) {
+                continue;
+            }
+            notifiedEmails.add(studentEmail.toLowerCase());
+
+            String jobTitle = saved.getTitle() == null ? "a job" : saved.getTitle();
+            notificationService.createForUserEntity(
+                    app.getStudent().getUser(),
+                    NotificationType.JOB_UPDATED,
+                    "Job updated",
+                    "A job you applied to was updated: " + jobTitle,
+                    recruiterEmail,
+                    saved.getId(),
+                    app.getId()
+            );
+        }
+
         return toJobDetails(saved);
     }
 

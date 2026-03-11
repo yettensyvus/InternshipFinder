@@ -58,11 +58,10 @@ export default function Applications() {
     try {
       const res = await axios.get(`/recruiter/applications/${jobId}`);
       const allApps = Array.isArray(res.data) ? res.data : [];
-      // Filter out applications that are already scheduled for an interview or hired
-      // These will be managed in their respective dedicated pages (Interviews / Hired)
-      const filteredApps = allApps.filter(app => 
-        app.status !== 'SCHEDULED' && app.status !== 'HIRED'
-      );
+      const filteredApps = allApps.filter((app) => {
+        const status = String(app?.status || '').toUpperCase();
+        return status === 'APPLIED' || status === 'REJECTED';
+      });
       setApplications(filteredApps);
     } catch (err) {
       showToast(toastId, 'error', t('recruiterApplications.failedLoadApps'));
@@ -84,7 +83,10 @@ export default function Applications() {
       }
       setUpdatingStatusId(appId);
       await axios.put(`/recruiter/applications/${appId}?status=${status}`);
-      if (status === 'SCHEDULED' || status === 'HIRED') {
+      if (status === 'SHORTLISTED') {
+        setApplications(prev => prev.filter(a => a.id !== appId));
+        if (selectedApp?.id === appId) setSelectedApp(null);
+      } else if (status === 'INTERVIEW_SCHEDULED' || status === 'HIRED') {
         setApplications(prev => prev.filter(a => a.id !== appId));
         if (selectedApp?.id === appId) setSelectedApp(null);
       } else {

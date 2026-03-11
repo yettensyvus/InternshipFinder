@@ -280,12 +280,71 @@ public class RecruiterApplicationController {
             for (Application other : otherApps) {
                 if (!other.getId().equals(app.getId()) && other.getStatus() != Status.HIRED) {
                     other.setStatus(Status.REJECTED);
-                    applicationRepository.save(other);
+                    Application rejected = applicationRepository.save(other);
+
+                    if (rejected.getStudent() != null && rejected.getStudent().getUser() != null) {
+                        String title = "Application rejected";
+                        String jobTitle = rejected.getJob() != null && rejected.getJob().getTitle() != null
+                                ? rejected.getJob().getTitle()
+                                : "a job";
+                        String company = rejected.getJob() != null && rejected.getJob().getCompany() != null
+                                ? rejected.getJob().getCompany()
+                                : "";
+                        String jobLabel = company.isBlank() ? jobTitle : (jobTitle + " (" + company + ")");
+                        String message = "Your application was rejected: " + jobLabel;
+                        notificationService.createForUserEntity(
+                                rejected.getStudent().getUser(),
+                                NotificationType.APPLICATION_STATUS_CHANGED,
+                                title,
+                                message,
+                                email,
+                                rejected.getJob() != null ? rejected.getJob().getId() : null,
+                                rejected.getId()
+                        );
+                    }
                 }
             }
         }
 
-        return ResponseEntity.ok(applicationRepository.save(app));
+        Application saved = applicationRepository.save(app);
+
+        if (saved.getStudent() != null && saved.getStudent().getUser() != null) {
+            String jobTitle = saved.getJob() != null && saved.getJob().getTitle() != null
+                    ? saved.getJob().getTitle()
+                    : "a job";
+            String company = saved.getJob() != null && saved.getJob().getCompany() != null
+                    ? saved.getJob().getCompany()
+                    : "";
+            String jobLabel = company.isBlank() ? jobTitle : (jobTitle + " (" + company + ")");
+
+            String title;
+            String message;
+            if (saved.getStatus() == Status.SHORTLISTED) {
+                title = "Shortlisted";
+                message = "You have been shortlisted for: " + jobLabel;
+            } else if (saved.getStatus() == Status.REJECTED) {
+                title = "Application rejected";
+                message = "Your application was rejected: " + jobLabel;
+            } else if (saved.getStatus() == Status.HIRED) {
+                title = "Hired";
+                message = "You have been hired for: " + jobLabel;
+            } else {
+                title = "Application status updated";
+                message = "Your application status is now: " + String.valueOf(saved.getStatus());
+            }
+
+            notificationService.createForUserEntity(
+                    saved.getStudent().getUser(),
+                    NotificationType.APPLICATION_STATUS_CHANGED,
+                    title,
+                    message,
+                    email,
+                    saved.getJob() != null ? saved.getJob().getId() : null,
+                    saved.getId()
+            );
+        }
+
+        return ResponseEntity.ok(saved);
     }
 
     @PostMapping("/applications/{applicationId}/schedule-interview")
@@ -320,6 +379,28 @@ public class RecruiterApplicationController {
         if (req.getInterviewAt() != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
             dateStr = sdf.format(req.getInterviewAt());
+        }
+
+        if (saved.getStudent() != null && saved.getStudent().getUser() != null) {
+            String jobTitle = saved.getJob() != null && saved.getJob().getTitle() != null
+                    ? saved.getJob().getTitle()
+                    : "a job";
+            String company = saved.getJob() != null && saved.getJob().getCompany() != null
+                    ? saved.getJob().getCompany()
+                    : "";
+            String jobLabel = company.isBlank() ? jobTitle : (jobTitle + " (" + company + ")");
+            String location = req.getLocation() == null ? "" : req.getLocation();
+            String message = "Interview scheduled for " + jobLabel + ". Date & time: " + dateStr + (location.isBlank() ? "" : (". Location: " + location));
+
+            notificationService.createForUserEntity(
+                    saved.getStudent().getUser(),
+                    NotificationType.APPLICATION_STATUS_CHANGED,
+                    "Interview scheduled",
+                    message,
+                    email,
+                    saved.getJob() != null ? saved.getJob().getId() : null,
+                    saved.getId()
+            );
         }
 
         emailService.sendInterviewInvitation(

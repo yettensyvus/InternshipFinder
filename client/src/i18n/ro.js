@@ -202,6 +202,7 @@ const ro = {
     types: {
       APPLICATION_SUBMITTED: 'Aplicație trimisă',
       APPLICATION_STATUS_CHANGED: 'Starea aplicației a fost schimbată',
+      JOB_UPDATED: 'Job actualizat',
       JOB_RECOMMENDED: 'Job recomandat',
       USER_REGISTERED: 'Utilizator înregistrat',
       JOB_POSTED: 'Job postat',

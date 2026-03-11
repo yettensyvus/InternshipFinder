@@ -202,6 +202,7 @@ const ru = {
     types: {
       APPLICATION_SUBMITTED: 'Заявка подана',
       APPLICATION_STATUS_CHANGED: 'Статус заявки изменен',
+      JOB_UPDATED: 'Вакансия обновлена',
       JOB_RECOMMENDED: 'Рекомендована вакансия',
       USER_REGISTERED: 'Пользователь зарегистрирован',
       JOB_POSTED: 'Вакансия опубликована',

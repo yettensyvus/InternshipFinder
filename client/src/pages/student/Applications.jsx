@@ -171,7 +171,7 @@ export default function Applications() {
                               {t('studentApplications.jobId')}: #{app.job?.id || 'N/A'}
                             </div>
                             <div className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 text-white text-[10px] font-bold shadow-md hover:shadow-lg transition-all flex-shrink-0">
-                              {t('recruiterApplications.shortlist')}
+                              {t('recruiterStudents.selectJob')}
                             </div>
                           </div>
                         </button>
