@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from '../../services/axios';
 import { showToast } from '../../services/toast';
@@ -6,9 +6,10 @@ import { useTranslation } from 'react-i18next';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import CustomDateTimePicker from '../../components/CustomDateTimePicker';
 import { sanitizeHtml } from '../../utils/sanitizeHtml';
+import Dropdown from '../../components/Dropdown';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import { recruiterJobManageSchema } from '../../schemas/recruiterJobManageSchema';
 
 export default function JobManage() {
   const navigate = useNavigate();
@@ -16,24 +17,10 @@ export default function JobManage() {
   const { t } = useTranslation();
 
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
-  const typeDropdownRef = useRef(null);
 
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
-  const schema = yup.object({
-    title: yup.string().trim().required(),
-    company: yup.string().trim().required(),
-    location: yup.string().trim().required(),
-    type: yup.string().required().oneOf(['JOB', 'INTERNSHIP']),
-    paid: yup.boolean(),
-    duration: yup.string().trim().required().min(2),
-    compensation: yup.string().trim(),
-    deadline: yup.mixed().required(),
-    description: yup.string().trim().required().min(20).max(5000),
-    active: yup.boolean()
-  });
 
   const {
     register,
@@ -55,7 +42,7 @@ export default function JobManage() {
       description: '',
       active: true
     },
-    resolver: yupResolver(schema),
+    resolver: yupResolver(recruiterJobManageSchema),
     mode: 'onSubmit'
   });
 
@@ -91,17 +78,7 @@ export default function JobManage() {
     if (id) load();
   }, [id]);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (typeDropdownRef.current && !typeDropdownRef.current.contains(event.target)) {
-        setIsTypeDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+  useEffect(() => {}, []);
 
   const typeOptions = [
     { value: 'JOB', label: t('recruiterJobManage.typeJob') },
@@ -230,40 +207,44 @@ export default function JobManage() {
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('recruiterJobManage.typeLabel')}</label>
-                      <div className="relative" ref={typeDropdownRef}>
-                        <button
-                          type="button"
-                          onClick={() => setIsTypeDropdownOpen(prev => !prev)}
-                          className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm"
-                        >
-                          <span className="text-sm font-semibold">{activeType.label}</span>
-                          <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isTypeDropdownOpen ? 'rotate-180' : ''}`} />
-                        </button>
+                      <Dropdown open={isTypeDropdownOpen} onOpenChange={setIsTypeDropdownOpen}>
+                        {({ open, toggle, close, ref }) => (
+                          <div className="relative" ref={ref}>
+                            <button
+                              type="button"
+                              onClick={toggle}
+                              className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm"
+                            >
+                              <span className="text-sm font-semibold">{activeType.label}</span>
+                              <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+                            </button>
 
-                        {isTypeDropdownOpen && (
-                          <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 overflow-hidden">
-                            {typeOptions.map((opt) => (
-                              <button
-                                key={opt.value}
-                                type="button"
-                                onClick={() => {
-                                  setValue('type', opt.value, { shouldDirty: true });
-                                  if (opt.value === 'JOB') {
-                                    setValue('paid', true, { shouldDirty: true });
-                                  } else if (opt.value === 'INTERNSHIP' && form.type === 'JOB') {
-                                    setValue('paid', false, { shouldDirty: true });
-                                    setValue('compensation', '', { shouldDirty: true });
-                                  }
-                                  setIsTypeDropdownOpen(false);
-                                }}
-                                className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${form.type === opt.value ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-                              >
-                                <span className="font-medium">{opt.label}</span>
-                              </button>
-                            ))}
+                            {open && (
+                              <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 overflow-hidden">
+                                {typeOptions.map((opt) => (
+                                  <button
+                                    key={opt.value}
+                                    type="button"
+                                    onClick={() => {
+                                      setValue('type', opt.value, { shouldDirty: true });
+                                      if (opt.value === 'JOB') {
+                                        setValue('paid', true, { shouldDirty: true });
+                                      } else if (opt.value === 'INTERNSHIP' && form.type === 'JOB') {
+                                        setValue('paid', false, { shouldDirty: true });
+                                        setValue('compensation', '', { shouldDirty: true });
+                                      }
+                                      close();
+                                    }}
+                                    className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${form.type === opt.value ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                                  >
+                                    <span className="font-medium">{opt.label}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         )}
-                      </div>
+                      </Dropdown>
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('recruiterJobManage.deadlineLabel')}</label>

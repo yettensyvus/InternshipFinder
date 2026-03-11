@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from '../services/axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -6,24 +6,17 @@ import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import { showLoadingToast, showToast } from '../services/toast';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import { authRegisterSchema } from '../schemas/authRegisterSchema';
+import Dropdown from '../components/Dropdown';
 
 export default function Register() {
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
-  const roleDropdownRef = useRef(null);
 
   const [loading, setLoading] = useState(false);
 
   const { t } = useTranslation();
 
   const navigate = useNavigate();
-
-  const schema = yup.object({
-    username: yup.string().trim().required().min(2),
-    email: yup.string().trim().required(),
-    password: yup.string().trim().required().min(6),
-    role: yup.string().required().oneOf(['STUDENT', 'RECRUITER'])
-  });
 
   const {
     register,
@@ -39,7 +32,7 @@ export default function Register() {
       password: '',
       role: 'STUDENT'
     },
-    resolver: yupResolver(schema),
+    resolver: yupResolver(authRegisterSchema),
     mode: 'onSubmit'
   });
 
@@ -51,15 +44,7 @@ export default function Register() {
   const role = watch('role');
   const activeRole = roles.find(r => r.code === role) || roles[0];
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (roleDropdownRef.current && !roleDropdownRef.current.contains(event.target)) {
-        setIsRoleDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  useEffect(() => {}, []);
 
   const onSubmit = async (data) => {
     const toastId = 'register';
@@ -162,35 +147,39 @@ export default function Register() {
 
           <div>
             <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">{t('auth.role')}</label>
-            <div className="relative" ref={roleDropdownRef}>
-              <button
-                type="button"
-                onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
-                className="w-full flex items-center justify-between gap-2 px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500/20 outline-none transition-all"
-              >
-                <span className="text-sm font-semibold">{activeRole.label}</span>
-                <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isRoleDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
+            <Dropdown open={isRoleDropdownOpen} onOpenChange={setIsRoleDropdownOpen}>
+              {({ open, toggle, close, ref }) => (
+                <div className="relative" ref={ref}>
+                  <button
+                    type="button"
+                    onClick={toggle}
+                    className="w-full flex items-center justify-between gap-2 px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500/20 outline-none transition-all"
+                  >
+                    <span className="text-sm font-semibold">{activeRole.label}</span>
+                    <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+                  </button>
 
-              {isRoleDropdownOpen && (
-                <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 overflow-hidden">
-                  {roles.map((r) => (
-                    <button
-                      key={r.code}
-                      type="button"
-                      onClick={() => {
-                        setValue('role', r.code, { shouldValidate: true, shouldDirty: true });
-                        setIsRoleDropdownOpen(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${role === r.code ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-                    >
-                      <span className="font-medium">{r.label}</span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">{r.code}</span>
-                    </button>
-                  ))}
+                  {open && (
+                    <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 overflow-hidden">
+                      {roles.map((r) => (
+                        <button
+                          key={r.code}
+                          type="button"
+                          onClick={() => {
+                            setValue('role', r.code, { shouldValidate: true, shouldDirty: true });
+                            close();
+                          }}
+                          className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${role === r.code ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                        >
+                          <span className="font-medium">{r.label}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">{r.code}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
+            </Dropdown>
             <input type="hidden" {...register('role')} />
             {errors.role ? (
               <p className="mt-1 text-sm text-red-600 dark:text-red-400">{t('auth.pleaseFillAllFields')}</p>

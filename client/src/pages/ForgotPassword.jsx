@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useOtpCooldown } from '../hooks/useOtpCooldown';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import { authForgotPasswordSchema } from '../schemas/authForgotPasswordSchema';
 
 export default function ForgotPassword() {
   const location = useLocation();
@@ -15,12 +15,6 @@ export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
-
-  const schema = yup.object({
-    email: yup.string().trim().required(),
-    otp: yup.string().trim(),
-    newPassword: yup.string().trim()
-  });
 
   const {
     register,
@@ -35,7 +29,7 @@ export default function ForgotPassword() {
       otp: '',
       newPassword: ''
     },
-    resolver: yupResolver(schema),
+    resolver: yupResolver(authForgotPasswordSchema),
     mode: 'onSubmit'
   });
 

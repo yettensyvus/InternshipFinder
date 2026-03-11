@@ -6,7 +6,7 @@ import { showLoadingToast, showToast } from '../services/toast';
 import { useOtpCooldown } from '../hooks/useOtpCooldown';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import { authVerifyEmailOtpSchema } from '../schemas/authVerifyEmailOtpSchema';
 
 export default function VerifyEmailOtp() {
   const [loading, setLoading] = useState(false);
@@ -16,10 +16,6 @@ export default function VerifyEmailOtp() {
   const email = location.state?.email;
   const { t } = useTranslation();
 
-  const schema = yup.object({
-    otp: yup.string().trim().required()
-  });
-
   const {
     register,
     handleSubmit,
@@ -27,7 +23,7 @@ export default function VerifyEmailOtp() {
     formState: { errors }
   } = useForm({
     defaultValues: { otp: '' },
-    resolver: yupResolver(schema),
+    resolver: yupResolver(authVerifyEmailOtpSchema),
     mode: 'onSubmit'
   });
 

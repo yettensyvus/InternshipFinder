@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { getDashboardPathForRole } from '../utils/rolePaths';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import { authLoginSchema } from '../schemas/authLoginSchema';
 import { toast } from 'react-toastify';
 
 export default function Login() {
@@ -16,11 +16,6 @@ export default function Login() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const schema = yup.object({
-    email: yup.string().trim().required(),
-    password: yup.string().trim().required()
-  });
-
   const {
     register,
     handleSubmit,
@@ -28,7 +23,7 @@ export default function Login() {
     formState: { errors }
   } = useForm({
     defaultValues: { email: '', password: '' },
-    resolver: yupResolver(schema),
+    resolver: yupResolver(authLoginSchema),
     mode: 'onSubmit'
   });
 

@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from '../../services/axios';
 import { useTranslation } from 'react-i18next';
+import Dropdown from '../../components/Dropdown';
 import { 
   CommandLineIcon, 
   ArrowPathIcon, 
@@ -21,7 +22,6 @@ export default function SystemLogs() {
   const [filter, setFilter] = useState('ALL');
   const [query, setQuery] = useState('');
   const [isLevelDropdownOpen, setIsLevelDropdownOpen] = useState(false);
-  const levelDropdownRef = useRef(null);
 
   const fetchLogs = async () => {
     setLoading(true);
@@ -39,18 +39,6 @@ export default function SystemLogs() {
 
   useEffect(() => {
     fetchLogs();
-  }, []);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (levelDropdownRef.current && !levelDropdownRef.current.contains(event.target)) {
-        setIsLevelDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
   }, []);
 
   const normalizedQuery = query.trim().toLowerCase();
@@ -137,36 +125,40 @@ export default function SystemLogs() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <div className="relative flex-1 sm:flex-none" ref={levelDropdownRef}>
-              <button
-                type="button"
-                onClick={() => setIsLevelDropdownOpen(!isLevelDropdownOpen)}
-                className="w-full sm:w-auto flex items-center justify-between gap-2 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-all shadow-sm"
-              >
-                <FunnelIcon className="h-4 w-4 text-gray-400" />
-                <span>{filter === 'ALL' ? t('common.allLevels') : filter}</span>
-                <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isLevelDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
+            <Dropdown open={isLevelDropdownOpen} onOpenChange={setIsLevelDropdownOpen}>
+              {({ open, toggle, close, ref }) => (
+                <div className="relative flex-1 sm:flex-none" ref={ref}>
+                  <button
+                    type="button"
+                    onClick={toggle}
+                    className="w-full sm:w-auto flex items-center justify-between gap-2 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-all shadow-sm"
+                  >
+                    <FunnelIcon className="h-4 w-4 text-gray-400" />
+                    <span>{filter === 'ALL' ? t('common.allLevels') : filter}</span>
+                    <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+                  </button>
 
-              {isLevelDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                  {['ALL', 'INFO', 'WARN', 'ERROR'].map((level) => (
-                    <button
-                      key={level}
-                      type="button"
-                      onClick={() => {
-                        setFilter(level);
-                        setIsLevelDropdownOpen(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors duration-200 ${filter === level ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-                    >
-                      <span className="font-bold">{level === 'ALL' ? t('common.allLevels') : level}</span>
-                      {filter === level && <CheckCircleIcon className="h-4 w-4 text-red-500" />}
-                    </button>
-                  ))}
+                  {open && (
+                    <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                      {['ALL', 'INFO', 'WARN', 'ERROR'].map((level) => (
+                        <button
+                          key={level}
+                          type="button"
+                          onClick={() => {
+                            setFilter(level);
+                            close();
+                          }}
+                          className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors duration-200 ${filter === level ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                        >
+                          <span className="font-bold">{level === 'ALL' ? t('common.allLevels') : level}</span>
+                          {filter === level && <CheckCircleIcon className="h-4 w-4 text-red-500" />}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
+            </Dropdown>
             <button onClick={fetchLogs} className="hidden sm:block p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
               <ArrowPathIcon className={`h-5 w-5 text-gray-500 ${loading ? 'animate-spin' : ''}`} />
             </button>

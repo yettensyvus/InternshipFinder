@@ -6,10 +6,10 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
 import { getInitials } from '../../utils/getInitials';
 import { uploadPhoto } from '../../services/uploads';
 import { BuildingOfficeIcon, GlobeAltIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+import { recruiterProfileSchema } from '../../schemas/recruiterProfileSchema';
 
 export default function RecruiterProfile() {
   const navigate = useNavigate();
@@ -21,11 +21,6 @@ export default function RecruiterProfile() {
   const [picUploading, setPicUploading] = useState(false);
   const picInputRef = useRef(null);
 
-  const schema = yup.object({
-    companyName: yup.string().trim().required().min(2),
-    companyWebsite: yup.string().trim()
-  });
-
   const {
     register,
     handleSubmit,
@@ -33,7 +28,7 @@ export default function RecruiterProfile() {
     formState: { errors }
   } = useForm({
     defaultValues: { companyName: '', companyWebsite: '' },
-    resolver: yupResolver(schema),
+    resolver: yupResolver(recruiterProfileSchema),
     mode: 'onSubmit'
   });
 

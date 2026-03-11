@@ -5,10 +5,10 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
 import { ArrowTopRightOnSquareIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { getInitials } from '../../utils/getInitials';
 import { uploadPhoto } from '../../services/uploads';
+import { studentProfileSchema } from '../../schemas/studentProfileSchema';
 
 export default function Profile() {
   const { t } = useTranslation();
@@ -20,12 +20,6 @@ export default function Profile() {
   const [applicationsCount, setApplicationsCount] = useState(0);
   const [picUploading, setPicUploading] = useState(false);
   const picInputRef = useRef(null);
-
-  const schema = yup.object({
-    name: yup.string().trim().required().min(2),
-    phone: yup.string().trim(),
-    yearOfPassing: yup.string().trim()
-  });
 
   const {
     register,
@@ -40,7 +34,7 @@ export default function Profile() {
       college: '',
       branch: ''
     },
-    resolver: yupResolver(schema),
+    resolver: yupResolver(studentProfileSchema),
     mode: 'onSubmit'
   });
 

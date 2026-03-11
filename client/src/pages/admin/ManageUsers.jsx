@@ -6,6 +6,7 @@ import { showToast } from '../../services/toast';
 import { useAuth } from '../../hooks/useAuth';
 import { getInitials } from '../../utils/getInitials';
 import { uploadCV, uploadPhoto } from '../../services/uploads';
+import Dropdown from '../../components/Dropdown';
 import { 
   MagnifyingGlassIcon, 
   UserIcon, 
@@ -39,7 +40,6 @@ export default function ManageUsers() {
   const picInputRef = useRef(null);
   const resumeInputRef = useRef(null);
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
-  const roleDropdownRef = useRef(null);
   const [form, setForm] = useState({
     username: '',
     email: '',
@@ -248,18 +248,6 @@ export default function ManageUsers() {
       recruiter: { ...prev.recruiter, [name]: value }
     }));
   };
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (roleDropdownRef.current && !roleDropdownRef.current.contains(event.target)) {
-        setIsRoleDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
   useEffect(() => {
     fetchUsers();
@@ -601,36 +589,40 @@ export default function ManageUsers() {
                           </div>
                           <div className="space-y-1.5">
                             <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">{t('adminUserDetails.roleLabel')}</label>
-                            <div className="relative" ref={roleDropdownRef}>
-                              <button
-                                type="button"
-                                onClick={() => !isSelf(selectedUser) && setIsRoleDropdownOpen(!isRoleDropdownOpen)}
-                                disabled={isSelf(selectedUser)}
-                                className="w-full flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all disabled:opacity-50"
-                              >
-                                <span className="font-semibold">{form.role}</span>
-                                <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isRoleDropdownOpen ? 'rotate-180' : ''}`} />
-                              </button>
+                            <Dropdown open={isRoleDropdownOpen} onOpenChange={setIsRoleDropdownOpen}>
+                              {({ open, toggle, close, ref }) => (
+                                <div className="relative" ref={ref}>
+                                  <button
+                                    type="button"
+                                    onClick={() => !isSelf(selectedUser) && toggle()}
+                                    disabled={isSelf(selectedUser)}
+                                    className="w-full flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500/20 outline-none transition-all disabled:opacity-50"
+                                  >
+                                    <span className="font-semibold">{form.role}</span>
+                                    <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+                                  </button>
 
-                              {isRoleDropdownOpen && (
-                                <div className="absolute left-0 mt-2 w-full bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 overflow-hidden">
-                                  {['STUDENT', 'RECRUITER', 'ADMIN'].map((r) => (
-                                    <button
-                                      key={r}
-                                      type="button"
-                                      onClick={() => {
-                                        setField('role', r);
-                                        setIsRoleDropdownOpen(false);
-                                      }}
-                                      className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors duration-200 ${form.role === r ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-                                    >
-                                      <span className="font-bold">{r}</span>
-                                      {form.role === r && <CheckCircleIcon className="h-4 w-4 text-red-500" />}
-                                    </button>
-                                  ))}
+                                  {open && (
+                                    <div className="absolute left-0 mt-2 w-full bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 overflow-hidden">
+                                      {['STUDENT', 'RECRUITER', 'ADMIN'].map((r) => (
+                                        <button
+                                          key={r}
+                                          type="button"
+                                          onClick={() => {
+                                            setField('role', r);
+                                            close();
+                                          }}
+                                          className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors duration-200 ${form.role === r ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                                        >
+                                          <span className="font-bold">{r}</span>
+                                          {form.role === r && <CheckCircleIcon className="h-4 w-4 text-red-500" />}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
                                 </div>
                               )}
-                            </div>
+                            </Dropdown>
                           </div>
 
                           {/* Role Specific Fields */}

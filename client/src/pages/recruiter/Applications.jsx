@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from '../../services/axios';
 import { showToast } from '../../services/toast';
 import { useTranslation } from 'react-i18next';
 import { getInitials } from '../../utils/getInitials';
 import { ChevronDownIcon, ArrowTopRightOnSquareIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import Dropdown from '../../components/Dropdown';
 
 export default function Applications() {
   const { t } = useTranslation();
@@ -16,7 +17,6 @@ export default function Applications() {
   const [page, setPage] = useState(1);
   const [updatingStatusId, setUpdatingStatusId] = useState(null);
   const [isJobDropdownOpen, setIsJobDropdownOpen] = useState(false);
-  const jobDropdownRef = useRef(null);
 
   const pageSize = 5;
 
@@ -33,18 +33,6 @@ export default function Applications() {
       }
     };
     load();
-  }, []);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (jobDropdownRef.current && !jobDropdownRef.current.contains(event.target)) {
-        setIsJobDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
   }, []);
 
   const fetchApplications = async (jobId) => {
@@ -205,41 +193,45 @@ export default function Applications() {
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
               {t('recruiterApplications.selectJob')}
             </label>
-            <div className="relative" ref={jobDropdownRef}>
-              <button
-                type="button"
-                disabled={jobsLoading}
-                onClick={() => setIsJobDropdownOpen((v) => !v)}
-                className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 disabled:opacity-60 shadow-sm"
-              >
-                <span className="text-sm font-semibold truncate">
-                  {jobsLoading
-                    ? t('recruiterApplications.loadingJobs')
-                    : (selectedJob ? `${selectedJob.title} - ${selectedJob.company}` : t('recruiterApplications.selectJobPlaceholder'))}
-                </span>
-                <ChevronDownIcon
-                  className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isJobDropdownOpen ? 'rotate-180' : ''}`}
-                />
-              </button>
+            <Dropdown open={isJobDropdownOpen} onOpenChange={setIsJobDropdownOpen}>
+              {({ open, toggle, close, ref }) => (
+                <div className="relative" ref={ref}>
+                  <button
+                    type="button"
+                    disabled={jobsLoading}
+                    onClick={toggle}
+                    className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 disabled:opacity-60 shadow-sm"
+                  >
+                    <span className="text-sm font-semibold truncate">
+                      {jobsLoading
+                        ? t('recruiterApplications.loadingJobs')
+                        : (selectedJob ? `${selectedJob.title} - ${selectedJob.company}` : t('recruiterApplications.selectJobPlaceholder'))}
+                    </span>
+                    <ChevronDownIcon
+                      className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+                    />
+                  </button>
 
-              {isJobDropdownOpen && !jobsLoading && (
-                <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 max-h-64 overflow-auto">
-                  {jobs.map((job) => (
-                    <button
-                      key={job.id}
-                      type="button"
-                      onClick={() => {
-                        fetchApplications(job.id);
-                        setIsJobDropdownOpen(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${String(selectedJobId) === String(job.id) ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-                    >
-                      <span className="font-medium truncate">{job.title} - {job.company}</span>
-                    </button>
-                  ))}
+                  {open && !jobsLoading && (
+                    <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 max-h-64 overflow-auto">
+                      {jobs.map((job) => (
+                        <button
+                          key={job.id}
+                          type="button"
+                          onClick={() => {
+                            fetchApplications(job.id);
+                            close();
+                          }}
+                          className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${String(selectedJobId) === String(job.id) ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                        >
+                          <span className="font-medium truncate">{job.title} - {job.company}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
+            </Dropdown>
           </div>
         </div>
 

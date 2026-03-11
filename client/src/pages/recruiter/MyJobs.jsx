@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import axios from '../../services/axios';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { showToast } from '../../services/toast';
 import { MagnifyingGlassIcon, ChevronDownIcon, FunnelIcon } from '@heroicons/react/24/outline';
+import Dropdown from '../../components/Dropdown';
 
 export default function MyJobs() {
   const navigate = useNavigate();
@@ -14,19 +15,8 @@ export default function MyJobs() {
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL'); // ALL, OPEN, CLOSED
   const [isStatusDropdownOpen, setIsStatusFilterOpen] = useState(false);
-  const statusDropdownRef = useRef(null);
 
   const pageSize = 4;
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target)) {
-        setIsStatusFilterOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -109,34 +99,40 @@ export default function MyJobs() {
               <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                 {t('recruiterApplications.type')}
               </label>
-              <div className="relative" ref={statusDropdownRef}>
-                <button
-                  onClick={() => setIsStatusFilterOpen(!isStatusDropdownOpen)}
-                  className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/40 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-900/60 transition-all shadow-sm"
-                >
-                  <div className="flex items-center gap-2">
-                    <FunnelIcon className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm font-medium">{activeStatusLabel}</span>
-                  </div>
-                  <ChevronDownIcon className={`h-4 w-4 text-gray-400 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
-                </button>
-                {isStatusDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-10 overflow-hidden">
-                    {statusOptions.map(opt => (
-                      <button
-                        key={opt.value}
-                        onClick={() => {
-                          setStatusFilter(opt.value);
-                          setIsStatusFilterOpen(false);
-                        }}
-                        className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${statusFilter === opt.value ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 font-semibold' : 'text-gray-700 dark:text-gray-300'}`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
+              <Dropdown open={isStatusDropdownOpen} onOpenChange={setIsStatusFilterOpen}>
+                {({ open, toggle, close, ref }) => (
+                  <div className="relative" ref={ref}>
+                    <button
+                      type="button"
+                      onClick={toggle}
+                      className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/40 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-900/60 transition-all shadow-sm"
+                    >
+                      <div className="flex items-center gap-2">
+                        <FunnelIcon className="h-4 w-4 text-gray-400" />
+                        <span className="text-sm font-medium">{activeStatusLabel}</span>
+                      </div>
+                      <ChevronDownIcon className={`h-4 w-4 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+                    </button>
+                    {open && (
+                      <div className="absolute top-full left-0 right-0 mt-2 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-10 overflow-hidden">
+                        {statusOptions.map(opt => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => {
+                              setStatusFilter(opt.value);
+                              close();
+                            }}
+                            className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${statusFilter === opt.value ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 font-semibold' : 'text-gray-700 dark:text-gray-300'}`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
+              </Dropdown>
             </div>
           </div>
         </div>

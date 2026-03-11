@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import axios from '../../services/axios';
 import { useTranslation } from 'react-i18next';
 import { showToast } from '../../services/toast';
 import { getInitials } from '../../utils/getInitials';
+import Dropdown from '../../components/Dropdown';
 import {
   MagnifyingGlassIcon,
   ArrowTopRightOnSquareIcon,
@@ -22,7 +23,6 @@ export default function RecruiterStudents() {
   const [selectedJobId, setSelectedJobId] = useState('');
   const [recommending, setRecommending] = useState(false);
   const [isJobDropdownOpen, setIsJobDropdownOpen] = useState(false);
-  const jobDropdownRef = useRef(null);
 
   const pageSize = 5;
 
@@ -62,25 +62,6 @@ export default function RecruiterStudents() {
     };
 
     loadJobs();
-  }, []);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (jobDropdownRef.current && !jobDropdownRef.current.contains(event.target)) {
-        setIsJobDropdownOpen(false);
-      }
-    };
-
-    const handleEscape = (event) => {
-      if (event.key === 'Escape') setIsJobDropdownOpen(false);
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEscape);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-    };
   }, []);
 
   const filtered = useMemo(() => {
@@ -382,49 +363,53 @@ export default function RecruiterStudents() {
                           </div>
 
                           <div className="space-y-3">
-                            <div className="relative w-full" ref={jobDropdownRef}>
-                              <button
-                                type="button"
-                                disabled={jobsLoading || jobs.length === 0}
-                                onClick={() => setIsJobDropdownOpen((v) => !v)}
-                                className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 disabled:opacity-60"
-                              >
-                                <span className="text-sm font-semibold truncate">
-                                  {activeJob?.title || (jobsLoading ? t('common.pleaseWait') : t('recruiterStudents.selectJob'))}
-                                </span>
-                                <ChevronDownIcon
-                                  className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isJobDropdownOpen ? 'rotate-180' : ''}`}
-                                />
-                              </button>
+                            <Dropdown open={isJobDropdownOpen} onOpenChange={setIsJobDropdownOpen}>
+                              {({ open, toggle, close, ref }) => (
+                                <div className="relative w-full" ref={ref}>
+                                  <button
+                                    type="button"
+                                    disabled={jobsLoading || jobs.length === 0}
+                                    onClick={toggle}
+                                    className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 disabled:opacity-60"
+                                  >
+                                    <span className="text-sm font-semibold truncate">
+                                      {activeJob?.title || (jobsLoading ? t('common.pleaseWait') : t('recruiterStudents.selectJob'))}
+                                    </span>
+                                    <ChevronDownIcon
+                                      className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+                                    />
+                                  </button>
 
-                              {isJobDropdownOpen && (
-                                <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 max-h-48 overflow-auto">
-                                  {availableJobs.map((j) => (
-                                    <button
-                                      key={j.id}
-                                      type="button"
-                                      onClick={() => {
-                                        setSelectedJobId(String(j.id));
-                                        setIsJobDropdownOpen(false);
-                                      }}
-                                      className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${
-                                        String(selectedJobId) === String(j.id)
-                                          ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300'
-                                          : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
-                                      }`}
-                                    >
-                                      <span className="font-medium truncate">{j.title}</span>
-                                      <span className="text-xs text-gray-500 dark:text-gray-400">{j.id}</span>
-                                    </button>
-                                  ))}
-                                  {availableJobs.length === 0 && (
-                                    <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 italic text-center">
-                                      {t('recruiterStudents.noAvailableJobs')}
+                                  {open && (
+                                    <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 max-h-48 overflow-auto">
+                                      {availableJobs.map((j) => (
+                                        <button
+                                          key={j.id}
+                                          type="button"
+                                          onClick={() => {
+                                            setSelectedJobId(String(j.id));
+                                            close();
+                                          }}
+                                          className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${
+                                            String(selectedJobId) === String(j.id)
+                                              ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300'
+                                              : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                          }`}
+                                        >
+                                          <span className="font-medium truncate">{j.title}</span>
+                                          <span className="text-xs text-gray-500 dark:text-gray-400">{j.id}</span>
+                                        </button>
+                                      ))}
+                                      {availableJobs.length === 0 && (
+                                        <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 italic text-center">
+                                          {t('recruiterStudents.noAvailableJobs')}
+                                        </div>
+                                      )}
                                     </div>
                                   )}
                                 </div>
                               )}
-                            </div>
+                            </Dropdown>
                             <button
                               type="button"
                               onClick={recommendJob}

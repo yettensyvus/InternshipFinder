@@ -5,6 +5,7 @@ import { fetchUnreadCount, subscribeToNotifications } from '../services/notifica
 import { useTranslation } from 'react-i18next';
 import { getDashboardPathForRole, getProfilePathForRole } from '../utils/rolePaths';
 import { getInitials } from '../utils/getInitials';
+import Dropdown from './Dropdown';
 import {
   SunIcon,
   MoonIcon,
@@ -31,8 +32,6 @@ export default function Navbar() {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const dropdownRef = useRef(null);
-  const languageDropdownRef = useRef(null);
   const mobileMenuRef = useRef(null);
 
   useEffect(() => {
@@ -72,8 +71,6 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) setIsProfileDropdownOpen(false);
-      if (languageDropdownRef.current && !languageDropdownRef.current.contains(event.target)) setIsLanguageDropdownOpen(false);
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) setIsMobileMenuOpen(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -194,33 +191,40 @@ export default function Navbar() {
         </div>
       </Link>
       <div className="hidden md:flex gap-4 items-center">
-        <div className="relative" ref={languageDropdownRef}>
-          <button
-            type="button"
-            onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
-            aria-label={t('common.language')}
-          >
-            <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">{activeLanguage.short}</span>
-            <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isLanguageDropdownOpen ? 'rotate-180' : ''}`} />
-          </button>
+        <Dropdown open={isLanguageDropdownOpen} onOpenChange={setIsLanguageDropdownOpen}>
+          {({ open, toggle, ref, close }) => (
+            <div className="relative" ref={ref}>
+              <button
+                type="button"
+                onClick={toggle}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+                aria-label={t('common.language')}
+              >
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">{activeLanguage.short}</span>
+                <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+              </button>
 
-          {isLanguageDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50">
-              {languages.map((lng) => (
-                <button
-                  key={lng.code}
-                  type="button"
-                  onClick={() => changeLanguage(lng.code)}
-                  className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${i18n.language === lng.code ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-                >
-                  <span className="font-medium">{lng.label}</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">{lng.short}</span>
-                </button>
-              ))}
+              {open && (
+                <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50">
+                  {languages.map((lng) => (
+                    <button
+                      key={lng.code}
+                      type="button"
+                      onClick={() => {
+                        changeLanguage(lng.code);
+                        close();
+                      }}
+                      className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${i18n.language === lng.code ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                    >
+                      <span className="font-medium">{lng.label}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{lng.short}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
-        </div>
+        </Dropdown>
 
         {auth ? (
           <>
@@ -235,9 +239,11 @@ export default function Navbar() {
               ) : null}
             </Link>
 
-            <div className="relative" ref={dropdownRef}>
+            <Dropdown open={isProfileDropdownOpen} onOpenChange={setIsProfileDropdownOpen}>
+              {({ open, toggle, close, ref }) => (
+              <div className="relative" ref={ref}>
               <button
-                onClick={toggleProfileDropdown}
+                onClick={toggle}
                 className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-transparent hover:border-gray-200 dark:hover:border-gray-700"
               >
                 <div className="relative">
@@ -265,10 +271,10 @@ export default function Navbar() {
                   </span>
                 </div>
 
-                <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
               </button>
 
-              {isProfileDropdownOpen && (
+              {open && (
                 <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50">
                   <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
                     <div className="flex items-center gap-3">
@@ -299,7 +305,7 @@ export default function Navbar() {
                     <Link
                       to={getDashboardPathForRole(auth?.role)}
                       className="flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
-                      onClick={() => setIsProfileDropdownOpen(false)}
+                      onClick={close}
                     >
                       <UserCircleIcon className="h-5 w-5" />
                       {t('common.dashboard')}
@@ -307,7 +313,7 @@ export default function Navbar() {
                     <Link
                       to={getProfilePathForRole(auth?.role)}
                       className="flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
-                      onClick={() => setIsProfileDropdownOpen(false)}
+                      onClick={close}
                     >
                       <UserIcon className="h-5 w-5" />
                       {t('common.profileSettings')}
@@ -315,7 +321,7 @@ export default function Navbar() {
                     <Link
                       to="/settings"
                       className="flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
-                      onClick={() => setIsProfileDropdownOpen(false)}
+                      onClick={close}
                     >
                       <Cog6ToothIcon className="h-5 w-5" />
                       {t('common.settings')}
@@ -326,7 +332,7 @@ export default function Navbar() {
                     <button
                       onClick={() => {
                         logout();
-                        setIsProfileDropdownOpen(false);
+                        close();
                       }}
                       className="flex items-center gap-3 w-full px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200"
                     >
@@ -337,6 +343,8 @@ export default function Navbar() {
                 </div>
               )}
             </div>
+            )}
+            </Dropdown>
           </>
         ) : (
           <div className="flex items-center gap-3">

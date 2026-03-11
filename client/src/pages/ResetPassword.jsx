@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { showLoadingToast, showToast } from '../services/toast';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import { authResetPasswordSchema } from '../schemas/authResetPasswordSchema';
 
 export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
@@ -15,10 +15,6 @@ export default function ResetPassword() {
   const otp = location.state?.otp;
   const { t } = useTranslation();
 
-  const schema = yup.object({
-    newPassword: yup.string().trim().required()
-  });
-
   const {
     register,
     handleSubmit,
@@ -26,7 +22,7 @@ export default function ResetPassword() {
     formState: { errors }
   } = useForm({
     defaultValues: { newPassword: '' },
-    resolver: yupResolver(schema),
+    resolver: yupResolver(authResetPasswordSchema),
     mode: 'onSubmit'
   });
 

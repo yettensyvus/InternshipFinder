@@ -1,29 +1,17 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import axios from '../../services/axios';
 import { showToast } from '../../services/toast';
 import { useTranslation } from 'react-i18next';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import CustomDateTimePicker from '../../components/CustomDateTimePicker';
 import { sanitizeHtml } from '../../utils/sanitizeHtml';
+import Dropdown from '../../components/Dropdown';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import { recruiterPostJobSchema } from '../../schemas/recruiterPostJobSchema';
 
 export default function PostJob() {
   const { t } = useTranslation();
-
-  const schema = yup.object({
-    title: yup.string().trim().required().min(3),
-    company: yup.string().trim().required(),
-    location: yup.string().trim().required(),
-    type: yup.string().required().oneOf(['JOB', 'INTERNSHIP']),
-    payment: yup.string().trim(),
-    paid: yup.boolean(),
-    duration: yup.string().trim().required().min(2),
-    compensation: yup.string().trim(),
-    description: yup.string().trim().required().min(20).max(5000),
-    deadline: yup.mixed().required()
-  });
 
   const {
     register,
@@ -45,17 +33,14 @@ export default function PostJob() {
       description: '',
       deadline: ''
     },
-    resolver: yupResolver(schema),
+    resolver: yupResolver(recruiterPostJobSchema),
     mode: 'onSubmit'
   });
 
   const job = watch();
 
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
-  const typeDropdownRef = useRef(null);
-
   const [isPaymentDropdownOpen, setIsPaymentDropdownOpen] = useState(false);
-  const paymentDropdownRef = useRef(null);
 
   const [submitting, setSubmitting] = useState(false);
   const [profileLoading, setProfileLoading] = useState(true);
@@ -78,20 +63,7 @@ export default function PostJob() {
     fetchProfile();
   }, [setValue, t]);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (typeDropdownRef.current && !typeDropdownRef.current.contains(event.target)) {
-        setIsTypeDropdownOpen(false);
-      }
-      if (paymentDropdownRef.current && !paymentDropdownRef.current.contains(event.target)) {
-        setIsPaymentDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+  useEffect(() => {}, []);
 
   const typeOptions = [
     { value: 'JOB', label: t('recruiterPostJob.typeJob') },
@@ -252,42 +224,46 @@ export default function PostJob() {
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('recruiterPostJob.type')}</label>
-                    <div className="relative" ref={typeDropdownRef}>
-                      <button
-                        type="button"
-                        onClick={() => setIsTypeDropdownOpen(prev => !prev)}
-                        className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm"
-                      >
-                        <span className="text-sm font-semibold">{activeType.label}</span>
-                        <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isTypeDropdownOpen ? 'rotate-180' : ''}`} />
-                      </button>
+                    <Dropdown open={isTypeDropdownOpen} onOpenChange={setIsTypeDropdownOpen}>
+                      {({ open, toggle, close, ref }) => (
+                        <div className="relative" ref={ref}>
+                          <button
+                            type="button"
+                            onClick={toggle}
+                            className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm"
+                          >
+                            <span className="text-sm font-semibold">{activeType.label}</span>
+                            <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+                          </button>
 
-                      {isTypeDropdownOpen && (
-                        <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 overflow-hidden">
-                          {typeOptions.map((opt) => (
-                            <button
-                              key={opt.value}
-                              type="button"
-                              onClick={() => {
-                                setValue('type', opt.value, { shouldDirty: true });
-                                if (opt.value === 'JOB') {
-                                  setValue('payment', 'PAID', { shouldDirty: true });
-                                  setValue('paid', true, { shouldDirty: true });
-                                } else {
-                                  setValue('payment', '', { shouldDirty: true });
-                                  setValue('paid', false, { shouldDirty: true });
-                                  setValue('compensation', '', { shouldDirty: true });
-                                }
-                                setIsTypeDropdownOpen(false);
-                              }}
-                              className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${job.type === opt.value ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-                            >
-                              <span className="font-medium">{opt.label}</span>
-                            </button>
-                          ))}
+                          {open && (
+                            <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 overflow-hidden">
+                              {typeOptions.map((opt) => (
+                                <button
+                                  key={opt.value}
+                                  type="button"
+                                  onClick={() => {
+                                    setValue('type', opt.value, { shouldDirty: true });
+                                    if (opt.value === 'JOB') {
+                                      setValue('payment', 'PAID', { shouldDirty: true });
+                                      setValue('paid', true, { shouldDirty: true });
+                                    } else {
+                                      setValue('payment', '', { shouldDirty: true });
+                                      setValue('paid', false, { shouldDirty: true });
+                                      setValue('compensation', '', { shouldDirty: true });
+                                    }
+                                    close();
+                                  }}
+                                  className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${job.type === opt.value ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                                >
+                                  <span className="font-medium">{opt.label}</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
-                    </div>
+                    </Dropdown>
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{t('recruiterPostJob.paid')}</label>
@@ -296,38 +272,42 @@ export default function PostJob() {
                         {t('recruiterPostJob.paidYes')}
                       </div>
                     ) : (
-                      <div className="relative" ref={paymentDropdownRef}>
-                        <button
-                          type="button"
-                          onClick={() => setIsPaymentDropdownOpen(prev => !prev)}
-                          className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm"
-                        >
-                          <span className={`text-sm font-semibold ${job.payment ? 'text-gray-700 dark:text-gray-200' : 'text-gray-500 dark:text-gray-400'}`}>{activePayment.label}</span>
-                          <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isPaymentDropdownOpen ? 'rotate-180' : ''}`} />
-                        </button>
+                      <Dropdown open={isPaymentDropdownOpen} onOpenChange={setIsPaymentDropdownOpen}>
+                        {({ open, toggle, close, ref }) => (
+                          <div className="relative" ref={ref}>
+                            <button
+                              type="button"
+                              onClick={toggle}
+                              className="w-full flex items-center justify-between gap-2 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm"
+                            >
+                              <span className={`text-sm font-semibold ${job.payment ? 'text-gray-700 dark:text-gray-200' : 'text-gray-500 dark:text-gray-400'}`}>{activePayment.label}</span>
+                              <ChevronDownIcon className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+                            </button>
 
-                        {isPaymentDropdownOpen && (
-                          <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 overflow-hidden">
-                            {paymentOptions.map((opt) => (
-                              <button
-                                key={opt.value || 'choose'}
-                                type="button"
-                                onClick={() => {
-                                  setValue('payment', opt.value, { shouldDirty: true });
-                                  setValue('paid', opt.value === 'PAID', { shouldDirty: true });
-                                  if (opt.value !== 'PAID') {
-                                    setValue('compensation', '', { shouldDirty: true });
-                                  }
-                                  setIsPaymentDropdownOpen(false);
-                                }}
-                                className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${job.payment === opt.value ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-                              >
-                                <span className="font-medium">{opt.label}</span>
-                              </button>
-                            ))}
+                            {open && (
+                              <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 overflow-hidden">
+                                {paymentOptions.map((opt) => (
+                                  <button
+                                    key={opt.value || 'choose'}
+                                    type="button"
+                                    onClick={() => {
+                                      setValue('payment', opt.value, { shouldDirty: true });
+                                      setValue('paid', opt.value === 'PAID', { shouldDirty: true });
+                                      if (opt.value !== 'PAID') {
+                                        setValue('compensation', '', { shouldDirty: true });
+                                      }
+                                      close();
+                                    }}
+                                    className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors duration-200 ${job.payment === opt.value ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                                  >
+                                    <span className="font-medium">{opt.label}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         )}
-                      </div>
+                      </Dropdown>
                     )}
                   </div>
                   <div>

@@ -6,10 +6,10 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
 import { getInitials } from '../../utils/getInitials';
 import { uploadPhoto } from '../../services/uploads';
 import { UserIcon, EnvelopeIcon, ShieldCheckIcon, ChartBarIcon, CommandLineIcon } from '@heroicons/react/24/outline';
+import { adminProfileSchema } from '../../schemas/adminProfileSchema';
 
 export default function AdminProfile() {
   const navigate = useNavigate();
@@ -21,10 +21,6 @@ export default function AdminProfile() {
   const [picUploading, setPicUploading] = useState(false);
   const picInputRef = useRef(null);
 
-  const schema = yup.object({
-    username: yup.string().trim().required().min(2)
-  });
-
   const {
     register,
     handleSubmit,
@@ -32,7 +28,7 @@ export default function AdminProfile() {
     formState: { errors }
   } = useForm({
     defaultValues: { username: '' },
-    resolver: yupResolver(schema),
+    resolver: yupResolver(adminProfileSchema),
     mode: 'onSubmit'
   });
 

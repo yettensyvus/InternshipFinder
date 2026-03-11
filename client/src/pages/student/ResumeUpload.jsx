@@ -6,7 +6,7 @@ import { ArrowTopRightOnSquareIcon, DocumentTextIcon } from '@heroicons/react/24
 import { uploadCV } from '../../services/uploads';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import { studentResumeUploadSchema } from '../../schemas/studentResumeUploadSchema';
 
 export default function ResumeUpload() {
   const [uploading, setUploading] = useState(false);
@@ -15,19 +15,13 @@ export default function ResumeUpload() {
   const fileInputRef = useRef(null);
   const toastId = 'student-resume-upload';
 
-  const schema = yup.object({
-    file: yup
-      .mixed()
-      .required()
-  });
-
   const {
     setValue,
     handleSubmit,
     watch
   } = useForm({
     defaultValues: { file: null },
-    resolver: yupResolver(schema),
+    resolver: yupResolver(studentResumeUploadSchema),
     mode: 'onSubmit'
   });
 
