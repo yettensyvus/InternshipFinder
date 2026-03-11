@@ -7,6 +7,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import { getInitials } from '../../utils/getInitials';
+import { uploadPhoto } from '../../services/uploads';
 import { UserIcon, EnvelopeIcon, ShieldCheckIcon, ChartBarIcon, CommandLineIcon } from '@heroicons/react/24/outline';
 
 export default function AdminProfile() {
@@ -81,10 +83,7 @@ export default function AdminProfile() {
     
     setPicUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await axios.post('/admin/profile-picture', formData);
-      const url = res.data;
+      const url = await uploadPhoto({ endpoint: '/admin/profile-picture', file });
       setForm(prev => ({ ...prev, profilePictureUrl: url }));
       updateAvatar?.(url);
       showToast('admin-profile-picture', 'info', t('adminProfile.updated'));
@@ -96,13 +95,7 @@ export default function AdminProfile() {
     }
   };
 
-  const initials = (form.username || t('common.roles.admin'))
-    .split(' ')
-    .filter(Boolean)
-    .map(p => p[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
+  const initials = getInitials(form.username || t('common.roles.admin'), { fallback: '?' });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">

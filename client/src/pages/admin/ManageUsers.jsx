@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { showToast } from '../../services/toast';
 import { useAuth } from '../../hooks/useAuth';
+import { getInitials } from '../../utils/getInitials';
+import { uploadCV, uploadPhoto } from '../../services/uploads';
 import { 
   MagnifyingGlassIcon, 
   UserIcon, 
@@ -173,12 +175,9 @@ export default function ManageUsers() {
       showToast('admin-pic-upload', 'error', t('common.fileTooLarge', { size: '2MB' }));
       return;
     }
-    const formData = new FormData();
-    formData.append('file', file);
     setPicUploading(true);
     try {
-      const res = await axios.post(`/admin/users/${selectedUser.id}/profile-picture`, formData);
-      const newUrl = res.data;
+      const newUrl = await uploadPhoto({ endpoint: `/admin/users/${selectedUser.id}/profile-picture`, file });
       setUserDetails(prev => ({ ...prev, profilePictureUrl: newUrl }));
       setUsers(prev => prev.map(u => u.id === selectedUser.id ? { ...u, profilePictureUrl: newUrl } : u));
       setSelectedUser(prev => ({ ...prev, profilePictureUrl: newUrl }));
@@ -198,12 +197,9 @@ export default function ManageUsers() {
       showToast('admin-resume-upload', 'error', t('common.fileTooLarge', { size: '10MB' }));
       return;
     }
-    const formData = new FormData();
-    formData.append('file', file);
     setResumeUploading(true);
     try {
-      const res = await axios.post(`/admin/users/${selectedUser.id}/resume`, formData);
-      const newUrl = res.data;
+      const newUrl = await uploadCV({ endpoint: `/admin/users/${selectedUser.id}/resume`, file });
       setUserDetails(prev => ({
         ...prev,
         student: prev.student ? { ...prev.student, resumeUrl: newUrl } : prev.student
@@ -292,13 +288,6 @@ export default function ManageUsers() {
     return !!myEmail && !!email && email === myEmail;
   };
 
-  const getInitials = (value) => {
-    const v = String(value || '').trim();
-    if (!v) return '?';
-    const parts = v.split(' ').filter(Boolean);
-    return (parts[0]?.[0] || '') + (parts.length > 1 ? parts[parts.length - 1]?.[0] || '' : '');
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 pt-12 pb-20">
       <div className="w-full px-2 md:px-6">
@@ -352,30 +341,6 @@ export default function ManageUsers() {
                 {/* Column 1: User List */}
                 <div className="lg:col-span-3 lg:border-r lg:border-gray-100 lg:dark:border-gray-800 lg:pr-6">
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between gap-3 mb-2 px-1">
-                      <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                        {t('recruiterStudents.page', { page, total: totalPages })}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setPage((p) => Math.max(1, p - 1))}
-                          disabled={page <= 1}
-                          className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 text-xs font-semibold text-gray-900 dark:text-gray-100 disabled:opacity-60"
-                        >
-                          {t('recruiterStudents.prev')}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                          disabled={page >= totalPages}
-                          className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 text-xs font-semibold text-gray-900 dark:text-gray-100 disabled:opacity-60"
-                        >
-                          {t('recruiterStudents.next')}
-                        </button>
-                      </div>
-                    </div>
-
                     {pagedUsers.length === 0 ? (
                       <div className="text-sm text-gray-500 py-10 text-center">{t('adminDashboard.noUsersFound')}</div>
                     ) : (
@@ -411,6 +376,30 @@ export default function ManageUsers() {
                         );
                       })
                     )}
+
+                    <div className="flex items-center justify-between gap-3 pt-2 px-1">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                        {t('recruiterStudents.page', { page, total: totalPages })}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setPage((p) => Math.max(1, p - 1))}
+                          disabled={page <= 1}
+                          className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 text-xs font-semibold text-gray-900 dark:text-gray-100 disabled:opacity-60"
+                        >
+                          {t('recruiterStudents.prev')}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                          disabled={page >= totalPages}
+                          className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 text-xs font-semibold text-gray-900 dark:text-gray-100 disabled:opacity-60"
+                        >
+                          {t('recruiterStudents.next')}
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

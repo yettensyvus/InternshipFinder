@@ -7,6 +7,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import { getInitials } from '../../utils/getInitials';
+import { uploadPhoto } from '../../services/uploads';
 import { BuildingOfficeIcon, GlobeAltIcon, UserCircleIcon } from '@heroicons/react/24/outline';
 
 export default function RecruiterProfile() {
@@ -96,10 +98,7 @@ export default function RecruiterProfile() {
     setPicUploading(true);
     const toastId = 'recruiter-profile-picture';
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await axios.post('/recruiter/profile-picture', formData);
-      const url = res.data;
+      const url = await uploadPhoto({ endpoint: '/recruiter/profile-picture', file });
       setForm(prev => ({ ...prev, profilePictureUrl: url }));
       updateAvatar?.(url);
       showToast(toastId, 'success', t('recruiterProfile.updated'));
@@ -111,13 +110,7 @@ export default function RecruiterProfile() {
     }
   };
 
-  const initials = (form.companyName || t('common.roles.recruiter'))
-    .split(' ')
-    .filter(Boolean)
-    .map(p => p[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
+  const initials = getInitials(form.companyName || t('common.roles.recruiter'), { fallback: '?' });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">

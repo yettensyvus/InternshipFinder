@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import axios from '../../services/axios';
 import { showToast } from '../../services/toast';
 import { useTranslation } from 'react-i18next';
+import { getInitials } from '../../utils/getInitials';
 import { ChevronDownIcon, ArrowTopRightOnSquareIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 
 export default function Applications() {
@@ -133,15 +134,6 @@ export default function Applications() {
     };
   };
 
-  const getInitials = (value) => {
-    const v = String(value || '').trim();
-    if (!v) return '?';
-    const parts = v.split(' ').filter(Boolean);
-    const a = parts[0]?.[0] || '';
-    const b = parts.length > 1 ? parts[parts.length - 1]?.[0] || '' : '';
-    return (a + b).toUpperCase() || '?';
-  };
-
   const ResumePanel = ({ resumeUrl }) => {
     if (!resumeUrl) {
       return (
@@ -270,30 +262,6 @@ export default function Applications() {
                 {/* Column 1: Applicant List */}
                 <div className="lg:col-span-3">
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between gap-3 mb-2">
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {t('recruiterStudents.page', { page, total: totalPages })}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setPage((p) => Math.max(1, p - 1))}
-                          disabled={page <= 1}
-                          className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 text-xs font-semibold text-gray-900 dark:text-gray-100 disabled:opacity-60"
-                        >
-                          {t('recruiterStudents.prev')}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                          disabled={page >= totalPages}
-                          className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 text-xs font-semibold text-gray-900 dark:text-gray-100 disabled:opacity-60"
-                        >
-                          {t('recruiterStudents.next')}
-                        </button>
-                      </div>
-                    </div>
-
                     {pagedApplications.map((app) => {
                       const isActive = selectedApp?.id === app.id;
                       const meta = statusMeta(app.status);
@@ -322,6 +290,30 @@ export default function Applications() {
                         </button>
                       );
                     })}
+
+                    <div className="flex items-center justify-between gap-3 pt-2">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {t('recruiterStudents.page', { page, total: totalPages })}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setPage((p) => Math.max(1, p - 1))}
+                          disabled={page <= 1}
+                          className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 text-xs font-semibold text-gray-900 dark:text-gray-100 disabled:opacity-60"
+                        >
+                          {t('recruiterStudents.prev')}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                          disabled={page >= totalPages}
+                          className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 text-xs font-semibold text-gray-900 dark:text-gray-100 disabled:opacity-60"
+                        >
+                          {t('recruiterStudents.next')}
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

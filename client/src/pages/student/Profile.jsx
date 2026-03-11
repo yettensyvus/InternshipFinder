@@ -7,6 +7,8 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { ArrowTopRightOnSquareIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { getInitials } from '../../utils/getInitials';
+import { uploadPhoto } from '../../services/uploads';
 
 export default function Profile() {
   const { t } = useTranslation();
@@ -111,10 +113,7 @@ export default function Profile() {
     if (!file) return;
     setPicUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await axios.post('/student/profile-picture', formData);
-      const url = res.data;
+      const url = await uploadPhoto({ endpoint: '/student/profile-picture', file });
       setForm(prev => ({ ...prev, profilePictureUrl: url }));
       updateAvatar?.(url);
       showToast('student-profile-picture', 'info', t('studentProfile.updated'));
@@ -126,13 +125,7 @@ export default function Profile() {
     }
   };
 
-  const initials = (form.name || t('common.roles.student'))
-    .split(' ')
-    .filter(Boolean)
-    .map(p => p[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
+  const initials = getInitials(form.name || t('common.roles.student'), { fallback: '?' });
 
   const resumeUrl = form.resumeUrl;
 

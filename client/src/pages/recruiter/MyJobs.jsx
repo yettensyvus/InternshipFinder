@@ -157,30 +157,6 @@ export default function MyJobs() {
               </div>
             ) : (
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    {t('recruiterStudents.page', { page, total: totalPages })}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      disabled={page <= 1}
-                      className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 text-xs font-semibold text-gray-900 dark:text-gray-100 disabled:opacity-60"
-                    >
-                      {t('recruiterStudents.prev')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                      disabled={page >= totalPages}
-                      className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 text-xs font-semibold text-gray-900 dark:text-gray-100 disabled:opacity-60"
-                    >
-                      {t('recruiterStudents.next')}
-                    </button>
-                  </div>
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {pagedJobs.map((job) => (
                     <button
@@ -231,6 +207,30 @@ export default function MyJobs() {
                       </div>
                     </button>
                   ))}
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    {t('recruiterStudents.page', { page, total: totalPages })}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page <= 1}
+                      className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 text-xs font-semibold text-gray-900 dark:text-gray-100 disabled:opacity-60"
+                    >
+                      {t('recruiterStudents.prev')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={page >= totalPages}
+                      className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40 text-xs font-semibold text-gray-900 dark:text-gray-100 disabled:opacity-60"
+                    >
+                      {t('recruiterStudents.next')}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

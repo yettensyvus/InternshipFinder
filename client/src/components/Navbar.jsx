@@ -1,10 +1,10 @@
-
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useEffect, useState, useRef } from 'react';
 import { fetchUnreadCount, subscribeToNotifications } from '../services/notifications';
 import { useTranslation } from 'react-i18next';
 import { getDashboardPathForRole, getProfilePathForRole } from '../utils/rolePaths';
+import { getInitials } from '../utils/getInitials';
 import {
   SunIcon,
   MoonIcon,
@@ -144,11 +144,6 @@ export default function Navbar() {
     setDarkMode(nextMode === 'dark');
   };
   const toggleProfileDropdown = () => setIsProfileDropdownOpen(!isProfileDropdownOpen);
-
-  const getInitials = (name) => {
-    if (!name) return 'U';
-    return name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2);
-  };
 
   const getRoleLabel = (role) => {
     switch (role) {

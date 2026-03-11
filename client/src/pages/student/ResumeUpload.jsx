@@ -3,6 +3,7 @@ import axios from '../../services/axios';
 import { showToast } from '../../services/toast';
 import { useTranslation } from 'react-i18next';
 import { ArrowTopRightOnSquareIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { uploadCV } from '../../services/uploads';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -66,14 +67,11 @@ export default function ResumeUpload() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-
     setUploading(true);
     try {
-      const res = await axios.post('/student/resume', formData);
-      if (typeof res.data === 'string' && res.data.startsWith('http')) {
-        setResumeUrl(res.data);
+      const url = await uploadCV({ endpoint: '/student/resume', file: selectedFile });
+      if (typeof url === 'string' && url.startsWith('http')) {
+        setResumeUrl(url);
       }
       showToast(toastId, 'success', t('resumeUpload.uploaded'));
       setValue('file', null);
